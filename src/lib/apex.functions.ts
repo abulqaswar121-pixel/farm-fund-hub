@@ -19,10 +19,11 @@ export const getDashboardData = createServerFn({ method: "GET" })
     let role = roleRow?.role ?? null;
     if (!role) {
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-      const { data: bootstrapRole, error: bootstrapError } = await supabaseAdmin.rpc("ensure_profile", {
+      const fullName = user.user.user_metadata?.["full_name"] as string | undefined;
+      const { data: bootstrapRole, error: bootstrapError } = await supabaseAdmin.rpc("ensure_profile", fullName ? {
         _user_id: context.userId,
-        _full_name: (user.user.user_metadata?.["full_name"] as string | undefined) ?? undefined,
-      });
+        _full_name: fullName,
+      } : { _user_id: context.userId });
       if (bootstrapError) throw new Error("Unable to finish account setup");
       role = roleSchema.parse(bootstrapRole);
     }
@@ -93,7 +94,7 @@ export const adminEnsureProfile = createServerFn({ method: "POST" })
     const { data: callerRole } = await context.supabase.from("user_roles").select("role").eq("user_id", context.userId).maybeSingle();
     if (callerRole?.role !== "admin") throw new Error("Admin access required");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error } = await supabaseAdmin.rpc("ensure_profile", { _user_id: data.userId, _full_name: data.fullName ?? undefined });
+    const { error } = await supabaseAdmin.rpc("ensure_profile", data.fullName ? { _user_id: data.userId, _full_name: data.fullName } : { _user_id: data.userId });
     if (error) throw new Error("Unable to create member profile");
     return { ok: true };
   });
