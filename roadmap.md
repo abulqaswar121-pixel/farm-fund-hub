@@ -1,0 +1,5 @@
+- [ ] Add Cloud database schema, role model, live equity view, and RLS policies
+- [ ] Add secure Paystack webhook and server-side contribution insertion
+- [ ] Add transactional email hooks for successful payments and operator expenses
+- [ ] Build email/password auth and role-aware dashboard skeleton
+- [ ] Request/configure Paystack credentials and validate the app
