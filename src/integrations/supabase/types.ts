@@ -244,7 +244,10 @@ export type Database = {
       }
     }
     Functions: {
-      [_ in never]: never
+      ensure_profile: {
+        Args: { _full_name?: string; _user_id: string }
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
     }
     Enums: {
       app_role: "admin" | "operator" | "contributor"
