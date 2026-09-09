@@ -25,7 +25,13 @@ export const Route = createFileRoute("/api/public/paystack-webhook")({
         const provided = Buffer.from(signature, "utf8");
         const computed = Buffer.from(expected, "utf8");
         if (provided.length !== computed.length || !timingSafeEqual(provided, computed)) return new Response("Invalid signature", { status: 401 });
-        const parsed = eventSchema.safeParse(JSON.parse(body));
+        let payload: unknown;
+        try {
+          payload = JSON.parse(body);
+        } catch {
+          return new Response("Invalid payload", { status: 400 });
+        }
+        const parsed = eventSchema.safeParse(payload);
         if (!parsed.success || parsed.data.event !== "charge.success" || parsed.data.data.status !== "success") return new Response("Ignored", { status: 200 });
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const memberId = parsed.data.data.metadata?.member_id;

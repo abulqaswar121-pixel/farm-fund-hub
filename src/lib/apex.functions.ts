@@ -1,7 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import type { Database } from "@/integrations/supabase/types";
-import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 
 const roleSchema = z.enum(["admin", "operator", "contributor"]);
@@ -20,7 +18,8 @@ export const getDashboardData = createServerFn({ method: "GET" })
 
     let role = roleRow?.role ?? null;
     if (!role) {
-      const { data: bootstrapRole, error: bootstrapError } = await context.supabase.rpc("ensure_profile", {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { data: bootstrapRole, error: bootstrapError } = await supabaseAdmin.rpc("ensure_profile", {
         _user_id: context.userId,
         _full_name: (user.user.user_metadata?.full_name as string | undefined) ?? null,
       });
@@ -81,8 +80,9 @@ export const verifyPaystackContribution = createServerFn({ method: "POST" })
     if (!response.ok) throw new Error("Unable to verify payment");
     const result = (await response.json()) as { status: boolean; data?: { status?: string; amount?: number; reference?: string; customer?: { email?: string } } };
     if (!result.status || result.data?.status !== "success" || result.data.reference !== data.reference) throw new Error("Payment was not verified");
-    const { error } = await context.supabase.from("contributions").insert({ member_id: context.userId, amount: Number(result.data.amount ?? 0) / 100, category: "Contribution", payment_method: "paystack", paystack_reference: data.reference, payment_status: "success", verified_at: new Date().toISOString(), recorded_by: context.userId });
-    if (error && !error.message.toLowerCase().includes("duplicate")) throw new Error("Payment verified but could not be recorded");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.from("contributions").upsert({ member_id: context.userId, amount: Number(result.data.amount ?? 0) / 100, category: "Contribution", payment_method: "paystack", paystack_reference: data.reference, payment_status: "success", verified_at: new Date().toISOString(), recorded_by: context.userId }, { onConflict: "paystack_reference", ignoreDuplicates: true });
+    if (error) throw new Error("Payment verified but could not be recorded");
     return { ok: true };
   });
 
