@@ -1,7 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import type { Database } from "@/integrations/supabase/types";
-import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 
 const roleSchema = z.enum(["admin", "operator", "contributor"]);
@@ -20,10 +18,12 @@ export const getDashboardData = createServerFn({ method: "GET" })
 
     let role = roleRow?.role ?? null;
     if (!role) {
-      const { data: bootstrapRole, error: bootstrapError } = await context.supabase.rpc("ensure_profile", {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const fullName = user.user.user_metadata?.["full_name"] as string | undefined;
+      const { data: bootstrapRole, error: bootstrapError } = await supabaseAdmin.rpc("ensure_profile", fullName ? {
         _user_id: context.userId,
-        _full_name: (user.user.user_metadata?.full_name as string | undefined) ?? null,
-      });
+        _full_name: fullName,
+      } : { _user_id: context.userId });
       if (bootstrapError) throw new Error("Unable to finish account setup");
       role = roleSchema.parse(bootstrapRole);
     }
@@ -35,13 +35,13 @@ export const getDashboardData = createServerFn({ method: "GET" })
       context.supabase.from("stock_logs").select("id, date, count, note").order("date", { ascending: false }).limit(10),
     ]);
 
-    const profileMap = new Map((profiles ?? []).map((profile) => [profile.id, profile.full_name || "Unnamed member"]));
+    const profileMap = new Map((profiles ?? []).map((profile) => [profile.id, profile["full_name"] || "Unnamed member"]));
     const successfulContributions = (contributions ?? []).filter((item) => item.payment_status === "success");
     const totalContributed = successfulContributions.reduce((sum, item) => sum + Number(item.amount), 0);
     const totalExpenses = (expenses ?? []).reduce((sum, item) => sum + Number(item.amount), 0);
 
     return {
-      user: { id: context.userId, email: user.user.email ?? "", name: user.user.user_metadata?.full_name ?? "Member" },
+      user: { id: context.userId, email: user.user.email ?? "", name: user.user.user_metadata?.["full_name"] ?? "Member" },
       role,
       totals: { totalContributed, totalExpenses, netPool: totalContributed - totalExpenses, memberCount: profiles?.length ?? 0 },
       contributions: (contributions ?? []).map((item) => ({ ...item, memberName: profileMap.get(item.member_id) ?? "Member" })),
@@ -81,8 +81,9 @@ export const verifyPaystackContribution = createServerFn({ method: "POST" })
     if (!response.ok) throw new Error("Unable to verify payment");
     const result = (await response.json()) as { status: boolean; data?: { status?: string; amount?: number; reference?: string; customer?: { email?: string } } };
     if (!result.status || result.data?.status !== "success" || result.data.reference !== data.reference) throw new Error("Payment was not verified");
-    const { error } = await context.supabase.from("contributions").insert({ member_id: context.userId, amount: Number(result.data.amount ?? 0) / 100, category: "Contribution", payment_method: "paystack", paystack_reference: data.reference, payment_status: "success", verified_at: new Date().toISOString(), recorded_by: context.userId });
-    if (error && !error.message.toLowerCase().includes("duplicate")) throw new Error("Payment verified but could not be recorded");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.from("contributions").upsert({ member_id: context.userId, amount: Number(result.data.amount ?? 0) / 100, category: "Contribution", payment_method: "paystack", paystack_reference: data.reference, payment_status: "success", verified_at: new Date().toISOString(), recorded_by: context.userId }, { onConflict: "paystack_reference", ignoreDuplicates: true });
+    if (error) throw new Error("Payment verified but could not be recorded");
     return { ok: true };
   });
 
@@ -93,7 +94,7 @@ export const adminEnsureProfile = createServerFn({ method: "POST" })
     const { data: callerRole } = await context.supabase.from("user_roles").select("role").eq("user_id", context.userId).maybeSingle();
     if (callerRole?.role !== "admin") throw new Error("Admin access required");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error } = await supabaseAdmin.rpc("ensure_profile", { _user_id: data.userId, _full_name: data.fullName ?? null });
+    const { error } = await supabaseAdmin.rpc("ensure_profile", data.fullName ? { _user_id: data.userId, _full_name: data.fullName } : { _user_id: data.userId });
     if (error) throw new Error("Unable to create member profile");
     return { ok: true };
   });
