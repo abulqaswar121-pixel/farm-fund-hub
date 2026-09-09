@@ -14,16 +14,252 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      contributions: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          date: string
+          id: string
+          member_id: string
+          note: string | null
+          payment_method: Database["public"]["Enums"]["payment_method"]
+          payment_status: Database["public"]["Enums"]["payment_status"]
+          paystack_reference: string | null
+          recorded_by: string | null
+          updated_at: string
+          verified_at: string | null
+        }
+        Insert: {
+          amount: number
+          category: string
+          created_at?: string
+          date?: string
+          id?: string
+          member_id: string
+          note?: string | null
+          payment_method: Database["public"]["Enums"]["payment_method"]
+          payment_status?: Database["public"]["Enums"]["payment_status"]
+          paystack_reference?: string | null
+          recorded_by?: string | null
+          updated_at?: string
+          verified_at?: string | null
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          date?: string
+          id?: string
+          member_id?: string
+          note?: string | null
+          payment_method?: Database["public"]["Enums"]["payment_method"]
+          payment_status?: Database["public"]["Enums"]["payment_status"]
+          paystack_reference?: string | null
+          recorded_by?: string | null
+          updated_at?: string
+          verified_at?: string | null
+        }
+        Relationships: []
+      }
+      expenses: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          date: string
+          id: string
+          note: string | null
+          recorded_by: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          category: string
+          created_at?: string
+          date?: string
+          id?: string
+          note?: string | null
+          recorded_by: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          date?: string
+          id?: string
+          note?: string | null
+          recorded_by?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      harvest_cycles: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          note: string | null
+          revenue: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          date?: string
+          id?: string
+          note?: string | null
+          revenue?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          note?: string | null
+          revenue?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      harvest_payouts: {
+        Row: {
+          amount: number
+          created_at: string
+          harvest_cycle_id: string
+          id: string
+          member_id: string
+          percent: number
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          harvest_cycle_id: string
+          id?: string
+          member_id: string
+          percent: number
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          harvest_cycle_id?: string
+          id?: string
+          member_id?: string
+          percent?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "harvest_payouts_harvest_cycle_id_fkey"
+            columns: ["harvest_cycle_id"]
+            isOneToOne: false
+            referencedRelation: "harvest_cycles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          full_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          full_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      stock_logs: {
+        Row: {
+          count: number
+          created_at: string
+          date: string
+          id: string
+          note: string | null
+          recorded_by: string
+          updated_at: string
+        }
+        Insert: {
+          count: number
+          created_at?: string
+          date?: string
+          id?: string
+          note?: string | null
+          recorded_by: string
+          updated_at?: string
+        }
+        Update: {
+          count?: number
+          created_at?: string
+          date?: string
+          id?: string
+          note?: string | null
+          recorded_by?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
-      [_ in never]: never
+      member_equity: {
+        Row: {
+          contributed: number | null
+          equity_percent: number | null
+          member_id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
-      [_ in never]: never
+      bootstrap_profile: {
+        Args: { _full_name?: string }
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "operator" | "contributor"
+      payment_method: "paystack" | "manual"
+      payment_status: "pending" | "success" | "failed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +386,10 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "operator", "contributor"],
+      payment_method: ["paystack", "manual"],
+      payment_status: ["pending", "success", "failed"],
+    },
   },
 } as const
