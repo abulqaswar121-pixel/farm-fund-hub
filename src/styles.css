@@ -5,29 +5,33 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Design system definition.
+ * Apex Agri-Capital — "well-kept account book" design system.
  *
- * The @theme inline block maps CSS custom properties to Tailwind utility
- * classes (e.g. --color-primary -> bg-primary, text-primary).
+ * Every page (old and new) draws from the same ledger tokens:
+ *   paper  #FAF7EF   page background
+ *   ink    #26323A   body text
+ *   leaf   #3F6A4E   credit / positive
+ *   rust   #92402F   debit / negative
+ *   gold   #B8873D   accent (seals, rules, highlights)
+ *   sage   #E9EDDC   ledger-row striping
  *
- * The :root and .dark blocks define the actual color values using oklch.
- * All colors MUST use oklch format.
- *
- * To add a new semantic color:
- * 1. Add the variable to :root (light value) and .dark (dark value)
- * 2. Register it in @theme inline as --color-<name>: var(--<name>)
+ * One bold gesture: the ruled ledger table (`.ledger-table` / `.ruled`).
+ * Everything else stays restrained — no gradients, no heavy shadows.
  */
 
 @theme inline {
-  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
+  --font-sans: "DM Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: Georgia, "Iowan Old Style", "Times New Roman", serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+
+  --radius-sm: calc(var(--radius) - 3px);
+  --radius-md: calc(var(--radius) - 1px);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --radius-2xl: calc(var(--radius) + 8px);
-  --radius-3xl: calc(var(--radius) + 12px);
-  --radius-4xl: calc(var(--radius) + 16px);
+  --radius-xl: calc(var(--radius) + 3px);
+  --radius-2xl: calc(var(--radius) + 6px);
+  --radius-3xl: calc(var(--radius) + 9px);
+  --radius-4xl: calc(var(--radius) + 12px);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -61,77 +65,94 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+
+  /* ledger tokens (utilities like bg-paper, text-ink, text-leaf, ...) */
+  --color-paper: var(--paper);
+  --color-paper-deep: var(--paper-deep);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-leaf: var(--leaf);
+  --color-leaf-deep: var(--leaf-deep);
+  --color-rust: var(--rust);
+  --color-gold: var(--gold);
+  --color-sage: var(--sage);
+  --color-sage-deep: var(--sage-deep);
+  --color-rule: var(--rule);
 }
 
 :root {
-  --radius: 0.625rem;
-  --background: oklch(0.975 0.018 95);
-  --foreground: oklch(0.22 0.035 145);
-  --card: oklch(0.995 0.01 95);
-  --card-foreground: oklch(0.22 0.035 145);
-  --popover: oklch(0.995 0.01 95);
-  --popover-foreground: oklch(0.22 0.035 145);
-  --primary: oklch(0.39 0.09 145);
-  --primary-foreground: oklch(0.98 0.015 95);
-  --secondary: oklch(0.91 0.055 92);
-  --secondary-foreground: oklch(0.25 0.045 145);
-  --muted: oklch(0.935 0.028 95);
-  --muted-foreground: oklch(0.48 0.045 145);
-  --accent: oklch(0.77 0.13 83);
-  --accent-foreground: oklch(0.25 0.045 55);
-  --destructive: oklch(0.56 0.18 28);
-  --destructive-foreground: oklch(0.98 0.015 95);
-  --border: oklch(0.86 0.04 95);
-  --input: oklch(0.86 0.04 95);
-  --ring: oklch(0.58 0.12 83);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.22 0.055 145);
-  --sidebar-foreground: oklch(0.97 0.02 95);
-  --sidebar-primary: oklch(0.77 0.13 83);
-  --sidebar-primary-foreground: oklch(0.25 0.045 55);
-  --sidebar-accent: oklch(0.3 0.065 145);
-  --sidebar-accent-foreground: oklch(0.98 0.015 95);
-  --sidebar-border: oklch(0.36 0.065 145);
-  --sidebar-ring: oklch(0.77 0.13 83);
+  --radius: 0.375rem;
+
+  /* ledger palette */
+  --paper: #faf7ef;
+  --paper-deep: #f3eede;
+  --ink: #26323a;
+  --ink-soft: #5b6a63;
+  --leaf: #3f6a4e;
+  --leaf-deep: #33553f;
+  --rust: #92402f;
+  --gold: #b8873d;
+  --sage: #e9eddc;
+  --sage-deep: #dde3cc;
+  --rule: #d9d2bb;
+
+  /* semantic tokens (map onto ledger palette) */
+  --background: #faf7ef;
+  --foreground: #26323a;
+  --card: #fdfbf4;
+  --card-foreground: #26323a;
+  --popover: #fdfbf4;
+  --popover-foreground: #26323a;
+  --primary: #3f6a4e;
+  --primary-foreground: #faf7ef;
+  --secondary: #e9eddc;
+  --secondary-foreground: #2c3b34;
+  --muted: #f1edde;
+  --muted-foreground: #5b6a63;
+  --accent: #efe6cf;
+  --accent-foreground: #5c4517;
+  --destructive: #92402f;
+  --destructive-foreground: #faf7ef;
+  --border: #d9d2bb;
+  --input: #cfc7ac;
+  --ring: #b8873d;
+  --chart-1: #3f6a4e;
+  --chart-2: #b8873d;
+  --chart-3: #92402f;
+  --chart-4: #7a8b6f;
+  --chart-5: #5b6a63;
+
+  /* deep ink-green used for the auth panel and footer ledger cover */
+  --sidebar: #2f463a;
+  --sidebar-foreground: #f3efe2;
+  --sidebar-primary: #b8873d;
+  --sidebar-primary-foreground: #faf7ef;
+  --sidebar-accent: #3a5546;
+  --sidebar-accent-foreground: #f3efe2;
+  --sidebar-border: #47654f;
+  --sidebar-ring: #b8873d;
 }
 
 .dark {
-  --background: oklch(0.129 0.042 264.695);
-  --foreground: oklch(0.984 0.003 247.858);
-  --card: oklch(0.208 0.042 265.755);
-  --card-foreground: oklch(0.984 0.003 247.858);
-  --popover: oklch(0.208 0.042 265.755);
-  --popover-foreground: oklch(0.984 0.003 247.858);
-  --primary: oklch(0.929 0.013 255.508);
-  --primary-foreground: oklch(0.208 0.042 265.755);
-  --secondary: oklch(0.279 0.041 260.031);
-  --secondary-foreground: oklch(0.984 0.003 247.858);
-  --muted: oklch(0.279 0.041 260.031);
-  --muted-foreground: oklch(0.704 0.04 256.788);
-  --accent: oklch(0.279 0.041 260.031);
-  --accent-foreground: oklch(0.984 0.003 247.858);
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.551 0.027 264.364);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.208 0.042 265.755);
-  --sidebar-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.279 0.041 260.031);
-  --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.551 0.027 264.364);
+  --background: #20272b;
+  --foreground: #ece7d8;
+  --card: #262e33;
+  --card-foreground: #ece7d8;
+  --popover: #262e33;
+  --popover-foreground: #ece7d8;
+  --primary: #6f9879;
+  --primary-foreground: #20272b;
+  --secondary: #2e3a33;
+  --secondary-foreground: #ece7d8;
+  --muted: #2e352f;
+  --muted-foreground: #aab5a6;
+  --accent: #3a3524;
+  --accent-foreground: #e5cf9c;
+  --destructive: #b25a45;
+  --destructive-foreground: #faf7ef;
+  --border: #3a413b;
+  --input: #4a5249;
+  --ring: #b8873d;
 }
 
 @layer base {
@@ -139,11 +160,240 @@
     border-color: var(--color-border);
   }
 
+  html {
+    background-color: var(--color-paper);
+  }
+
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
   }
 
-  h1, h2, h3, h4 { font-family: var(--font-display); }
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 600;
+  }
+
+  ::selection {
+    background: color-mix(in srgb, var(--color-gold) 35%, transparent);
+  }
+}
+
+@layer components {
+  /* ---- the one bold gesture: ruled ledger tables ------------------- */
+
+  .ledger-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8125rem;
+    line-height: 1.45;
+  }
+
+  .ledger-table thead th {
+    text-align: left;
+    font-size: 0.625rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #707a6d;
+    padding: 0.55rem 0.75rem;
+    border-bottom: 1.5px solid var(--color-rule);
+    background: transparent;
+    white-space: nowrap;
+  }
+
+  .ledger-table thead th.num,
+  .ledger-table tbody td.num {
+    text-align: right;
+  }
+
+  .ledger-table tbody td {
+    padding: 0.6rem 0.75rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--color-rule) 55%, transparent);
+    vertical-align: middle;
+  }
+
+  /* pale-sage ledger-row striping */
+  .ledger-table tbody tr:nth-child(even) {
+    background: color-mix(in srgb, var(--color-sage) 72%, transparent);
+  }
+
+  .ledger-table tbody tr:hover {
+    background: color-mix(in srgb, var(--color-gold) 9%, transparent);
+  }
+
+  .ledger-table tbody tr:last-child td {
+    border-bottom: 1.5px solid var(--color-rule);
+  }
+
+  .ledger-table .total-row td {
+    font-weight: 600;
+    border-top: 1.5px solid var(--color-rule);
+    border-bottom: 1.5px solid var(--color-rule);
+    background: color-mix(in srgb, var(--color-sage) 55%, transparent);
+  }
+
+  /* ruled account-book paper (hero ledger sheet, section headers) */
+  .ruled {
+    background-image: repeating-linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--color-gold) 24%, transparent) 0px,
+      color-mix(in srgb, var(--color-gold) 24%, transparent) 1px,
+      transparent 1px,
+      transparent 30px
+    );
+  }
+
+  /* ---- ledger furniture ------------------------------------------- */
+
+  .ledger-panel {
+    background: var(--color-card);
+    border: 1px solid var(--color-rule);
+    border-radius: var(--radius-lg);
+  }
+
+  .ledger-panel--deep {
+    background: var(--color-paper-deep);
+  }
+
+  .ledger-kicker {
+    font-size: 0.625rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-muted-foreground);
+  }
+
+  .ledger-rule-h {
+  }
+
+  /* every money figure: monospace + tabular so columns align */
+  .fig {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+  }
+
+  .fig--credit {
+    color: var(--color-leaf);
+  }
+
+  .fig--debit {
+    color: var(--color-rust);
+  }
+
+  .fig--gold {
+    color: var(--color-gold);
+  }
+
+  /* small print label beside figures */
+  .ledger-caption {
+    font-size: 0.8125rem;
+    color: var(--color-muted-foreground);
+  }
+
+  .table-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* inline paystack / status pill */
+  .ledger-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    border: 1px solid var(--color-rule);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    background: var(--color-card);
+    color: var(--color-muted-foreground);
+    white-space: nowrap;
+  }
+
+  .ledger-pill--success {
+    color: var(--color-leaf);
+    border-color: color-mix(in srgb, var(--color-leaf) 45%, var(--color-rule));
+    background: color-mix(in srgb, var(--color-leaf) 8%, var(--color-card));
+  }
+
+  .ledger-pill--pending {
+    color: #7a5a1e;
+    border-color: color-mix(in srgb, var(--color-gold) 55%, var(--color-rule));
+    background: color-mix(in srgb, var(--color-gold) 10%, var(--color-card));
+  }
+
+  .ledger-pill--failed {
+    color: var(--color-rust);
+    border-color: color-mix(in srgb, var(--color-rust) 45%, var(--color-rule));
+    background: color-mix(in srgb, var(--color-rust) 7%, var(--color-card));
+  }
+
+  /* gold seal — used sparingly for verified / closed records */
+  .ledger-seal {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.2rem 0.65rem;
+    border: 1.5px solid var(--color-gold);
+    border-radius: 999px;
+    color: #7a5a1e;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .ledger-link {
+    color: var(--color-leaf);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: color-mix(in srgb, var(--color-leaf) 45%, transparent);
+  }
+
+  .ledger-link:hover {
+    text-decoration-color: var(--color-leaf);
+  }
+
+  .ledger-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    border-bottom: 1.5px solid var(--color-rule);
+  }
+
+  .ledger-tab {
+    padding: 0.55rem 0.9rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--color-muted-foreground);
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1.5px;
+    cursor: pointer;
+  }
+
+  .ledger-tab:hover {
+    color: var(--color-foreground);
+  }
+
+  .ledger-tab[aria-selected="true"] {
+    color: var(--color-leaf);
+    border-bottom-color: var(--color-leaf);
+  }
+
+  .ledger-input {
+    background: var(--color-card) !important;
+    box-shadow: none !important;
+  }
 }

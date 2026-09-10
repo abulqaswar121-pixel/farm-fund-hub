@@ -10,12 +10,48 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as HomeRouteImport } from './routes/home'
+import { Route as PortalRouteImport } from './routes/portal'
+import { Route as PortalIndexRouteImport } from './routes/portal/index'
+import { Route as PortalAdminRouteImport } from './routes/portal/admin'
+import { Route as PortalMemberRouteImport } from './routes/portal/member'
+import { Route as PortalOperatorRouteImport } from './routes/portal/operator'
 import { Route as ApiPublicPaystackWebhookRouteImport } from './routes/api.public.paystack-webhook'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const HomeRoute = HomeRouteImport.update({
+  id: '/home',
+  path: '/home',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PortalRoute = PortalRouteImport.update({
+  id: '/portal',
+  path: '/portal',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PortalIndexRoute = PortalIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PortalRoute,
+} as any)
+const PortalAdminRoute = PortalAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => PortalRoute,
+} as any)
+const PortalMemberRoute = PortalMemberRouteImport.update({
+  id: '/member',
+  path: '/member',
+  getParentRoute: () => PortalRoute,
+} as any)
+const PortalOperatorRoute = PortalOperatorRouteImport.update({
+  id: '/operator',
+  path: '/operator',
+  getParentRoute: () => PortalRoute,
 } as any)
 const ApiPublicPaystackWebhookRoute =
   ApiPublicPaystackWebhookRouteImport.update({
@@ -26,27 +62,70 @@ const ApiPublicPaystackWebhookRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/home': typeof HomeRoute
+  '/portal': typeof PortalRouteWithChildren
+  '/portal/admin': typeof PortalAdminRoute
+  '/portal/member': typeof PortalMemberRoute
+  '/portal/operator': typeof PortalOperatorRoute
+  '/portal/': typeof PortalIndexRoute
   '/api/public/paystack-webhook': typeof ApiPublicPaystackWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/home': typeof HomeRoute
+  '/portal/admin': typeof PortalAdminRoute
+  '/portal/member': typeof PortalMemberRoute
+  '/portal/operator': typeof PortalOperatorRoute
+  '/portal': typeof PortalIndexRoute
   '/api/public/paystack-webhook': typeof ApiPublicPaystackWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/home': typeof HomeRoute
+  '/portal': typeof PortalRouteWithChildren
+  '/portal/admin': typeof PortalAdminRoute
+  '/portal/member': typeof PortalMemberRoute
+  '/portal/operator': typeof PortalOperatorRoute
+  '/portal/': typeof PortalIndexRoute
   '/api/public/paystack-webhook': typeof ApiPublicPaystackWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/api/public/paystack-webhook'
+  fullPaths:
+    | '/'
+    | '/home'
+    | '/portal'
+    | '/portal/admin'
+    | '/portal/member'
+    | '/portal/operator'
+    | '/portal/'
+    | '/api/public/paystack-webhook'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/api/public/paystack-webhook'
-  id: '__root__' | '/' | '/api/public/paystack-webhook'
+  to:
+    | '/'
+    | '/home'
+    | '/portal/admin'
+    | '/portal/member'
+    | '/portal/operator'
+    | '/portal'
+    | '/api/public/paystack-webhook'
+  id:
+    | '__root__'
+    | '/'
+    | '/home'
+    | '/portal'
+    | '/portal/admin'
+    | '/portal/member'
+    | '/portal/operator'
+    | '/portal/'
+    | '/api/public/paystack-webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  HomeRoute: typeof HomeRoute
+  PortalRoute: typeof PortalRouteWithChildren
   ApiPublicPaystackWebhookRoute: typeof ApiPublicPaystackWebhookRoute
 }
 
@@ -59,6 +138,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/home': {
+      id: '/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof HomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/portal': {
+      id: '/portal'
+      path: '/portal'
+      fullPath: '/portal'
+      preLoaderRoute: typeof PortalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/portal/': {
+      id: '/portal/'
+      path: '/'
+      fullPath: '/portal/'
+      preLoaderRoute: typeof PortalIndexRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/portal/admin': {
+      id: '/portal/admin'
+      path: '/admin'
+      fullPath: '/portal/admin'
+      preLoaderRoute: typeof PortalAdminRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/portal/member': {
+      id: '/portal/member'
+      path: '/member'
+      fullPath: '/portal/member'
+      preLoaderRoute: typeof PortalMemberRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/portal/operator': {
+      id: '/portal/operator'
+      path: '/operator'
+      fullPath: '/portal/operator'
+      preLoaderRoute: typeof PortalOperatorRouteImport
+      parentRoute: typeof PortalRoute
+    }
     '/api/public/paystack-webhook': {
       id: '/api/public/paystack-webhook'
       path: '/api/public/paystack-webhook'
@@ -69,8 +190,27 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface PortalRouteChildren {
+  PortalAdminRoute: typeof PortalAdminRoute
+  PortalMemberRoute: typeof PortalMemberRoute
+  PortalOperatorRoute: typeof PortalOperatorRoute
+  PortalIndexRoute: typeof PortalIndexRoute
+}
+
+const PortalRouteChildren: PortalRouteChildren = {
+  PortalAdminRoute: PortalAdminRoute,
+  PortalMemberRoute: PortalMemberRoute,
+  PortalOperatorRoute: PortalOperatorRoute,
+  PortalIndexRoute: PortalIndexRoute,
+}
+
+const PortalRouteWithChildren =
+  PortalRoute._addFileChildren(PortalRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  HomeRoute: HomeRoute,
+  PortalRoute: PortalRouteWithChildren,
   ApiPublicPaystackWebhookRoute: ApiPublicPaystackWebhookRoute,
 }
 export const routeTree = rootRouteImport
