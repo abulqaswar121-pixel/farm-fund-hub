@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { AlertTriangle, RefreshCw } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import {
@@ -95,9 +96,25 @@ function OperatorPortal() {
   if (failed) {
     return (
       <Card>
-        <EmptyState icon={<ShieldAlert size={18} />} title="The farm console did not load">
-          Your role may not include farm operations, or the page hit a temporary error. Refresh to
-          try again.
+        <EmptyState
+          icon={<AlertTriangle size={18} />}
+          title="The farm console could not reach the ledger"
+          action={
+            <button
+              type="button"
+              className="pg-btn pg-btn--ghost mt-1"
+              onClick={() => {
+                setFailed(false);
+                void refresh();
+              }}
+            >
+              <RefreshCw size={14} aria-hidden="true" />
+              Try again
+            </button>
+          }
+        >
+          Your access level may not include farm operations, or the service is briefly
+          unavailable. Nothing you have already filed is lost.
         </EmptyState>
       </Card>
     );

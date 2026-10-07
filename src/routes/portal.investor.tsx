@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useState } from "react";
 import {
+  AlertTriangle,
   ArrowRight,
   BadgeCheck,
   Banknote,
@@ -11,6 +12,7 @@ import {
   Gauge,
   Loader2,
   Lock,
+  RefreshCw,
   Repeat,
   Sprout,
   Wallet,
@@ -104,9 +106,25 @@ function InvestorPortal() {
   if (failed) {
     return (
       <Card>
-        <EmptyState title="We could not load your ledger">
-          Refresh the page to try again. If it keeps failing, sign out and back in — no ledger entry
-          is affected by a page error.
+        <EmptyState
+          icon={<AlertTriangle size={18} />}
+          title="We could not reach your ledger"
+          action={
+            <button
+              type="button"
+              className="pg-btn pg-btn--ghost mt-1"
+              onClick={() => {
+                setFailed(false);
+                void refresh();
+              }}
+            >
+              <RefreshCw size={14} aria-hidden="true" />
+              Try again
+            </button>
+          }
+        >
+          Your positions are untouched — this is a read failure, not a ledger change. If it keeps
+          failing, the service may be briefly unavailable; sign out and back in if it persists.
         </EmptyState>
       </Card>
     );

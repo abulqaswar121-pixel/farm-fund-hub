@@ -28,7 +28,8 @@ export function FamilyFooter() {
               every naira, kilogram and equity share accounted for in the open.
             </p>
             <p className="mt-3 text-xs text-slate-500">
-              Rooted in Sokoto State. Built for Nigeria&apos;s farm economy.
+              Head office in Sokoto State; farm operations at Tunga Magajiya, Niger State. Built for
+              Nigeria&apos;s farm economy.
             </p>
             <div className="mt-5 flex items-center gap-3">
               <a

@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import {
+  AlertTriangle,
   BadgeCheck,
   Banknote,
   CalendarCheck,
@@ -11,6 +12,7 @@ import {
   Loader2,
   Lock,
   Plus,
+  RefreshCw,
   Repeat,
   Scale,
   ShieldAlert,
@@ -96,8 +98,24 @@ function AdminPortal() {
   if (failed) {
     return (
       <Card>
-        <EmptyState icon={<Lock size={18} />} title="Treasury console unavailable">
-          Admin access is required for this console. If you are an admin, refresh to try again — the
+        <EmptyState
+          icon={<Lock size={18} />}
+          title="Treasury console unavailable"
+          action={
+            <button
+              type="button"
+              className="pg-btn pg-btn--ghost mt-1"
+              onClick={() => {
+                setFailed(false);
+                void refresh();
+              }}
+            >
+              <RefreshCw size={14} aria-hidden="true" />
+              Try again
+            </button>
+          }
+        >
+          Admin access is required for this console, and the ledger must be reachable. The
           permission check is enforced in the database as well as here.
         </EmptyState>
       </Card>
