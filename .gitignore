@@ -30,3 +30,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Python (scripts/preview-ledger)
+__pycache__/
+*.py[cod]

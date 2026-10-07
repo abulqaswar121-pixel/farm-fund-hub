@@ -27,6 +27,7 @@ function createPublicClient() {
 
   return createClient<Database>(url, key, {
     auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
+    global: { headers: { "X-Client-Info": "agricapital-public-ssr" } },
   });
 }
 

@@ -21,7 +21,83 @@
  *
  * Type: Space Grotesk (display) · DM Sans (body) · Roboto Mono (all figures,
  * always tabular so money, kilograms and equity percentages align in columns).
+ * All three faces are served from /fonts in this repository, so the platform
+ * carries its own typography: no third-party font request, nothing to block a
+ * first paint, and identical rendering on a farm connection and in an offline
+ * review. Licences ship alongside the files in public/fonts/licenses.
  * ========================================================================== */
+
+/* Self-hosted Precision Gateway type ---------------------------------------- */
+@font-face {
+  font-family: "Space Grotesk";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/fonts/space-grotesk-latin-500.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Space Grotesk";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/fonts/space-grotesk-latin-600.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Space Grotesk";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/space-grotesk-latin-700.woff2") format("woff2");
+}
+@font-face {
+  font-family: "DM Sans";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/dm-sans-latin-400.woff2") format("woff2");
+}
+@font-face {
+  font-family: "DM Sans";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/fonts/dm-sans-latin-500.woff2") format("woff2");
+}
+@font-face {
+  font-family: "DM Sans";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/fonts/dm-sans-latin-600.woff2") format("woff2");
+}
+@font-face {
+  font-family: "DM Sans";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/dm-sans-latin-700.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Roboto Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/roboto-mono-latin-400.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Roboto Mono";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/fonts/roboto-mono-latin-500.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Roboto Mono";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/fonts/roboto-mono-latin-600.woff2") format("woff2");
+}
 
 @theme inline {
   --font-sans: "DM Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
@@ -127,6 +203,7 @@
 
   /* --- master gradient ------------------------------------------------ */
   --grad-master: linear-gradient(120deg, #22d3ee 0%, #68baf7 48%, #a9a1eb 100%);
+  --grad-highlight: linear-gradient(90deg, #8a2be2 0%, #ff007f 100%);
   --grad-energy: linear-gradient(120deg, #8a2be2 0%, #ff007f 100%);
   --grad-navy: linear-gradient(165deg, #0a1a30 0%, #061223 100%);
 
@@ -920,5 +997,19 @@
     .pg-live-dot {
       animation: none;
     }
+  }
+
+  /* Preview-only notice (see components/ndh/PreviewRibbon.tsx). Rendered only
+     when a build is pointed at the local preview ledger. */
+  .ndh-preview-ribbon {
+    display: block;
+    margin: 0;
+    padding: 0.4rem var(--gutter);
+    background: var(--grad-highlight);
+    color: #fff;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.02em;
+    text-align: center;
   }
 }

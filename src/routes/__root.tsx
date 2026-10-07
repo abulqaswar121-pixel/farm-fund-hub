@@ -13,6 +13,7 @@ import { Sprout } from "lucide-react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { NdhFamilySymbol } from "../components/ndh/NdhFamilySymbol";
+import { PreviewRibbon } from "../components/ndh/PreviewRibbon";
 
 const SITE_TITLE = "NDH AgriCapital | Multi-Commodity Farm Investment Ledger";
 const SITE_DESCRIPTION =
@@ -95,14 +96,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "stylesheet", href: appCss },
       { rel: "icon", href: "/favicon.png", type: "image/png" },
       { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       // Precision Gateway typography: Space Grotesk display, DM Sans body,
-      // Roboto Mono for every figure the platform prints.
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Roboto+Mono:wght@400;500;600&display=swap",
-      },
+      // Roboto Mono for every figure the platform prints. The faces are served
+      // from /fonts in this repository (see the @font-face block in
+      // src/styles.css), so a first paint never waits on a third-party host.
+      { rel: "preload", href: "/fonts/dm-sans-latin-400.woff2", as: "font", type: "font/woff2", crossOrigin: "anonymous" },
+      { rel: "preload", href: "/fonts/space-grotesk-latin-600.woff2", as: "font", type: "font/woff2", crossOrigin: "anonymous" },
+      { rel: "preload", href: "/fonts/roboto-mono-latin-400.woff2", as: "font", type: "font/woff2", crossOrigin: "anonymous" },
     ],
     scripts: [
       { src: "https://js.paystack.co/v1/inline.js", async: true },
@@ -121,6 +121,7 @@ function RootShell({ children }: { children: ReactNode }) {
         <HeadContent />
       </head>
       <body className="bg-porcelain">
+        <PreviewRibbon />
         {children}
         <Scripts />
       </body>
