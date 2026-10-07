@@ -9,6 +9,7 @@
 // Load inside server handlers only:
 //   const { supabasePublic } = await import("@/integrations/supabase/client.public.server");
 import { createClient } from "@supabase/supabase-js";
+import { createLedgerFetch } from "./fetchWithBudget";
 import type { Database } from "./types";
 
 function createPublicClient() {
@@ -27,7 +28,12 @@ function createPublicClient() {
 
   return createClient<Database>(url, key, {
     auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
-    global: { headers: { "X-Client-Info": "agricapital-public-ssr" } },
+    global: {
+      // Bounded, so a ledger that cannot be reached becomes a fast, honest
+      // empty state instead of a page that never finishes rendering.
+      fetch: createLedgerFetch(key),
+      headers: { "X-Client-Info": "agricapital-public-ssr" },
+    },
   });
 }
 
