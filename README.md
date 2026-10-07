@@ -14,16 +14,16 @@ ledger; nothing is stored twice and nothing is editable by hand.
 
 These are enforced in the database, not in the interface.
 
-| Rule | Where it lives |
-| --- | --- |
-| Terms are frozen when a cycle is published — target capital, minimum ticket, profit split, reserve and commodity | `freeze_cycle_terms()` trigger on `farm_cycles` |
-| Equity is **derived live** as `my verified capital ÷ total verified capital × 100`. It is never stored, never editable | `cycle_funding` view, `my_cycle_position()`, `cycle_position_book()` |
-| Profit split is locked at publication (default 70% members / 30% farm caretaker) | `farm_cycles.profit_investor_percent` + `profit_operator_percent`, `CHECK` sum = 100 |
-| Emergency reserve is locked between 5% and 10% of harvest revenue | `CHECK (reserve_percent between 5 and 10)` |
-| Settlement runs a strict four-level waterfall | `run_cycle_waterfall()` |
-| A cycle can never settle twice | `run_cycle_waterfall()` guard |
-| A member can never offer more equity than they actually hold | `guard_transfer_capital()` trigger |
-| An operator can never read a member's capital, the contribution book or payout lines | RLS policies using `private.is_admin()` |
+| Rule                                                                                                                   | Where it lives                                                                       |
+| ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| Terms are frozen when a cycle is published — target capital, minimum ticket, profit split, reserve and commodity       | `freeze_cycle_terms()` trigger on `farm_cycles`                                      |
+| Equity is **derived live** as `my verified capital ÷ total verified capital × 100`. It is never stored, never editable | `cycle_funding` view, `my_cycle_position()`, `cycle_position_book()`                 |
+| Profit split is locked at publication (default 70% members / 30% farm caretaker)                                       | `farm_cycles.profit_investor_percent` + `profit_operator_percent`, `CHECK` sum = 100 |
+| Emergency reserve is locked between 5% and 10% of harvest revenue                                                      | `CHECK (reserve_percent between 5 and 10)`                                           |
+| Settlement runs a strict four-level waterfall                                                                          | `run_cycle_waterfall()`                                                              |
+| A cycle can never settle twice                                                                                         | `run_cycle_waterfall()` guard                                                        |
+| A member can never offer more equity than they actually hold                                                           | `guard_transfer_capital()` trigger                                                   |
+| An operator can never read a member's capital, the contribution book or payout lines                                   | RLS policies using `private.is_admin()`                                              |
 
 **The waterfall**, in strict priority order:
 
@@ -50,24 +50,24 @@ Roles live in `user_roles` and are checked through the security-definer
 
 The **first account ever created becomes the admin**, so the co-operative can be
 bootstrapped. Every account after that is a member; the admin promotes people
-from *Portal → Members & roles*.
+from _Portal → Members & roles_.
 
 ---
 
 ## Routes
 
-| Route | Who | What |
-| --- | --- | --- |
-| `/` | public | Ecosystem stats, stock families, lifecycle, locked rules, ROI & profit calculator, transparency feed |
-| `/cycles` | public | Marketplace with stock and status filters |
-| `/cycles/$cycleId` | public | Cycle terms, funding progress, stage rail, waterfall, farm record, incidents, weather |
-| `/signin` | public | Sign in / create account |
-| `/portal/investor` | member | Portfolio, live telemetry vs target weight, statement with receipts, share transfer board, visit booking, reinvestment |
-| `/portal/operator` | operator | Mobile-first quick log: feed, growth sample, mortality, medication, eggs/yield, expense, harvest weigh-in, incident, weather |
-| `/portal/admin` | admin | Cycle launcher, contribution verifier, log auditor, settlement engine, payout register, members & roles |
-| `/legal/$doc` | public | `terms`, `privacy`, `risk` |
-| `/api/public/paystack-webhook` | Paystack | The only automatic way equity is ever credited |
-| `/api/health` | public | Deployment health: ledger reachability and whether payments are configured |
+| Route                          | Who      | What                                                                                                                         |
+| ------------------------------ | -------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `/`                            | public   | Ecosystem stats, stock families, lifecycle, locked rules, ROI & profit calculator, transparency feed                         |
+| `/cycles`                      | public   | Marketplace with stock and status filters                                                                                    |
+| `/cycles/$cycleId`             | public   | Cycle terms, funding progress, stage rail, waterfall, farm record, incidents, weather                                        |
+| `/signin`                      | public   | Sign in / create account                                                                                                     |
+| `/portal/investor`             | member   | Portfolio, live telemetry vs target weight, statement with receipts, share transfer board, visit booking, reinvestment       |
+| `/portal/operator`             | operator | Mobile-first quick log: feed, growth sample, mortality, medication, eggs/yield, expense, harvest weigh-in, incident, weather |
+| `/portal/admin`                | admin    | Cycle launcher, contribution verifier, log auditor, settlement engine, payout register, members & roles                      |
+| `/legal/$doc`                  | public   | `terms`, `privacy`, `risk`                                                                                                   |
+| `/api/public/paystack-webhook` | Paystack | The only automatic way equity is ever credited                                                                               |
+| `/api/health`                  | public   | Deployment health: ledger reachability and whether payments are configured                                                   |
 
 ---
 
@@ -92,7 +92,12 @@ number.
 
 **Auto-rollover.** A member can instruct that their principal, profit or both be
 rolled into a later open cycle. An admin applies the instruction after
-settlement; the rolled amount becomes a real verified contribution.
+settlement; the rolled amount becomes a real verified contribution. It draws
+only on that member's own settlement line, is capped by the instruction mode
+(principal, profit, or the whole line) and by whatever has not already been
+rolled, and once a line has been fully rolled it is marked `withheld` — a
+withheld payout can never afterwards be marked paid in cash, because the ledger
+must not count the same money twice.
 
 **Secondary market.** Members offer verified equity at par. Another member claims
 the offer; an admin settles it once the money has moved. Settlement credits the
@@ -106,9 +111,23 @@ capital.
 
 ```bash
 npm install --no-audit --no-fund
-npm run dev          # http://localhost:8080
-npx tsc --noEmit     # must be clean
+npm run dev                        # http://localhost:8080
+npx tsc --noEmit && npm run lint   # both must be clean
+npm run build                      # Cloudflare/nitro output in .output
+NITRO_PRESET=node-server npm run build && node .output/server/index.mjs
 ```
+
+`bun.lock` is this project's lockfile; there is no `package-lock.json`, and one
+should not be added. `vite preview` does not serve this app — the TanStack Start
+plugin looks for a `dist/server/server.js` entry the nitro build no longer
+produces. Use `npm run dev`, or the node-server preset above to check the real
+build artifact.
+
+To review the interface without a Supabase project, `scripts/preview-ledger/`
+serves a development-only PostgREST stand-in over a local PostgreSQL with the
+real migrations and real RLS; `scripts/preview-ledger/seed_demo.py` builds a
+throwaway demonstration database beside it (git-ignored — see the zero-sample-data
+rule below).
 
 Environment (`.env`):
 
@@ -126,21 +145,22 @@ not configured instead of pretending to succeed.
 
 ## Database
 
-Eight migrations in `supabase/migrations/`. The four `20260909…` files are the
-original auth/role base; the four `20261007…` files are AgriCapital:
+Nine migrations in `supabase/migrations/`. The four `20260909…` files are the
+original auth/role base; the five `20261007…` files are AgriCapital:
 
 ```
 20261007115900_…_role_enum.sql              # 'member' added in its own transaction
 20261007120000_…_core.sql                   # 12 tables, lock triggers, capital guards
 20261007120100_…_roles_and_rls.sql          # has_role/is_admin/is_staff, every policy
 20261007120200_…_views_and_settlement.sql   # aggregate views + waterfall, rollover, transfer
+20261007120300_…_rollover_guards.sql        # rollover caps, withheld-payout protection
 ```
 
 Apply them with `supabase db push`, or paste them into the dashboard SQL editor
 **one file at a time**.
 
 > Order matters and the transaction boundary matters. `…115900…` adds the new
-> `member` value to the `app_role` enum, and PostgreSQL refuses to *use* a new
+> `member` value to the `app_role` enum, and PostgreSQL refuses to _use_ a new
 > enum value in the transaction that added it. Run that file on its own, then
 > the other three in order. Pasting all four as a single script fails on the
 > enum, not on anything else.
@@ -151,11 +171,27 @@ The public pages read **only** through the `cycle_*` / `platform_*` views; the
 After applying them, **sign up for the first account.** The very first account
 ever created is provisioned as `admin` so the co-operative can be bootstrapped;
 every account after that is a `member`, and the admin promotes people from
-*Portal → Members & roles*.
+_Portal → Members & roles_.
 
 Types in `src/integrations/supabase/types.ts` are generated from the schema by
 `node scripts/generate-agri-types.mjs` — if you add a table, view or RPC, add it
 there and regenerate, or the query builder will silently mistype.
+
+## Lovable
+
+Lovable syncs this repository and previews it as a full-stack build. Two things
+to know before the first look:
+
+* the preview renders the designed empty states until the migrations have been
+  applied to the project's database — that is the correct, honest first look;
+* after they are applied, **sign up the first account**: the first account ever
+  created becomes the admin, everyone after is a member.
+
+`LOVABLE.md` carries the handoff in full: migration order and transaction
+boundaries, the environment secrets, and the rules an editor's prompt must not
+break. Preview-only tooling (the local ledger stand-in, the demonstration seed)
+is inert in a Lovable build: it is never imported by `src/`, and the preview
+ribbon only appears when `VITE_PREVIEW_LEDGER=true` is set.
 
 ## Design
 
@@ -165,6 +201,12 @@ gains, violet-magenta `#8A2BE2 → #FF007F` reserved for identity moments.
 Space Grotesk headings, DM Sans body, tabular monospace for every naira, kilo
 and equity figure. Tokens and the `.pg-*` semantic classes live in
 `src/styles.css`.
+
+The three brand faces (Space Grotesk, DM Sans, Roboto Mono) are self-hosted from
+`public/fonts` with their licences, so a first paint never waits on a third-party
+host. The link-preview card at `public/og-agricapital.png` is generated by
+`scripts/build-og-image.py` and states the platform's locked rules rather than
+any figure, because at unfurl time there are no figures to state honestly.
 
 **No sample data exists anywhere.** Every page renders a real empty state with a
 call to action until the co-operative publishes its first cycle.
