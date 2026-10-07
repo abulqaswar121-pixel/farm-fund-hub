@@ -28,14 +28,33 @@ Accounts it creates (password: `agricapital`):
 from __future__ import annotations
 
 import glob
+import os
 import pathlib
+import shutil
 import subprocess
 import sys
 
-DSN_BASE = "postgresql://postgres@127.0.0.1:5432"
-DB = "ndh_preview"
-PSQL = pathlib.Path("/tmp/pgvenv/lib/python3.11/site-packages/pgserver/pginstall/bin/psql")
-PASSWORD = "agricapital"
+REPO = pathlib.Path(__file__).resolve().parents[2]
+DSN_BASE = os.environ.get("PREVIEW_LEDGER_DSN_BASE", "postgresql://postgres@127.0.0.1:5432")
+DB = os.environ.get("PREVIEW_LEDGER_DB", "ndh_preview")
+PASSWORD = os.environ.get("PREVIEW_LEDGER_PASSWORD", "agricapital")
+
+
+def find_psql() -> str:
+    """Any psql will do; prefer one on PATH, fall back to a bundled install."""
+    on_path = shutil.which("psql")
+    if on_path:
+        return on_path
+    candidates = sorted(pathlib.Path("/tmp").glob("**/pgserver/pginstall/bin/psql"))
+    if candidates:
+        return str(candidates[0])
+    raise SystemExit(
+        "No psql found. Install PostgreSQL client tools, or point PREVIEW_LEDGER_DSN_BASE "
+        "at a server you already have and run this where psql is available."
+    )
+
+
+PSQL = pathlib.Path(find_psql())
 
 ADMIN = "a0000000-0000-4000-8000-000000000001"
 FARMER = "a0000000-0000-4000-8000-000000000002"
@@ -331,7 +350,7 @@ create or replace function auth.uid() returns uuid language sql stable as
         )
     )
 
-    migrations = sorted(glob.glob("/home/user/farm-fund-hub/supabase/migrations/*.sql"))
+    migrations = sorted(glob.glob(str(REPO / "supabase/migrations/*.sql")))
     for path in migrations:
         out = sql(open(path).read())
         print("migration", path.split("/")[-1], "->", "ok" if "STDERR" not in out else out[-800:])
@@ -350,7 +369,7 @@ create or replace function auth.uid() returns uuid language sql stable as
     out = sql(seed)
     print("seed ->", out.strip()[-300:] if out.strip() else "clean")
 
-    sys.path.insert(0, "/home/user/farm-fund-hub/scripts/preview-ledger")
+    sys.path.insert(0, str(REPO / "scripts/preview-ledger"))
     from server import hash_password  # noqa: E402
 
     import psycopg

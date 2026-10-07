@@ -118,7 +118,10 @@ NITRO_PRESET=node-server npm run build && node .output/server/index.mjs
 ```
 
 `bun.lock` is this project's lockfile; there is no `package-lock.json`, and one
-should not be added. `vite preview` does not serve this app — the TanStack Start
+should not be added — npm's lock generation is currently inconsistent for this
+dependency tree, so a committed npm lock would break `npm ci` in a build host.
+`package.json` pins `h3` to `2.0.1-rc.26` (the registry advertises a newer
+release whose tarball 404s) and `rolldown` to `1.2.1`; leave those in place. `vite preview` does not serve this app — the TanStack Start
 plugin looks for a `dist/server/server.js` entry the nitro build no longer
 produces. Use `npm run dev`, or the node-server preset above to check the real
 build artifact.

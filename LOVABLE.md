@@ -105,6 +105,36 @@ than merely warned about — but please do not try:
 10. **Paystack secrets stay server-side.** `PAYSTACK_SECRET_KEY` must never be
     read in client code or exposed through `VITE_`-prefixed variables.
 
+## 4b. Installs: read this before touching dependencies
+
+- `bun.lock` is the project's lockfile. **Do not add a `package-lock.json`.**
+  npm's lock generation is currently inconsistent for this dependency tree (it
+  emits a lock that `npm ci` then rejects), so committing one would replace a
+  working install with a failing build step.
+- `npm install` and `bun install` both work from a clean clone today.
+- `package.json` carries two `overrides` for reasons worth keeping:
+  - `h3` is pinned to `2.0.1-rc.26`. The registry currently advertises an
+    `h3@2.0.2` whose tarball 404s while npm's floating range resolves to it,
+    which made every fresh `npm install` fail outright.
+  - `rolldown` is pinned to `1.2.1`.
+- If a future install fails on a package whose tarball 404s, the fix is the same
+  shape: pin that exact version in `overrides`, and say why in a comment or a
+  commit message. Do not "clean up" the existing overrides.
+
+## 4c. What a freshly migrated database looks like (verified)
+
+Confirmed end to end against a database with all nine migrations applied and
+**zero rows** — the exact state the preview reaches on day one:
+
+- every route answers 200 and renders its designed empty state — no error text,
+  no stack traces, no blank screens;
+- `/api/health` reports `ledger: ok, payments: not configured`;
+- the public views return empty results or honest zeros, never errors;
+- anonymous callers cannot invoke `ensure_profile` (`permission denied`);
+- **the first account created becomes `admin`, the second becomes `member`** —
+  the bootstrap is what makes the platform usable without hand-editing the
+  database.
+
 ## 5. Zero sample data is a product rule
 
 The co-operative's figures are members' money. Inventing them — even to make a
@@ -133,11 +163,11 @@ seed script is git-ignored on purpose.
 ## 7. Local build notes
 
 ```bash
-npm install --no-audit --no-fund   # bun.lock is the project's lockfile
+npm install --no-audit --no-fund   # or: bun install --frozen-lockfile
 npm run dev                        # http://localhost:8080
 npx tsc --noEmit && npm run lint   # both must be clean
 npm run build                      # Cloudflare/nitro output in .output
-NITRO_PRESET=node-server npm run build   # then: node .output/server/index.mjs
+npm run build:node                 # then: node .output/server/index.mjs
 ```
 
 `vite preview` does **not** serve this app: the TanStack Start plugin expects a
