@@ -30,8 +30,8 @@ export function FamilyFooter() {
           <div>
             <BrandLockup size="md" />
             <p className="mt-4 max-w-xs text-sm leading-6 text-slate-400">
-              The multi-commodity agricultural capital ledger of the Najeeb Digital Hub family —
-              every naira, kilogram and equity share accounted for in the open.
+              The farm capital ledger of the Najeeb Digital Hub family — every naira, every kilogram
+              and every member's share accounted for in the open.
             </p>
             <p className="mt-3 text-xs text-slate-500">
               Head office in Sokoto State; farm operations at Tunga Magajiya, Niger State. Built for

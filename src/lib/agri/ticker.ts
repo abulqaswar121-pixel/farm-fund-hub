@@ -36,25 +36,25 @@ export const FARM_STANDARDS: TickerItem[] = [
   {
     id: "std-catfish",
     subject: "Catfish Batch #04",
-    reading: "Week 12 · biomass standard 1.4 kg",
+    reading: "Week 12 · batch weight target 1.4 kg",
     tone: "live",
   },
   {
     id: "std-broiler",
     subject: "Broiler Flock #09",
-    reading: "Viability floor 98.4%",
+    reading: "Target 98.4% of birds healthy",
     tone: "verified",
   },
   {
     id: "std-greenhouse",
     subject: "Greenhouse Batch",
-    reading: "Drip irrigation optimal",
+    reading: "Drip irrigation running as planned",
     tone: "live",
   },
   {
     id: "std-soya",
     subject: "Soya Harvest Window",
-    reading: "Nov 2026",
+    reading: "Harvest expected Nov 2026",
     tone: "closing",
   },
 ];
@@ -67,11 +67,11 @@ export const TICKER_TONE_CLASS: Record<TickerTone, string> = {
 
 /** The cycle states that are worth announcing on a public ticker. */
 const ANNOUNCED_STATUS: Record<string, { verb: string; tone: TickerTone }> = {
-  open: { verb: "funding open", tone: "live" },
-  funded: { verb: "fully subscribed", tone: "verified" },
-  active: { verb: "active on farm", tone: "live" },
-  harvested: { verb: "harvested · weigh-in logged", tone: "closing" },
-  settled: { verb: "settled through the waterfall", tone: "verified" },
+  open: { verb: "open for funding", tone: "live" },
+  funded: { verb: "fully funded", tone: "verified" },
+  active: { verb: "growing on the farm", tone: "live" },
+  harvested: { verb: "harvested · weighed in", tone: "closing" },
+  settled: { verb: "paid out to members", tone: "verified" },
 };
 
 /**

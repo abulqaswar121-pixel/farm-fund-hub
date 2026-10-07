@@ -20,9 +20,9 @@ export function HowWeKeepThisHonest() {
             Four promises you can actually check
           </h2>
           <p className="mt-2 max-w-3xl text-[0.85rem] leading-6 text-ink-soft">
-            Every rule below is enforced by the platform itself, not by good intentions: the
-            settlement engine refuses to run outside the order, and the public pages cannot read
-            what they are not supposed to see.
+            Every rule below is enforced by the platform itself, not by good intentions: the payout
+            engine refuses to run out of order, and the public pages cannot read what they are not
+            supposed to see.
           </p>
         </div>
 

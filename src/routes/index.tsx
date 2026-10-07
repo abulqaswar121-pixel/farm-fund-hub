@@ -460,8 +460,8 @@ function PublicHome() {
               The same four orders of payment, in every cycle
             </h2>
             <p className="mt-2 max-w-3xl text-[0.85rem] leading-6 text-ink-soft">
-              This is not a promise to be reasonable at harvest. It is the order the settlement
-              engine runs, and it cannot run in any other order.
+              This is not a promise to be reasonable at harvest. It is the order our payout engine
+              runs in, and it cannot run in any other order.
             </p>
           </div>
 
