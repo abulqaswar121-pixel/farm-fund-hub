@@ -17,7 +17,7 @@ export const Route = createFileRoute("/cycles/")({
       {
         name: "description",
         content:
-          "Browse every open and running NDH AgriCapital production cycle: catfish, broiler, layer, grain and greenhouse stock with locked profit splits and live funding progress.",
+          "Browse every open and running NDH AgriCapital production cycle: catfish, tilapia, broiler, layer, grain and greenhouse stock with locked profit splits and live funding progress.",
       },
       { property: "og:title", content: "Farm Marketplace | NDH AgriCapital" },
     ],
@@ -62,32 +62,51 @@ function Marketplace() {
     <div className="min-h-screen bg-porcelain" id="top">
       <PrecisionHeader activePath="/cycles" />
 
-      <section className="border-b border-navy-line bg-navy text-white">
-        <div className="mx-auto max-w-[var(--page)] px-[var(--gutter)] py-11">
-          <p className="pg-kicker pg-kicker--onDark">Farm marketplace</p>
-          <h1 className="mt-2 font-display text-[1.8rem] font-bold leading-tight md:text-[2.3rem]">
+      <section className="band-dark">
+        <div className="bg-grid-pattern absolute inset-0 opacity-60" aria-hidden="true" />
+        <div
+          className="hero-glow left-1/3 top-[-160px] h-[340px] w-[660px] -translate-x-1/2"
+          aria-hidden="true"
+        />
+        <div className="absolute inset-x-0 top-0 h-px bg-[image:var(--grad-master)] opacity-70" />
+
+        <div className="relative z-10 mx-auto max-w-[var(--page)] px-[var(--gutter)] py-12">
+          <p className="pg-kicker pg-kicker--onDark">Farm marketplace · cycle ledger</p>
+          <h1 className="animate-rise-in mt-2 font-display text-[1.8rem] font-bold leading-tight md:text-[2.4rem]">
             Choose the stock you want to back
           </h1>
-          <p className="mt-3 max-w-2xl text-[0.88rem] leading-7 text-slate-300">
+          <p className="animate-rise-in animate-rise-in--1 mt-3 max-w-2xl text-[0.88rem] leading-7 text-slate-300">
             Every cycle below publishes its target capital, its minimum entry ticket, its locked
             profit split and its projected harvest window before it takes a single naira.
           </p>
 
-          <dl className="mt-7 grid grid-cols-3 gap-5 border-t border-navy-line pt-6">
-            <div>
-              <dt className="pg-kicker pg-kicker--onDark">Open now</dt>
-              <dd className="fig mt-1 text-[1.3rem] font-semibold">{totals.open}</dd>
-            </div>
-            <div>
-              <dt className="pg-kicker pg-kicker--onDark">Capital raised</dt>
-              <dd className="fig mt-1 text-[1.3rem] font-semibold">
-                ₦{(totals.raised / 1_000_000).toFixed(1)}M
-              </dd>
-            </div>
-            <div>
-              <dt className="pg-kicker pg-kicker--onDark">Member positions</dt>
-              <dd className="fig mt-1 text-[1.3rem] font-semibold">{totals.investors}</dd>
-            </div>
+          <dl className="mt-7 grid gap-4 border-t border-navy-line pt-6 sm:grid-cols-3">
+            {[
+              { label: "Open now", value: String(totals.open), caption: "Accepting contributions" },
+              {
+                label: "Capital raised",
+                value: `₦${(totals.raised / 1_000_000).toFixed(1)}M`,
+                caption: "Verified member funding",
+              },
+              {
+                label: "Member positions",
+                value: String(totals.investors),
+                caption: "Across published cycles",
+              },
+            ].map((stat) => (
+              <div
+                key={stat.label}
+                className="rounded-2xl border border-navy-line bg-white/[0.06] p-4 shadow-lg backdrop-blur-md"
+              >
+                <dt className="pg-kicker pg-kicker--onDark">{stat.label}</dt>
+                <dd className="mt-1.5">
+                  <span className="fig block text-[1.4rem] font-semibold leading-none text-white">
+                    {stat.value}
+                  </span>
+                  <span className="mt-1.5 block text-[0.68rem] text-slate-400">{stat.caption}</span>
+                </dd>
+              </div>
+            ))}
           </dl>
         </div>
       </section>

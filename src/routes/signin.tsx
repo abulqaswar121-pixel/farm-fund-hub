@@ -1,10 +1,10 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowRight, Lock, ShieldCheck, Sprout, Waves } from "lucide-react";
+import { ArrowRight, Lock, ShieldCheck, Waves } from "lucide-react";
 import { z } from "zod";
 
+import { BrandLockup } from "@/components/ndh/BrandLockup";
 import { FamilyFooter } from "@/components/ndh/FamilyFooter";
-import { NdhFamilySymbol } from "@/components/ndh/NdhFamilySymbol";
 import { Notice } from "@/components/ndh/ledger-ui";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -83,13 +83,7 @@ function SignInPage() {
       <div className="grid flex-1 lg:grid-cols-[1.02fr_0.98fr]">
         {/* Co-operative standing */}
         <section className="pg-node-texture relative flex flex-col justify-between bg-navy px-7 py-9 text-white lg:px-12 lg:py-12">
-          <Link to="/" className="flex items-center gap-3 no-underline">
-            <NdhFamilySymbol SectorIcon={Sprout} size={42} />
-            <span className="pg-brand-lockup">
-              <strong className="text-white">NAJEEB</strong>
-              <small>AgriCapital</small>
-            </span>
-          </Link>
+          <BrandLockup size="lg" />
 
           <div className="max-w-lg py-12">
             <p className="pg-chip border-navy-line bg-white/10 text-signal">

@@ -891,7 +891,7 @@ export type Database = {
     };
     Enums: {
       app_role: "admin" | "operator" | "member" | "contributor";
-      commodity_type: "catfish" | "broiler" | "layer" | "grain" | "greenhouse";
+      commodity_type: "catfish" | "tilapia" | "broiler" | "layer" | "grain" | "greenhouse";
       cycle_status: "draft" | "open" | "funded" | "active" | "harvested" | "settled" | "cancelled";
       distribution_status: "draft" | "executed" | "paid";
       incident_severity: "low" | "moderate" | "serious" | "critical";
@@ -1036,7 +1036,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "operator", "member", "contributor"],
-      commodity_type: ["catfish", "broiler", "layer", "grain", "greenhouse"],
+      commodity_type: ["catfish", "tilapia", "broiler", "layer", "grain", "greenhouse"],
       cycle_status: ["draft", "open", "funded", "active", "harvested", "settled", "cancelled"],
       distribution_status: ["draft", "executed", "paid"],
       incident_severity: ["low", "moderate", "serious", "critical"],

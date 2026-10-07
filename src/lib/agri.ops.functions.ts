@@ -736,7 +736,7 @@ export const createFarmCycle = createServerFn({ method: "POST" })
     z.object({
       code: z.string().trim().min(3).max(24),
       name: z.string().trim().min(4).max(120),
-      commodity: z.enum(["catfish", "broiler", "layer", "grain", "greenhouse"]),
+      commodity: z.enum(["catfish", "tilapia", "broiler", "layer", "grain", "greenhouse"]),
       summary: z.string().trim().max(600).optional(),
       farmSite: z.string().trim().min(2).max(120),
       farmLatitude: z.number().min(-90).max(90).optional(),

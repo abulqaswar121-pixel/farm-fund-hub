@@ -79,6 +79,7 @@ LYR05 = "b0000000-0000-4000-8000-000000000205"
 GRN21 = "b0000000-0000-4000-8000-000000000321"
 GHO07 = "b0000000-0000-4000-8000-000000000407"
 CAT15 = "b0000000-0000-4000-8000-000000000015"
+TIL03 = "b0000000-0000-4000-8000-000000000703"
 
 
 def sql(statement: str, dbname: str = DB, stop: bool = True) -> str:
@@ -156,6 +157,14 @@ values
    18, current_date - 2, current_date + 38, null, current_date + 120,
    'open', 'funding_open', now() - interval '2 days', '{ADMIN}'),
 
+  ('{TIL03}', 'TIL-003', 'tilapia',
+   'Tilapia Cycle 3 — Tunga Magajiya Tanks',
+   'Fourteen thousand monosex Nile tilapia fingerlings across eight lined tanks, transferred to two lake cages at week 10 for the final grow-out.',
+   'Tunga Magajiya, Niger State', 9.52380, 6.04890,
+   1600000, 20000, 2680000, 190000,
+   24, current_date - 6, current_date + 21, null, current_date + 160,
+   'open', 'funding_open', now() - interval '6 days', '{ADMIN}'),
+
   ('{CAT15}', 'CAT-015', 'catfish',
    'Catfish Batch 15 — Tunga Magajiya',
    'Draft plan for the batch that follows CAT-014. Not published, so nothing here is promised to anyone yet.',
@@ -197,6 +206,8 @@ def investments_sql() -> str:
             investment(GRN21, AISHA, 400000, 7, "TRF-41118"),
             investment(GRN21, ZAINAB, 400000, 4, "TRF-41126"),
             investment(GHO07, ZAINAB, 150000, 1, "TRF-50011"),
+            investment(TIL03, MUSA, 300000, 5, "TRF-60301"),
+            investment(TIL03, BILAAL, 200000, 3, "TRF-60318"),
         ]
     )
 

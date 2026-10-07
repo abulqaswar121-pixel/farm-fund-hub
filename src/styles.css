@@ -10,14 +10,22 @@
  * The shared visual language of the Najeeb Digital Hub family, tuned for a
  * multi-commodity agricultural investment ledger.
  *
- *   navy        #0A1A30   master background, header, portal shell
+ *   navy        #0A1A30   master background, header, hero band, footer anchor
  *   porcelain   #F8FAFC   page canvas
  *   white       #FFFFFF   elevated interactive cards
+ *   hairline    #D9E1EF   crisp one-pixel borders on every white card
  *   cyan        #22D3EE   tech accent, live states, focus rings
  *   gradient    #22D3EE → #68BAF7 → #A9A1EB   identity moments only
- *   emerald     #10B981   growth, positive margin, active cycles
+ *   emerald     #10B981   growth, verified margin, active/funding cycles
+ *   amber       #F59E0B   closing cycles, pending verifications
  *   violet/rose #8A2BE2 → #FF007F   highlights, master mark
- *   amber/coral #F59E0B / #FB7185   operational alerts
+ *
+ * Visual rhythm (adopted from NDH Academy so the two surfaces read as one
+ * family): a deep-navy hero band with ambient glow, a live marquee strip, then
+ * alternating porcelain canvas and pure-white strips carrying elevated white
+ * cards — never a full screen of unbroken dense table.
+ *
+ *   elevation   0 4px 16px rgba(16,27,64,0.07) — soft, low-ink, never heavy
  *
  * Type: Space Grotesk (display) · DM Sans (body) · Roboto Mono (all figures,
  * always tabular so money, kilograms and equity percentages align in columns).
@@ -179,8 +187,8 @@
   --navy-line: #1e3556;
   --porcelain: #f8fafc;
   --white: #ffffff;
-  --hairline: #e2e8f0; /* slate-200 */
-  --hairline-strong: #cbd5e1; /* slate-300 */
+  --hairline: #d9e1ef; /* crisp card border */
+  --hairline-strong: #c3cfe4; /* hover / divider emphasis */
 
   /* --- ink ------------------------------------------------------------ */
   --ink-deep: #0f172a;
@@ -199,7 +207,16 @@
   --violet-ndh: #8a2be2;
   --magenta-ndh: #ff007f;
   --amber-alert: #f59e0b;
+  --amber-soft: #fffbeb;
   --coral: #fb7185;
+
+  /* Status indicators, by meaning:
+     emerald = funding or active cycle and verified margin,
+     cyan    = a live technology state (feed, streaming figures),
+     amber   = a cycle closing or an item awaiting verification. */
+  --status-funding: #10b981;
+  --status-live: #22d3ee;
+  --status-closing: #f59e0b;
 
   /* --- master gradient ------------------------------------------------ */
   --grad-master: linear-gradient(120deg, #22d3ee 0%, #68baf7 48%, #a9a1eb 100%);
@@ -207,11 +224,13 @@
   --grad-energy: linear-gradient(120deg, #8a2be2 0%, #ff007f 100%);
   --grad-navy: linear-gradient(165deg, #0a1a30 0%, #061223 100%);
 
-  /* --- elevation ------------------------------------------------------ */
-  --shadow-hairline: 0 1px 2px rgba(10, 26, 48, 0.06);
-  --shadow-soft: 0 4px 16px rgba(10, 26, 48, 0.06);
-  --shadow-lift: 0 14px 34px rgba(10, 26, 48, 0.1);
-  --shadow-deep: 0 28px 64px rgba(10, 26, 48, 0.18);
+  /* --- elevation ------------------------------------------------------ *
+   * Low-ink, soft. The whole point is that a page of cards reads as
+   * paper on a desk, not as a spreadsheet with drop shadows.            */
+  --shadow-hairline: 0 1px 2px rgba(16, 27, 64, 0.06);
+  --shadow-soft: 0 4px 16px rgba(16, 27, 64, 0.07);
+  --shadow-lift: 0 14px 30px -16px rgba(16, 27, 64, 0.16);
+  --shadow-deep: 0 24px 55px -22px rgba(16, 27, 64, 0.22);
   --shadow-glow: 0 8px 26px rgba(34, 211, 238, 0.28);
 
   /* --- rhythm --------------------------------------------------------- */
@@ -414,6 +433,140 @@
     color: color-mix(in srgb, var(--signal) 78%, #ffffff);
   }
 
+  /* ------------------------------------------------------------------ *
+   * 3b. Brand lockup — the NDH family signature, shared with the
+   *     Academy: the Open Gateway master tile wearing this property's
+   *     sector badge, NAJEEB DIGITAL HUB on the top line, the property
+   *     name underneath (NDH AgriCapital, signal cyan → emerald).
+   * ------------------------------------------------------------------ */
+  .ndh-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.72rem;
+    min-width: 0;
+    color: #ffffff;
+    text-decoration: none;
+  }
+
+  .ndh-brand .ndh-family-symbol {
+    transition: transform 0.25s ease;
+  }
+
+  .ndh-brand:hover .ndh-family-symbol {
+    transform: scale(1.04);
+  }
+
+  .ndh-brand-copy {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    line-height: 1.06;
+  }
+
+  .ndh-brand-line {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .ndh-brand-name {
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    white-space: nowrap;
+    color: #ffffff;
+    transition: color 0.18s ease;
+  }
+
+  .ndh-brand-name em {
+    font-style: normal;
+    font-weight: 400;
+    color: #cbd5e1;
+  }
+
+  .ndh-brand:hover .ndh-brand-name {
+    color: #ffffff;
+  }
+
+  .ndh-brand-sub {
+    margin-top: 0.12rem;
+    font-family: var(--font-display);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    color: var(--signal);
+    white-space: nowrap;
+  }
+
+  .ndh-brand-sub em {
+    font-style: normal;
+    font-weight: 700;
+    color: var(--mint);
+  }
+
+  .ndh-brand-badge {
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--signal) 35%, transparent);
+    background: color-mix(in srgb, var(--signal) 12%, transparent);
+    color: color-mix(in srgb, var(--signal) 82%, #ffffff);
+    padding: 2px 8px;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .ndh-brand--sm .ndh-brand-name {
+    font-size: 0.82rem;
+  }
+
+  .ndh-brand--sm .ndh-brand-sub {
+    font-size: 0.66rem;
+  }
+
+  .ndh-brand--lg .ndh-brand-name {
+    font-size: 1.1rem;
+  }
+
+  .ndh-brand--lg .ndh-brand-sub {
+    font-size: 0.82rem;
+  }
+
+  /* On the porcelain canvas the lockup switches to ecosystem ink. */
+  .ndh-brand--onLight {
+    color: var(--ink-deep);
+  }
+
+  .ndh-brand--onLight .ndh-brand-name {
+    color: var(--ink-deep);
+  }
+
+  .ndh-brand--onLight .ndh-brand-name em {
+    color: var(--ink-soft);
+  }
+
+  .ndh-brand--onLight .ndh-brand-sub {
+    color: var(--signal-deep);
+  }
+
+  .ndh-brand--onLight .ndh-brand-sub em {
+    color: var(--mint-deep);
+  }
+
+  .ndh-brand--onLight .ndh-brand-badge {
+    border-color: color-mix(in srgb, var(--signal) 40%, var(--hairline));
+    background: #ecfeff;
+    color: #0e7490;
+  }
+
+  .ndh-brand--onLight .ndh-family-sector {
+    box-shadow: 0 0 0 2px #ffffff;
+  }
+
   .pg-nav-link {
     font-size: 0.82rem;
     font-weight: 500;
@@ -613,8 +766,8 @@
   .pg-card {
     background: #ffffff;
     border: 1px solid var(--hairline);
-    border-radius: var(--radius-xl);
-    box-shadow: var(--shadow-hairline);
+    border-radius: 1rem; /* rounded-2xl — the Academy card radius */
+    box-shadow: var(--shadow-soft);
   }
 
   .pg-card--lift {
@@ -633,7 +786,7 @@
   .pg-panel-dark {
     background: var(--grad-navy);
     border: 1px solid var(--navy-line);
-    border-radius: var(--radius-2xl);
+    border-radius: 1rem;
     color: #ffffff;
   }
 
@@ -1010,6 +1163,208 @@
 
   @media (prefers-reduced-motion: reduce) {
     .pg-live-dot {
+      animation: none;
+    }
+  }
+
+  /* ------------------------------------------------------------------ *
+   * 12. Academy visual rhythm — dark hero bands with ambient glow, the
+   *     live marquee strip, faint numerals and the commodity banner.
+   *     Shared with the Academy so both surfaces read as one family.
+   * ------------------------------------------------------------------ */
+  .band-dark {
+    position: relative;
+    overflow: hidden;
+    background: var(--navy);
+    color: #ffffff;
+  }
+
+  .bg-grid-pattern {
+    background-image:
+      linear-gradient(to right, rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+    background-size: 44px 44px;
+  }
+
+  .hero-glow {
+    position: absolute;
+    border-radius: 999px;
+    pointer-events: none;
+    background: radial-gradient(
+      ellipse at center,
+      rgba(34, 211, 238, 0.22) 0%,
+      rgba(104, 186, 247, 0.12) 42%,
+      rgba(34, 211, 238, 0) 72%
+    );
+    filter: blur(6px);
+  }
+
+  .band-dark .hero-glow {
+    opacity: 0.95;
+  }
+
+  @keyframes pg-marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  .pg-marquee {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .pg-marquee-track {
+    display: flex;
+    width: max-content;
+    align-items: center;
+    animation: pg-marquee 46s linear infinite;
+  }
+
+  .pg-marquee:hover .pg-marquee-track,
+  .pg-marquee:focus-within .pg-marquee-track {
+    animation-play-state: paused;
+  }
+
+  .pg-marquee::before,
+  .pg-marquee::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 4rem;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .pg-marquee::before {
+    left: 0;
+    background: linear-gradient(to right, #ffffff, transparent);
+  }
+
+  .pg-marquee::after {
+    right: 0;
+    background: linear-gradient(to left, #ffffff, transparent);
+  }
+
+  .pg-ticker-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin: 0;
+    padding: 0.85rem 1rem 0.85rem 0;
+    border-right: 1px solid var(--hairline);
+    white-space: nowrap;
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+  }
+
+  .pg-marquee--onDark::before {
+    background: linear-gradient(to right, var(--navy), transparent);
+  }
+
+  .pg-marquee--onDark::after {
+    background: linear-gradient(to left, var(--navy), transparent);
+  }
+
+  .pg-ticker-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-inline: 1.15rem;
+    font-size: 0.78rem;
+    white-space: nowrap;
+  }
+
+  @keyframes pg-rise-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  .animate-rise-in {
+    animation: pg-rise-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .animate-rise-in--1 {
+    animation-delay: 0.08s;
+  }
+
+  .animate-rise-in--2 {
+    animation-delay: 0.16s;
+  }
+
+  .animate-rise-in--3 {
+    animation-delay: 0.24s;
+  }
+
+  .pg-numeral {
+    font-family: var(--font-mono);
+    font-size: 2.15rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.05em;
+    color: color-mix(in srgb, var(--ink-mute) 34%, transparent);
+  }
+
+  /* Commodity banner on a marketplace card: photograph, species tag and a
+     legibility scrim so the tag never fights the image. */
+  .pg-banner {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background: var(--navy);
+  }
+
+  .pg-banner img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+  }
+
+  .pg-card--lift:hover .pg-banner img {
+    transform: scale(1.045);
+  }
+
+  .pg-banner-scrim {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      180deg,
+      rgba(10, 26, 48, 0.55) 0%,
+      rgba(10, 26, 48, 0.08) 42%,
+      rgba(10, 26, 48, 0.72) 100%
+    );
+  }
+
+  .pg-chip--closing {
+    border-color: color-mix(in srgb, var(--status-closing) 45%, var(--hairline));
+    background: var(--amber-soft);
+    color: #b45309;
+  }
+
+  .pg-chip--onDark {
+    border-color: var(--navy-line);
+    background: color-mix(in srgb, #ffffff 9%, transparent);
+    color: #e2e8f0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pg-marquee-track,
+    .animate-rise-in {
       animation: none;
     }
   }

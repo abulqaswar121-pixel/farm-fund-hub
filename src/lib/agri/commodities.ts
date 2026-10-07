@@ -6,14 +6,18 @@
  * marketplace, all three portals and the ledger maths, so it must stay free of
  * browser APIs and of any database access.
  */
-import { Bird, Egg, Fish, Sprout, Wheat, type LucideIcon } from "lucide-react";
+import { Bird, Egg, Fish, Sprout, Waves, Wheat, type LucideIcon } from "lucide-react";
 
-export type CommodityId = "catfish" | "broiler" | "layer" | "grain" | "greenhouse";
+export type CommodityId = "catfish" | "tilapia" | "broiler" | "layer" | "grain" | "greenhouse";
 
 export type Commodity = {
   id: CommodityId;
   name: string;
   icon: LucideIcon;
+  /** The species or crop tag printed on the marketplace card banner. */
+  species: string;
+  /** Card banner photograph, served from /public. */
+  image: string;
   /** One-line description used on marketplace cards. */
   summary: string;
   /** The unit the operator logs growth in. */
@@ -38,6 +42,8 @@ export const COMMODITIES: Commodity[] = [
     id: "catfish",
     name: "Catfish Aquaculture",
     icon: Fish,
+    species: "Clarias gariepinus",
+    image: "/images/commodities/catfish.jpg",
     summary:
       "Fingerlings raised through juvenile and grow-out stages to table size, tracked by biomass and feed conversion ratio.",
     growthUnit: "g / fish",
@@ -55,9 +61,33 @@ export const COMMODITIES: Commodity[] = [
     stockingLabel: "Stocking fingerlings into ponds",
   },
   {
+    id: "tilapia",
+    name: "Tilapia Aquaculture",
+    icon: Waves,
+    species: "Oreochromis niloticus",
+    image: "/images/commodities/tilapia.jpg",
+    summary:
+      "Nile tilapia grown in lined tanks and cages to plate size, tracked by dissolved oxygen, biomass sampling and feed conversion ratio.",
+    growthUnit: "g / fish",
+    feedUnit: "kg of feed",
+    typicalDurationWeeks: 24,
+    targetYieldLabel: "Plate size · 500 – 700 g average",
+    revenueBasis: "Fresh whole-fish sales to hotels, cold rooms and open markets",
+    accent: "cyan",
+    telemetry: [
+      "Biomass (kg) in each tank or cage",
+      "Average sampled weight (g) per fish",
+      "Dissolved oxygen and water temperature",
+      "Feed conversion ratio and mortality",
+    ],
+    stockingLabel: "Stocking monosex tilapia fingerlings",
+  },
+  {
     id: "broiler",
     name: "Broiler Poultry",
     icon: Bird,
+    species: "Ross 308 day-old chicks",
+    image: "/images/commodities/broiler.jpg",
     summary:
       "Day-old chicks reared on a six to eight week grow-out to dressed meat weight for the festive and hotel trade.",
     growthUnit: "kg live weight",
@@ -78,6 +108,8 @@ export const COMMODITIES: Commodity[] = [
     id: "layer",
     name: "Layer Poultry",
     icon: Egg,
+    species: "Isa Brown point-of-lay pullets",
+    image: "/images/commodities/layer.jpg",
     summary:
       "Point-of-lay birds producing daily crate output across a twelve to eighteen month laying window.",
     growthUnit: "crates / day",
@@ -98,6 +130,8 @@ export const COMMODITIES: Commodity[] = [
     id: "grain",
     name: "Grain & Field Crops",
     icon: Wheat,
+    species: "Maize, soya & rice",
+    image: "/images/commodities/grain.jpg",
     summary:
       "Maize, soya and rice planted, weeded and fertilised across a full season, measured in bags harvested.",
     growthUnit: "bags / hectare",
@@ -118,6 +152,8 @@ export const COMMODITIES: Commodity[] = [
     id: "greenhouse",
     name: "Greenhouses & Horticulture",
     icon: Sprout,
+    species: "Tomatoes & bell peppers",
+    image: "/images/commodities/greenhouse.jpg",
     summary:
       "Protected tomatoes and bell peppers grown under drip irrigation for premium urban markets.",
     growthUnit: "kg / m²",

@@ -472,7 +472,8 @@ function CycleLauncher({
         data: {
           code: form.code,
           name: form.name,
-          commodity: form.commodity as "catfish" | "broiler" | "layer" | "grain" | "greenhouse",
+          commodity: form.commodity as
+            "catfish" | "tilapia" | "broiler" | "layer" | "grain" | "greenhouse",
           summary: form.summary || undefined,
           farmSite: form.farmSite,
           targetCapital: Number(form.targetCapital),

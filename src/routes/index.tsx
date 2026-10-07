@@ -9,6 +9,7 @@ import {
   Fish,
   Gauge,
   Lock,
+  PiggyBank,
   Repeat,
   Scale,
   ShieldCheck,
@@ -21,6 +22,7 @@ import { AiConcierge } from "@/components/ndh/AiConcierge";
 import { FamilyFooter } from "@/components/ndh/FamilyFooter";
 import { PrecisionHeader } from "@/components/ndh/PrecisionHeader";
 import { CycleCard } from "@/components/agri/CycleCard";
+import { LiveFarmTicker } from "@/components/agri/LiveFarmTicker";
 import { ProfitCalculator, type CalculatorCycle } from "@/components/agri/ProfitCalculator";
 import { TransparencyFeed, IncidentRegister } from "@/components/agri/TransparencyFeed";
 import { ClimatePanel } from "@/components/agri/ClimatePanel";
@@ -28,9 +30,57 @@ import { StageRail } from "@/components/agri/StageRail";
 import { WaterfallLadder } from "@/components/agri/WaterfallLadder";
 import { Figure } from "@/components/ndh/ledger-ui";
 import { getPlatformPulse, listPublicCycles } from "@/lib/agri.public.functions";
-import { COMMODITIES, STAGES } from "@/lib/agri/commodities";
+import { COMMODITIES } from "@/lib/agri/commodities";
 import { money, moneyCompact, number, percent } from "@/lib/agri/format";
 import { DEFAULT_RULES, readRules, type CycleRules } from "@/lib/agri/rules";
+
+/**
+ * The four-step cycle lifecycle, in the Academy's numbered language.
+ *
+ * The six-stage operator rail still exists on every cycle page — this is the
+ * investor-facing arc of the same journey, compressed to the four things a
+ * member actually experiences.
+ */
+const LIFECYCLE_STEPS = [
+  {
+    n: "01",
+    icon: PiggyBank,
+    title: "Capital Pooling",
+    body: "Verified member funding with locked profit splits. The split, the reserve and the entry ticket are frozen the moment the cycle is published.",
+    chip: "Funding open",
+    tone: "mint" as const,
+  },
+  {
+    n: "02",
+    icon: Fish,
+    title: "Stocking & Growth",
+    body: "Real-time feed conversion, biomass sampling and dated farm photo logs from the operator, approved before they reach the public record.",
+    chip: "Live on farm",
+    tone: "signal" as const,
+  },
+  {
+    n: "03",
+    icon: Scale,
+    title: "Harvest & Off-Take",
+    body: "Verified scale weigh-in at the pond bank or pen, with batch scale tickets and institutional buyer off-take confirmed against the pick-up note.",
+    chip: "Weigh-in logged",
+    tone: "amber" as const,
+  },
+  {
+    n: "04",
+    icon: Waves,
+    title: "Waterfall Settlement",
+    body: "Principal capital returned first, then net profits distributed at the locked split — a strict four-level priority order, audited and published.",
+    chip: "Settled",
+    tone: "mint" as const,
+  },
+];
+
+const STEP_CHIP_CLASS = {
+  mint: "pg-chip--mint",
+  signal: "pg-chip--signal",
+  amber: "pg-chip--closing",
+} as const;
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -39,7 +89,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Back Nigeria's farm economy with a ledger you can audit. Catfish, poultry, grain and greenhouse cycles with locked profit splits, a strict settlement waterfall and live verified equity.",
+          "Back Nigeria's farm economy with a ledger you can audit. Catfish, tilapia, poultry, grain and greenhouse cycles with locked profit splits, a strict settlement waterfall and live verified equity.",
       },
       { property: "og:title", content: "NDH AgriCapital | The Shared Farm Ledger" },
       {
@@ -86,38 +136,45 @@ function PublicHome() {
       <PrecisionHeader activePath="/" />
 
       {/* ---------------------------------------------------------------- *
-       * Hero — the gateway moment, in the master navy.
+       * Hero — the gateway moment: deep navy, ambient glow, the platform
+       * pulse counted live from the ledger.
        * ---------------------------------------------------------------- */}
-      <section className="pg-node-texture relative overflow-hidden bg-navy text-white">
+      <section className="band-dark">
+        <div className="bg-grid-pattern absolute inset-0 opacity-60" aria-hidden="true" />
+        <div
+          className="hero-glow left-1/2 top-[-140px] h-[380px] w-[720px] -translate-x-1/2"
+          aria-hidden="true"
+        />
         <div className="absolute inset-x-0 top-0 h-px bg-[image:var(--grad-master)] opacity-70" />
-        <div className="mx-auto grid max-w-[var(--page)] gap-10 px-[var(--gutter)] py-14 lg:grid-cols-[1.15fr_0.85fr] lg:py-20">
+
+        <div className="relative z-10 mx-auto grid max-w-[var(--page)] gap-10 px-[var(--gutter)] py-14 lg:grid-cols-[1.12fr_0.88fr] lg:py-20">
           <div>
-            <p className="pg-chip border-navy-line bg-white/10 text-signal">
-              <Sparkles size={12} aria-hidden="true" />
-              An NDH family platform · agricapital.ndh.com.ng
+            <p className="animate-rise-in inline-flex items-center gap-2 rounded-full border border-signal/30 bg-white/[0.06] px-4 py-1.5 text-xs font-semibold text-signal shadow-lg backdrop-blur-md">
+              <Sparkles size={13} aria-hidden="true" />
+              The Agricultural Investment Ledger of Najeeb Digital Hub
             </p>
 
-            <h1 className="mt-5 font-display text-[2.1rem] font-bold leading-[1.08] tracking-tight sm:text-[2.7rem] lg:text-[3.05rem]">
+            <h1 className="animate-rise-in animate-rise-in--1 mt-5 font-display text-[2.1rem] font-bold leading-[1.06] tracking-tight sm:text-[2.8rem] lg:text-[3.15rem]">
               Farm capital with the
               <br />
               <span className="pg-gradient-text">books left open.</span>
             </h1>
 
-            <p className="mt-5 max-w-xl text-[0.95rem] leading-7 text-slate-300">
-              NDH AgriCapital pools member capital into real production cycles — catfish ponds,
-              broiler and layer houses, grain fields and greenhouses — and runs every one of them on
-              a ledger you can audit: locked profit splits, a strict settlement waterfall, and
-              equity calculated live from verified contributions.
+            <p className="animate-rise-in animate-rise-in--2 mt-5 max-w-xl text-[0.95rem] leading-7 text-slate-300">
+              NDH AgriCapital pools member capital into real production cycles — catfish and tilapia
+              ponds, broiler and layer houses, grain fields and greenhouses — and runs every one of
+              them on a ledger you can audit: locked profit splits, a strict settlement waterfall,
+              and equity calculated live from verified contributions.
             </p>
 
-            <div className="mt-7 flex flex-wrap items-center gap-3">
+            <div className="animate-rise-in animate-rise-in--3 mt-7 flex flex-wrap items-center gap-3">
               <Link to="/cycles" className="pg-btn pg-btn--signal">
                 <Sprout size={16} aria-hidden="true" />
                 Browse open cycles
                 <ArrowRight size={15} aria-hidden="true" />
               </Link>
               <Link to="/signin" className="pg-btn pg-btn--onDark">
-                Member sign in
+                Member Sign In
               </Link>
               <a href="#calculator" className="pg-btn pg-btn--onDark">
                 <Calculator size={16} aria-hidden="true" />
@@ -125,36 +182,39 @@ function PublicHome() {
               </a>
             </div>
 
-            <dl className="mt-9 grid grid-cols-2 gap-x-6 gap-y-5 border-t border-navy-line pt-7 sm:grid-cols-4">
-              <Figure
-                onDark
-                label="Active on farm"
-                value={number(pulse.activeCycles)}
-                caption={`${number(pulse.openCycles)} raising now`}
-              />
-              <Figure
-                onDark
-                label="Capital deployed"
+            {/* Platform pulse — every counter is counted from the ledger. */}
+            <dl className="mt-9 grid gap-4 sm:grid-cols-3">
+              <HeroCounter
+                label="Capital Deployed"
                 value={moneyCompact(pulse.capitalDeployed)}
-                caption="Verified contributions"
+                caption="Verified member contributions"
               />
-              <Figure
-                onDark
-                label="Returned to members"
-                value={moneyCompact(pulse.capitalReturned + pulse.profitDistributed)}
-                caption={hasSettlements ? "Principal + profit paid" : "No settlement yet"}
-              />
-              <Figure
-                onDark
-                label="Stock under care"
+              <HeroCounter
+                label="Livestock On Farm"
                 value={number(pulse.livestockOnFarm)}
-                caption="Head / birds logged"
+                caption="Head, birds and crates logged"
+              />
+              <HeroCounter
+                label="Settled Cycles"
+                value={number(pulse.settledCycles)}
+                caption={
+                  hasSettlements
+                    ? `${moneyCompact(pulse.capitalReturned + pulse.profitDistributed)} returned`
+                    : "Waterfall not run yet"
+                }
               />
             </dl>
+
+            <p className="mt-3 text-[0.68rem] leading-5 text-slate-500">
+              {number(pulse.activeCycles)} cycles active on farm · {number(pulse.openCycles)}{" "}
+              raising capital now · {number(pulse.membersCount)} registered members. Counters read
+              zero until the co-operative&apos;s first cycle is published — we never seed them with
+              an illustration.
+            </p>
           </div>
 
           <div className="space-y-4">
-            <div className="rounded-2xl border border-navy-line bg-white/[0.04] p-5 backdrop-blur">
+            <div className="rounded-2xl border border-navy-line bg-white/[0.05] p-5 shadow-lg backdrop-blur-md">
               <p className="pg-kicker pg-kicker--onDark">What is locked before you pay</p>
               <ul className="mt-3 space-y-3">
                 <LockedRow
@@ -182,7 +242,7 @@ function PublicHome() {
               </a>
             </div>
 
-            <div className="rounded-2xl border border-navy-line bg-white/[0.04] p-5">
+            <div className="rounded-2xl border border-navy-line bg-white/[0.05] p-5 shadow-lg backdrop-blur-md">
               <p className="pg-kicker pg-kicker--onDark">Co-operative today</p>
               <div className="mt-3 grid grid-cols-2 gap-4">
                 <div>
@@ -222,9 +282,20 @@ function PublicHome() {
       </section>
 
       {/* ---------------------------------------------------------------- *
+       * Live farm ticker — the strip directly under the hero band.
+       * ---------------------------------------------------------------- */}
+      <LiveFarmTicker
+        cycles={cycles.map((card) => ({
+          code: card.cycle.code,
+          commodity: card.cycle.commodity,
+          status: card.cycle.status,
+        }))}
+      />
+
+      {/* ---------------------------------------------------------------- *
        * Marketplace
        * ---------------------------------------------------------------- */}
-      <section className="mx-auto max-w-[var(--page)] px-[var(--gutter)] py-14">
+      <section className="mx-auto max-w-[var(--page)] px-[var(--gutter)] py-16">
         <div className="flex flex-col gap-3 border-b border-hairline pb-5 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="pg-kicker">Live farm stock marketplace</p>
@@ -271,51 +342,66 @@ function PublicHome() {
       </section>
 
       {/* ---------------------------------------------------------------- *
-       * Lifecycle
+       * Lifecycle — the four-step investment journey, Academy numeral grid.
        * ---------------------------------------------------------------- */}
-      <section className="border-y border-hairline bg-white">
-        <div className="mx-auto max-w-[var(--page)] px-[var(--gutter)] py-14">
-          <p className="pg-kicker">The six-stage lifecycle</p>
-          <h2 className="mt-1.5 text-[1.5rem] leading-tight text-ink-deep md:text-[1.85rem]">
-            Every cycle follows the same track
+      <section id="how-it-works" className="scroll-mt-20 border-y border-hairline bg-white">
+        <div className="mx-auto max-w-[var(--page)] px-[var(--gutter)] py-16">
+          <p className="pg-kicker">How it works</p>
+          <h2 className="mt-1.5 text-[1.5rem] leading-tight text-ink-deep md:text-[1.95rem]">
+            Your capital&apos;s journey, in four steps
           </h2>
           <p className="mt-1.5 max-w-3xl text-[0.85rem] leading-6 text-ink-soft">
-            From the moment funding opens to the moment the waterfall clears, a cycle moves through
-            the same six stages. Members see where their capital stands at any point on the rail.
+            Every commodity — catfish, tilapia, broilers, layers, grain or greenhouse — travels the
+            same arc. The terms are locked before step one and the arithmetic is published at step
+            four.
           </p>
 
-          <div className="mt-6">
-            <StageRail currentStage="operational" />
+          <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {LIFECYCLE_STEPS.map((step) => {
+              const Icon = step.icon;
+              return (
+                <div key={step.n} className="pg-card relative p-6">
+                  <div className="pg-numeral absolute right-5 top-4" aria-hidden="true">
+                    {step.n}
+                  </div>
+                  <span className="grid size-11 place-items-center rounded-xl bg-[image:var(--grad-master)] text-navy-deep">
+                    <Icon size={19} aria-hidden="true" />
+                  </span>
+                  <p className="mt-4 font-display text-[1rem] font-bold text-ink-deep">
+                    <span className="fig mr-1.5 text-[0.72rem] text-ink-mute">{step.n}</span>
+                    {step.title}
+                  </p>
+                  <p className="mt-2 text-[0.8rem] leading-6 text-ink-soft">{step.body}</p>
+                  <p className={`pg-chip mt-3.5 ${STEP_CHIP_CLASS[step.tone]}`}>{step.chip}</p>
+                </div>
+              );
+            })}
           </div>
 
-          <ol className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {STAGES.map((stage) => (
-              <li key={stage.id} className="rounded-xl border border-hairline bg-porcelain p-4">
-                <div className="flex items-center gap-2">
-                  <span className="grid size-6 place-items-center rounded-full bg-navy font-mono text-[0.68rem] font-bold text-white">
-                    {stage.index}
-                  </span>
-                  <p className="font-display text-[0.85rem] font-semibold text-ink-deep">
-                    {stage.name}
-                  </p>
-                </div>
-                <p className="mt-2 text-[0.76rem] leading-5 text-ink-mute">{stage.description}</p>
-                <p className="pg-chip mt-2.5">
-                  {stage.owner === "market"
-                    ? "Members fund"
-                    : stage.owner === "operator"
-                      ? "Farm operator"
-                      : "Admin & treasury"}
+          <div className="mt-10 rounded-2xl border border-hairline bg-porcelain p-5">
+            <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+              <div>
+                <p className="pg-kicker">On the farm side</p>
+                <p className="mt-1.5 max-w-2xl text-[0.8rem] leading-6 text-ink-soft">
+                  The operator works the same journey through six logged stages. A member can watch
+                  the rail advance on any cycle they have backed.
                 </p>
-              </li>
-            ))}
-          </ol>
+              </div>
+              <Link to="/cycles" className="pg-btn pg-btn--ghost shrink-0">
+                See it on a live cycle
+                <ArrowUpRight size={15} aria-hidden="true" />
+              </Link>
+            </div>
+            <div className="mt-4">
+              <StageRail currentStage="operational" />
+            </div>
+          </div>
 
           <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
             {COMMODITIES.map((commodity) => {
               const Icon = commodity.icon;
               return (
-                <div key={commodity.id} className="rounded-xl border border-hairline bg-white p-4">
+                <div key={commodity.id} className="pg-card pg-card--lift p-4">
                   <span className="grid size-9 place-items-center rounded-lg bg-mint-soft text-mint-deep">
                     <Icon size={17} aria-hidden="true" />
                   </span>
@@ -403,18 +489,24 @@ function PublicHome() {
       </section>
 
       {/* ---------------------------------------------------------------- *
-       * Calculator
+       * Calculator — laid on the porcelain canvas inside a bordered white
+       * container, so the modeler reads as a tool and not as a terminal.
        * ---------------------------------------------------------------- */}
-      <section id="calculator" className="scroll-mt-20 bg-navy py-14">
-        <div className="mx-auto max-w-[var(--page)] px-[var(--gutter)]">
-          <p className="pg-kicker pg-kicker--onDark">Run the numbers yourself</p>
-          <h2 className="mt-1.5 text-[1.5rem] leading-tight text-white md:text-[1.85rem]">
-            Model a contribution before you commit
-          </h2>
-          <p className="mt-1.5 mb-6 max-w-3xl text-[0.85rem] leading-6 text-slate-400">
-            The calculator uses the same settlement arithmetic the platform will run at harvest,
-            against the cycle&apos;s own costed plan.
-          </p>
+      <section
+        id="calculator"
+        className="mx-auto max-w-[var(--page)] scroll-mt-20 px-[var(--gutter)] py-16"
+      >
+        <p className="pg-kicker">Run the numbers yourself</p>
+        <h2 className="mt-1.5 text-[1.5rem] leading-tight text-ink-deep md:text-[1.95rem]">
+          Model a contribution before you commit
+        </h2>
+        <p className="mt-1.5 max-w-3xl text-[0.85rem] leading-6 text-ink-soft">
+          The calculator uses the same settlement arithmetic the platform will run at harvest,
+          against the cycle&apos;s own costed plan. It is a projection of the plan — never a promise
+          of a return.
+        </p>
+
+        <div className="mt-6 rounded-2xl border border-hairline bg-white p-2 shadow-[var(--shadow-soft)] sm:p-3">
           <ProfitCalculator cycles={calculatorCycles} />
         </div>
       </section>
@@ -422,36 +514,36 @@ function PublicHome() {
       {/* ---------------------------------------------------------------- *
        * Transparency, incidents, climate
        * ---------------------------------------------------------------- */}
-      <section
-        id="transparency"
-        className="mx-auto max-w-[var(--page)] scroll-mt-20 px-[var(--gutter)] py-14"
-      >
-        <p className="pg-kicker">Farm transparency</p>
-        <h2 className="mt-1.5 text-[1.5rem] leading-tight text-ink-deep md:text-[1.85rem]">
-          The field record, published as it happens
-        </h2>
-        <p className="mt-1.5 max-w-3xl text-[0.85rem] leading-6 text-ink-soft">
-          Growth samples, feed logs, mortality and harvest weigh-ins — approved by an admin and
-          published with the date they were taken. Bad news is published too.
-        </p>
+      <section id="transparency" className="scroll-mt-20 border-t border-hairline py-16">
+        <div className="mx-auto max-w-[var(--page)] px-[var(--gutter)]">
+          <p className="pg-kicker">Farm transparency · the register</p>
+          <h2 className="mt-1.5 text-[1.5rem] leading-tight text-ink-deep md:text-[1.95rem]">
+            The field record, published as it happens
+          </h2>
+          <p className="mt-1.5 max-w-3xl text-[0.85rem] leading-6 text-ink-soft">
+            Growth samples, feed logs, mortality and harvest weigh-ins — approved by an admin and
+            published with the date they were taken. Bad news is published too, with its severity
+            and its resolution.
+          </p>
 
-        <div className="mt-6 grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
-          <div className="pg-card p-5">
-            <div className="mb-4 flex items-center justify-between gap-2">
-              <p className="pg-kicker">Recent milestones</p>
-              <span className="pg-chip pg-chip--mint">
-                <span className="pg-live-dot" />
-                Live
-              </span>
+          <div className="mt-6 grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
+            <div className="pg-card p-5">
+              <div className="mb-4 flex items-center justify-between gap-2">
+                <p className="pg-kicker">Recent milestones</p>
+                <span className="pg-chip pg-chip--mint">
+                  <span className="pg-live-dot" />
+                  Ledger live
+                </span>
+              </div>
+              <TransparencyFeed milestones={pulse.milestones} limit={7} />
             </div>
-            <TransparencyFeed milestones={pulse.milestones} limit={7} />
-          </div>
 
-          <div className="space-y-5">
-            <ClimatePanel logged={[]} />
-            <div className="pg-card p-4">
-              <p className="pg-kicker mb-3">Incident &amp; insurance register</p>
-              <IncidentRegister incidents={pulse.incidents} />
+            <div className="space-y-5">
+              <ClimatePanel logged={[]} />
+              <div className="pg-card p-4">
+                <p className="pg-kicker mb-3">Incident &amp; insurance register</p>
+                <IncidentRegister incidents={pulse.incidents} />
+              </div>
             </div>
           </div>
         </div>
@@ -460,7 +552,7 @@ function PublicHome() {
       {/* ---------------------------------------------------------------- *
        * Innovation surfaces
        * ---------------------------------------------------------------- */}
-      <section className="border-y border-hairline bg-white py-14">
+      <section className="border-y border-hairline bg-white py-16">
         <div className="mx-auto max-w-[var(--page)] px-[var(--gutter)]">
           <p className="pg-kicker">Beyond the basics</p>
           <h2 className="mt-1.5 text-[1.5rem] leading-tight text-ink-deep md:text-[1.85rem]">
@@ -509,9 +601,10 @@ function PublicHome() {
       {/* ---------------------------------------------------------------- *
        * Close
        * ---------------------------------------------------------------- */}
-      <section className="mx-auto max-w-[var(--page)] px-[var(--gutter)] py-14">
-        <div className="pg-panel-dark pg-contour overflow-hidden p-7 md:p-10">
-          <div className="grid gap-6 md:grid-cols-[1.3fr_1fr] md:items-center">
+      <section className="mx-auto max-w-[var(--page)] px-[var(--gutter)] py-16">
+        <div className="band-dark pg-contour rounded-2xl border border-navy-line p-7 md:p-10">
+          <div className="hero-glow left-1/4 top-[-120px] h-[240px] w-[520px]" aria-hidden="true" />
+          <div className="relative z-10 grid gap-6 md:grid-cols-[1.3fr_1fr] md:items-center">
             <div>
               <p className="pg-kicker pg-kicker--onDark">Ready when you are</p>
               <h2 className="mt-2 font-display text-[1.5rem] font-bold leading-tight text-white md:text-[1.9rem]">
@@ -534,7 +627,7 @@ function PublicHome() {
             </div>
           </div>
 
-          <div className="mt-7 grid gap-4 border-t border-navy-line pt-6 sm:grid-cols-3">
+          <div className="relative z-10 mt-7 grid gap-4 border-t border-navy-line pt-6 sm:grid-cols-3">
             <Figure
               onDark
               label="Minimum entry"
@@ -554,6 +647,26 @@ function PublicHome() {
 
       <FamilyFooter />
       <AiConcierge />
+    </div>
+  );
+}
+
+/**
+ * A platform pulse counter on the hero band.
+ *
+ * Numbers are monospace and tabular; the label is the Academy's quiet kicker
+ * so a visitor reads the figure first and the caption second.
+ */
+function HeroCounter({ label, value, caption }: { label: string; value: string; caption: string }) {
+  return (
+    <div className="rounded-2xl border border-navy-line bg-white/[0.06] p-4 shadow-lg backdrop-blur-md">
+      <dt className="pg-kicker pg-kicker--onDark">{label}</dt>
+      <dd className="mt-1.5">
+        <span className="fig block text-[1.5rem] font-semibold leading-none text-white">
+          {value}
+        </span>
+        <span className="mt-1.5 block text-[0.68rem] leading-4 text-slate-400">{caption}</span>
+      </dd>
     </div>
   );
 }

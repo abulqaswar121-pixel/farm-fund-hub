@@ -2,7 +2,7 @@ import { createFileRoute, Link, Navigate, Outlet, useRouterState } from "@tansta
 import { createContext, useContext, useEffect, useState } from "react";
 import { LogOut, Sprout } from "lucide-react";
 
-import { FamilyMenu } from "@/components/ndh/FamilyMenu";
+import { BrandLockup } from "@/components/ndh/BrandLockup";
 import { NdhFamilySymbol } from "@/components/ndh/NdhFamilySymbol";
 import { AiConcierge } from "@/components/ndh/AiConcierge";
 import { supabase } from "@/integrations/supabase/client";
@@ -132,13 +132,7 @@ function PortalHeader({
   return (
     <header className="pg-header">
       <div className="pg-header-inner">
-        <Link to="/portal" className="pg-brand" aria-label="NDH AgriCapital portal">
-          <NdhFamilySymbol SectorIcon={Sprout} size={36} />
-          <span className="pg-brand-lockup">
-            <strong>NAJEEB</strong>
-            <small>AgriCapital portal</small>
-          </span>
-        </Link>
+        <BrandLockup size="sm" />
 
         <nav className="pg-portal-tabs" aria-label="Portal sections">
           {tabs.map((tab) => (
@@ -157,7 +151,12 @@ function PortalHeader({
           <span className="pg-chip pg-chip--onDark hidden border-navy-line bg-white/10 text-slate-200 sm:inline-flex">
             {ROLE_LABEL[role]}
           </span>
-          <FamilyMenu links={[{ label: "Marketplace", href: "/cycles" }]} />
+          <Link
+            to="/cycles"
+            className="pg-chip pg-chip--onDark hidden no-underline hover:text-white sm:inline-flex"
+          >
+            Marketplace
+          </Link>
           <button
             type="button"
             onClick={signOut}

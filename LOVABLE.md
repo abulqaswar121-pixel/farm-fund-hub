@@ -149,9 +149,19 @@ seed script is git-ignored on purpose.
 
 ## 6. Knowledge to keep
 
-- Brand: navy `#0A1A30`, porcelain `#F8FAFC`, signal cyan `#22D3EE`, master
-  gradient `#22D3EE → #68BAF7 → #A9A1EB`, emerald for gains, violet-magenta
+- Brand: navy `#0A1A30`, porcelain `#F8FAFC`, white cards with hairline
+  `#D9E1EF` borders and the soft shadow `0 4px 16px rgba(16,27,64,0.07)`,
+  signal cyan `#22D3EE` for live technology states, emerald `#10B981` for
+  funding/active cycles and verified margin, amber `#F59E0B` for a closing
+  cycle, master gradient `#22D3EE → #68BAF7 → #A9A1EB`, and violet-magenta
   `#8A2BE2 → #FF007F` for identity moments only.
+- Navigation isolation is a rule, not a preference: the header carries
+  AgriCapital actions only (Marketplace, How It Works, Transparency Register,
+  Rules, Member Sign In). Sibling NDH businesses and the parent directory live
+  in `FamilyFooter` and nowhere else — do not reintroduce an ecosystem switcher
+  into the header, and do not move footer links into the nav.
+- The live farm ticker may carry ledger lines and *published operating
+  standards*; it must never carry a member balance, a payout or a return figure.
 - Type: Space Grotesk headings, DM Sans body, Roboto Mono for every figure —
   self-hosted in `public/fonts` so first paint never waits on a third party.
 - Design tokens and the semantic `.pg-*` classes live in `src/styles.css`.

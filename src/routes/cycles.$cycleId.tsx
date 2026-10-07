@@ -71,8 +71,11 @@ function CycleDetail() {
     <div className="min-h-screen bg-porcelain" id="top">
       <PrecisionHeader activePath="/cycles" />
 
-      <section className="border-b border-navy-line bg-navy text-white">
-        <div className="mx-auto max-w-[var(--page)] px-[var(--gutter)] py-9">
+      <section className="band-dark">
+        <div className="bg-grid-pattern absolute inset-0 opacity-60" aria-hidden="true" />
+        <div className="hero-glow left-1/4 top-[-170px] h-[320px] w-[620px]" aria-hidden="true" />
+        <div className="absolute inset-x-0 top-0 h-px bg-[image:var(--grad-master)] opacity-70" />
+        <div className="relative z-10 mx-auto max-w-[var(--page)] px-[var(--gutter)] py-9">
           <Link
             to="/cycles"
             className="inline-flex items-center gap-1.5 text-[0.76rem] font-semibold text-slate-400 no-underline hover:text-white"
