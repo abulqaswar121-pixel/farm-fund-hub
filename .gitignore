@@ -35,5 +35,6 @@ dist-ssr
 __pycache__/
 *.py[cod]
 
-# Local preview only: never committed, never shipped
-scripts/preview-ledger/seed_demo.py
+# This project's lockfile is bun.lock. An npm lockfile is a second source of
+# truth for dependency state, so it is never committed.
+package-lock.json
