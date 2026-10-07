@@ -17,45 +17,68 @@ empty states that render means the app is healthy; a blank screen does not.
 Nothing in the interface is placeholder art. Empty states are part of the design
 system and are supposed to be reviewed as such.
 
-## 2. Then: apply the migrations
+## 2. Then: get the migrations into the database
 
 The database is the product. Until these run, every read is refused by design.
+
+**Git sync alone will not do it.** Lovable deliberately does not run migration
+files that arrive through a commit — a fact worth knowing before wondering why
+the preview still looks empty. Two ways to apply them:
+
+1. **Ask Lovable, in the project chat,** to apply the pending files under
+   `supabase/migrations/` — it shows each change and asks for approval before
+   running it, which is the reviewed path and keeps the files and generated
+   types in step.
+2. **Apply them yourself** — `supabase db push`, or paste them into the
+   Supabase SQL editor one file at a time, in the order below.
+
+Either way, one file at a time is not a style preference:
 
 `supabase/migrations/` is ordered, and **the order and transaction boundaries
 matter**:
 
-| File | What it is |
-| --- | --- |
-| `20260909084433…` … `20260909084607…` | original auth/profile base |
-| `20261007115900_…_role_enum.sql` | adds `member` to the `app_role` enum — **run alone** |
-| `20261007120000_…_core.sql` | 12 tables, cycle-term freeze trigger, capital guards |
-| `20261007120100_…_roles_and_rls.sql` | `has_role`/`is_admin`/`is_staff` and every policy |
+| File                                        | What it is                                                            |
+| ------------------------------------------- | --------------------------------------------------------------------- |
+| `20260909084433…` … `20260909084607…`       | original auth/profile base                                            |
+| `20261007115900_…_role_enum.sql`            | adds `member` to the `app_role` enum — **run alone**                  |
+| `20261007120000_…_core.sql`                 | 12 tables, cycle-term freeze trigger, capital guards                  |
+| `20261007120100_…_roles_and_rls.sql`        | `has_role`/`is_admin`/`is_staff` and every policy                     |
 | `20261007120200_…_views_and_settlement.sql` | public views, waterproof settlement engine, rollover + share transfer |
-| `20261007120300_…_rollover_guards.sql` | rollover caps and the withheld-payout trigger |
+| `20261007120300_…_rollover_guards.sql`      | rollover caps and the withheld-payout trigger                         |
 
-PostgreSQL refuses to *use* a new enum value in the transaction that created it,
+PostgreSQL refuses to _use_ a new enum value in the transaction that created it,
 so `…115900…` must be applied on its own before the rest. Pasting the four
 AgriCapital files as one script fails on the enum and nothing else.
 
 After the migrations: **sign up the first account.** The very first account ever
 created is provisioned as `admin`; every account after it is a `member`, and the
-admin promotes people from *Portal → Members & roles*.
+admin promotes people from _Portal → Members & roles_.
+
+Then check `/api/health`: it reports whether the ledger is reachable and whether
+payments are configured, so a half-finished setup cannot look like a working one.
 
 ## 3. Environment
 
-`.env` carries the Supabase project URL and publishable key — enough for the
-public pages. Server-only values must be added as secrets (never committed,
-never sent to the browser):
+`.env` carries the Supabase project URL and publishable key, which is what the
+preview uses for public reads. Server-only values belong in the project's secrets
+store — never committed, never sent to the browser:
 
-| Variable | Needed for | Without it |
-| --- | --- | --- |
-| `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY` | every read | public pages show their empty states |
-| `SUPABASE_SERVICE_ROLE_KEY` | first-account bootstrap, contribution verification, settlement | those actions report "not configured" and refuse |
-| `PAYSTACK_SECRET_KEY` | webhook signature, payment verification | `/api/health` reports `payments: not configured`; no card credit |
-| `VITE_PAYSTACK_PUBLIC_KEY` | inline checkout | the checkout button cannot open |
+| Variable                                   | Needed for                                                     | Without it                                                       |
+| ------------------------------------------ | -------------------------------------------------------------- | ---------------------------------------------------------------- |
+| `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY` | every read                                                     | public pages show their empty states                             |
+| `SUPABASE_SERVICE_ROLE_KEY`                | first-account bootstrap, contribution verification, settlement | those actions report "not configured" and refuse                 |
+| `PAYSTACK_SECRET_KEY`                      | webhook signature, payment verification                        | `/api/health` reports `payments: not configured`; no card credit |
+| `VITE_PAYSTACK_PUBLIC_KEY`                 | inline checkout                                                | the checkout button cannot open                                  |
 
 Nothing degrades silently: `/api/health` states ledger reachability and whether
 payments are configured.
+
+## 3b. Which branch Lovable previews
+
+Git sync follows the project's **active branch**, and the branch is switchable
+from Lovable. Merge the work to `main` and sync there for a single source of
+truth; the feature branch this was built on is a session artifact and should not
+become the project's long-lived branch.
 
 ## 4. Rules an editor's prompt must not break
 
@@ -64,8 +87,8 @@ than merely warned about — but please do not try:
 
 1. **Terms freeze at publication.** `target_capital`, `minimum_ticket`, profit
    split, reserve and commodity cannot change after `locked_at` is set.
-2. **Equity is never stored.** It is computed live as *verified capital ÷ total
-   verified capital × 100* on every read. No column, no cached field, no
+2. **Equity is never stored.** It is computed live as _verified capital ÷ total
+   verified capital × 100_ on every read. No column, no cached field, no
    "quick fix".
 3. **The profit split is locked 70 % members / 30 % farm caretaker.**
 4. **The waterfall order is fixed:** operational liabilities → 100 % principal →
@@ -89,21 +112,23 @@ screen look full — is the one thing this platform must never do. Every page
 therefore has a designed empty state with a call to action, and the honest path
 to a populated screen is to create a cycle, contribute, verify, and settle.
 
-If a *local* demonstration database is needed for interface review, it is built
+If a _local_ demonstration database is needed for interface review, it is built
 outside the product by `scripts/preview-ledger/` (a development-only PostgREST
 stand-in) — those files are dev tooling, are never imported by `src/`, and the
 seed script is git-ignored on purpose.
 
 ## 6. Knowledge to keep
 
-* Brand: navy `#0A1A30`, porcelain `#F8FAFC`, signal cyan `#22D3EE`, master
+- Brand: navy `#0A1A30`, porcelain `#F8FAFC`, signal cyan `#22D3EE`, master
   gradient `#22D3EE → #68BAF7 → #A9A1EB`, emerald for gains, violet-magenta
   `#8A2BE2 → #FF007F` for identity moments only.
-* Type: Space Grotesk headings, DM Sans body, Roboto Mono for every figure —
+- Type: Space Grotesk headings, DM Sans body, Roboto Mono for every figure —
   self-hosted in `public/fonts` so first paint never waits on a third party.
-* Design tokens and the semantic `.pg-*` classes live in `src/styles.css`.
-* GitHub workflow: never force-push; `npx tsc --noEmit` and `npm run lint` must
-  both be clean before a change is considered done.
+- Design tokens and the semantic `.pg-*` classes live in `src/styles.css`.
+- GitHub workflow: never force-push; `npx tsc --noEmit` and `npm run lint` must
+  both be clean before a change is considered done. Lint reports zero errors
+  (only `react-refresh` warnings from shadcn's own files).
+- `bun.lock` is the lockfile. Do not add a `package-lock.json`.
 
 ## 7. Local build notes
 

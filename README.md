@@ -182,9 +182,12 @@ there and regenerate, or the query builder will silently mistype.
 Lovable syncs this repository and previews it as a full-stack build. Two things
 to know before the first look:
 
-* the preview renders the designed empty states until the migrations have been
-  applied to the project's database — that is the correct, honest first look;
-* after they are applied, **sign up the first account**: the first account ever
+- the preview renders the designed empty states until the migrations have been
+  applied to the project's database — and git sync does **not** apply them for
+  you: ask Lovable in the project chat to run the pending files under
+  `supabase/migrations/`, or apply them yourself, one file at a time;
+- that first look is the correct, honest one anyway;
+- after they are applied, **sign up the first account**: the first account ever
   created becomes the admin, everyone after is a member.
 
 `LOVABLE.md` carries the handoff in full: migration order and transaction
