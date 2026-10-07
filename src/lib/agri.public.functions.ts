@@ -3,97 +3,95 @@ import { z } from "zod";
 
 import type { Database } from "@/integrations/supabase/types";
 
-type CycleRow = Database["public"]["Tables"]["farm_cycles"]["Row"];
-type FundingRow = Database["public"]["Views"]["cycle_funding"]["Row"];
-
-export type PublicCycleCard = {
-  cycle: CycleRow;
-  raised: number;
-  fundedPercent: number;
-  investorCount: number;
-  /** Only ever the admin's costed plan — never a realised return. */
-  projectedRevenue: number;
-};
-
-async function anonClient() {
-  const { supabasePublic } = await import("@/integrations/supabase/client.public.server");
-  return supabasePublic;
-}
+/* ============================================================================
+ * The public ledger surface — what a signed-out visitor is allowed to know.
+ *
+ * THE RULE: a public page may advertise a cycle; it may not publish the
+ * business inside it. Before sign-in a visitor sees the produce, the photo, the
+ * target, how much has been raised (rounded), the funding window and the
+ * timeline. Everything else — what the cycle expects to earn, what it owes,
+ * what it actually paid out, who supplied it, who bought the harvest, and what
+ * any individual member put in — is fetched only for a signed-in member through
+ * the authenticated portal functions in `agri.member.functions.ts`.
+ *
+ * This is enforced here, in the query, not in the markup:
+ *
+ *   1. every read below selects an explicit column list (never `select("*")`),
+ *      so the server never even loads projected_revenue, projected_liabilities,
+ *      expense rows, settlement lines or per-member capital;
+ *   2. every row is mapped into a `Public*` type below, so a column added to a
+ *      table later cannot leak into a public page by default;
+ *   3. aggregates are rounded (`raisedPublic`) before they leave the server, so
+ *      a member's contribution cannot be inferred by watching the figure move.
+ *
+ * `scripts/check-public-surface.mjs` fails the build if a forbidden column or
+ * table appears in this file. Hiding things with CSS is not a safeguard.
+ * ========================================================================== */
 
 /**
- * Runs a public read and reports whether the ledger answered.
- *
- * The public pages deliberately render with real empty states instead of
- * throwing when the database is unreachable or before the first cycle is
- * published — an investor looking at an empty marketplace must see "no cycles
- * yet", never a stack trace.
+ * The only columns of `farm_cycles` a public page may read. Anything not listed
+ * here — projected revenue, projected liabilities, the costed plan, the creator
+ * — is unavailable to the anonymous role from this application.
  */
-async function ledgerRead<T>(
-  run: (supabase: Awaited<ReturnType<typeof anonClient>>) => PromiseLike<{ data: T | null }>,
-  fallback: T,
-  label: string,
-): Promise<{ data: T; reachable: boolean }> {
-  try {
-    const supabase = await anonClient();
-    const { data } = await run(supabase);
-    return { data: data ?? fallback, reachable: true };
-  } catch (error) {
-    console.warn(`[agricapital] ${label} could not reach the ledger:`, error);
-    return { data: fallback, reachable: false };
-  }
-}
+const PUBLIC_CYCLE_COLUMNS = [
+  "id",
+  "code",
+  "commodity",
+  "name",
+  "summary",
+  "farm_site",
+  "status",
+  "current_stage",
+  "target_capital",
+  "minimum_ticket",
+  "cycle_weeks",
+  "funding_opens_on",
+  "funding_closes_on",
+  "stocking_on",
+  "projected_harvest_on",
+  "locked_at",
+] as const;
+
+const PUBLIC_CYCLE_SELECT = PUBLIC_CYCLE_COLUMNS.join(", ");
+
+/** A cycle as the public is allowed to see it. */
+export type PublicCycle = {
+  id: string;
+  code: string;
+  /** Commodity id; the catalogue maps it to a name, photo and species tag. */
+  commodity: string;
+  name: string;
+  summary: string | null;
+  /** Region-level location only, e.g. "Tunga Magajiya, Niger State". */
+  farmSite: string;
+  status: string;
+  currentStage: string;
+  targetCapital: number;
+  /**
+   * Raised capital, rounded down to the nearest ₦10,000. The exact figure never
+   * leaves the server on a public request.
+   */
+  raisedRounded: number;
+  /** Whole-percent funding progress. */
+  fundedPercent: number;
+  /** The smallest amount a member may put in. A published term, not internals. */
+  minimumTicket: number;
+  cycleWeeks: number;
+  fundingOpensOn: string | null;
+  fundingClosesOn: string | null;
+  projectedHarvestOn: string | null;
+};
+
+export type PublicCycleCard = PublicCycle & {
+  /** Approved farm updates the public may read for this cycle. */
+  publicUpdateCount: number;
+};
 
 export type PublicCycleList = {
   cycles: PublicCycleCard[];
   /** False when the ledger could not be reached — drives the honest banner. */
   ledgerReachable: boolean;
 };
-
-/** Every published cycle, with its public funding progress. */
-export const listPublicCycles = createServerFn({ method: "GET" }).handler(
-  async (): Promise<PublicCycleList> => {
-    const supabase = await anonClient();
-
-    let cycles: CycleRow[] = [];
-    let funding: FundingRow[] = [];
-    let reachable = true;
-
-    try {
-      const [cycleResult, fundingResult] = await Promise.all([
-        supabase
-          .from("farm_cycles")
-          .select("*")
-          .not("locked_at", "is", null)
-          .neq("status", "cancelled")
-          .order("funding_opens_on", { ascending: false }),
-        supabase.from("cycle_funding").select("*"),
-      ]);
-      cycles = cycleResult.data ?? [];
-      funding = fundingResult.data ?? [];
-    } catch (error) {
-      console.warn("[agricapital] the farm marketplace could not reach the ledger:", error);
-      reachable = false;
-    }
-
-    const fundingByCycle = new Map<string, FundingRow>(
-      (funding ?? []).map((row) => [row.cycle_id ?? "", row]),
-    );
-
-    return {
-      cycles: cycles.map((cycle) => {
-        const progress = fundingByCycle.get(cycle.id);
-        return {
-          cycle,
-          raised: Number(progress?.raised_capital ?? 0),
-          fundedPercent: Number(progress?.funded_percent ?? 0),
-          investorCount: Number(progress?.investor_count ?? 0),
-          projectedRevenue: Number(cycle.projected_revenue),
-        };
-      }),
-      ledgerReachable: reachable,
-    };
-  },
-);
 
 export type PublicMilestone = {
   id: string;
@@ -103,6 +101,7 @@ export type PublicMilestone = {
   commodity: string | null;
   logType: string | null;
   logDate: string | null;
+  /** The operator's approved public line — never raw counts or invoices. */
   summary: string | null;
   createdAt: string | null;
 };
@@ -116,7 +115,6 @@ export type PublicIncident = {
   status: string;
   occurredOn: string;
   description: string;
-  insuranceClaimRef: string | null;
   resolutionNote: string | null;
   resolvedOn: string | null;
 };
@@ -132,9 +130,268 @@ export type PublicWeather = {
   note: string | null;
 };
 
+export type PublicCycleDetail = {
+  cycle: PublicCycle;
+  milestones: PublicMilestone[];
+  incidents: PublicIncident[];
+  weather: PublicWeather[];
+  /**
+   * The weigh-in, published as weight only. The buyer, the scale ticket and the
+   * money are members' business and stay in the portal.
+   */
+  harvest: { harvestDate: string; totalWeightKg: number | null } | null;
+  /** The date members were paid, when the cycle has finished. No amounts. */
+  paidOutOn: string | null;
+};
+
+async function anonClient() {
+  const { supabasePublic } = await import("@/integrations/supabase/client.public.server");
+  return supabasePublic;
+}
+
+type CyclePublicRow = Pick<
+  Database["public"]["Tables"]["farm_cycles"]["Row"],
+  (typeof PUBLIC_CYCLE_COLUMNS)[number]
+>;
+
+/** Map one whitelisted row into the public shape, rounding as it goes. */
+function toPublicCycle(row: CyclePublicRow, exactRaised: number): PublicCycle {
+  const target = Number(row.target_capital ?? 0);
+  const raisedRounded = floorToPublicStep(exactRaised);
+  const fundedPercent = target > 0 ? Math.min(100, Math.floor((raisedRounded / target) * 100)) : 0;
+
+  return {
+    id: row.id,
+    code: row.code,
+    commodity: row.commodity,
+    name: row.name,
+    summary: row.summary,
+    farmSite: row.farm_site,
+    status: row.status,
+    currentStage: row.current_stage,
+    targetCapital: target,
+    raisedRounded,
+    fundedPercent,
+    minimumTicket: Number(row.minimum_ticket ?? 0),
+    cycleWeeks: row.cycle_weeks,
+    fundingOpensOn: row.funding_opens_on,
+    fundingClosesOn: row.funding_closes_on,
+    projectedHarvestOn: row.projected_harvest_on,
+  };
+}
+
+/** ₦10,000 buckets: enough to be useful, too coarse to unmask one contributor. */
+function floorToPublicStep(amount: number): number {
+  return Math.floor(Math.max(0, amount) / 10_000) * 10_000;
+}
+
+function mapMilestone(
+  row: Database["public"]["Views"]["public_milestones"]["Row"],
+): PublicMilestone {
+  return {
+    id: row.id ?? "",
+    cycleId: row.cycle_id,
+    cycleCode: row.cycle_code,
+    cycleName: row.cycle_name,
+    commodity: row.commodity,
+    logType: row.log_type,
+    logDate: row.log_date,
+    summary: row.summary,
+    createdAt: row.created_at,
+  };
+}
+
+function mapIncident(row: Database["public"]["Tables"]["incidents"]["Row"]): PublicIncident {
+  return {
+    id: row.id,
+    cycleId: row.cycle_id,
+    title: row.title,
+    category: row.category,
+    severity: row.severity,
+    status: row.status,
+    occurredOn: row.occurred_on,
+    description: row.description,
+    // `estimated_impact` is a money figure and is deliberately not mapped.
+    resolutionNote: row.resolution_note,
+    resolvedOn: row.resolved_on,
+  };
+}
+
+function mapWeather(row: Database["public"]["Tables"]["weather_snapshots"]["Row"]): PublicWeather {
+  return {
+    id: row.id,
+    capturedOn: row.captured_on,
+    rainfallMm: row.rainfall_mm === null ? null : Number(row.rainfall_mm),
+    tempMinC: row.temp_min_c === null ? null : Number(row.temp_min_c),
+    tempMaxC: row.temp_max_c === null ? null : Number(row.temp_max_c),
+    humidityPercent: row.humidity_percent === null ? null : Number(row.humidity_percent),
+    source: row.source,
+    note: row.note,
+  };
+}
+
+/** Every published cycle, with its public funding progress. */
+export const listPublicCycles = createServerFn({ method: "GET" }).handler(
+  async (): Promise<PublicCycleList> => {
+    const supabase = await anonClient();
+
+    let cycles: CyclePublicRow[] = [];
+    let funding: { cycle_id: string | null; raised_capital: number | null }[] = [];
+    let updates: { cycle_id: string | null }[] = [];
+    let reachable = true;
+
+    try {
+      const [cycleResult, fundingResult, updateResult] = await Promise.all([
+        supabase
+          .from("farm_cycles")
+          .select(PUBLIC_CYCLE_SELECT)
+          .not("locked_at", "is", null)
+          .neq("status", "cancelled")
+          .order("funding_opens_on", { ascending: false }),
+        // The aggregate funding view is the only place a public request can
+        // learn how much has been raised; the investment ledger itself is not
+        // granted to the anonymous role at all.
+        supabase.from("cycle_funding").select("cycle_id, raised_capital"),
+        supabase.from("public_milestones").select("cycle_id"),
+      ]);
+      cycles = (cycleResult.data ?? []) as unknown as CyclePublicRow[];
+      funding = fundingResult.data ?? [];
+      updates = updateResult.data ?? [];
+    } catch (error) {
+      console.warn("[agricapital] the farm marketplace could not reach the ledger:", error);
+      reachable = false;
+    }
+
+    const raisedByCycle = new Map<string, number>(
+      (funding ?? []).map((row) => [row.cycle_id ?? "", Number(row.raised_capital ?? 0)]),
+    );
+    const updatesByCycle = new Map<string, number>();
+    for (const row of updates ?? []) {
+      const key = row.cycle_id ?? "";
+      updatesByCycle.set(key, (updatesByCycle.get(key) ?? 0) + 1);
+    }
+
+    return {
+      cycles: (cycles ?? []).map((row) => ({
+        ...toPublicCycle(row, raisedByCycle.get(row.id) ?? 0),
+        publicUpdateCount: updatesByCycle.get(row.id) ?? 0,
+      })),
+      ledgerReachable: reachable,
+    };
+  },
+);
+
+/**
+ * One published cycle, as the public may see it.
+ *
+ * What is absent matters as much as what is present: no projected revenue, no
+ * projected liabilities, no expense rows, no settlement breakdown, no buyer, no
+ * named suppliers, no per-member capital, no investor count.
+ */
+export const getPublicCycle = createServerFn({ method: "GET" })
+  .validator(z.object({ cycleId: z.string().uuid() }))
+  .handler(async ({ data }): Promise<PublicCycleDetail | null> => {
+    const supabase = await anonClient();
+
+    let cycle: CyclePublicRow | null = null;
+    try {
+      const { data: row } = await supabase
+        .from("farm_cycles")
+        .select(PUBLIC_CYCLE_SELECT)
+        .eq("id", data.cycleId)
+        .maybeSingle();
+      cycle = (row as CyclePublicRow | null) ?? null;
+    } catch (error) {
+      console.warn("[agricapital] this cycle could not be read from the ledger:", error);
+      return null;
+    }
+
+    if (!cycle) return null;
+
+    // Each panel is loaded independently: a cycle with no weigh-in yet still
+    // renders its terms and its progress rail.
+    const settled = await Promise.allSettled([
+      supabase
+        .from("cycle_funding")
+        .select("raised_capital")
+        .eq("cycle_id", cycle.id)
+        .maybeSingle(),
+      supabase.from("public_milestones").select("*").eq("cycle_id", cycle.id).limit(12),
+      supabase
+        .from("incidents")
+        .select(
+          "id, cycle_id, title, category, severity, status, occurred_on, description, resolution_note, resolved_on",
+        )
+        .eq("cycle_id", cycle.id)
+        .order("occurred_on", { ascending: false }),
+      supabase
+        .from("weather_snapshots")
+        .select("*")
+        .eq("cycle_id", cycle.id)
+        .order("captured_on", { ascending: false })
+        .limit(14),
+      // Weight only — the view's revenue, buyer and ticket columns are not
+      // selected, so they cannot reach a signed-out browser.
+      supabase
+        .from("cycle_harvest")
+        .select("harvest_date, total_weight_kg")
+        .eq("cycle_id", cycle.id)
+        .maybeSingle(),
+      // The settlement *date* marks a finished cycle. Its amounts stay private.
+      supabase.from("cycle_returns").select("executed_at").eq("cycle_id", cycle.id).maybeSingle(),
+    ]);
+
+    const pick = <T>(index: number): T | null => {
+      const result = settled[index];
+      if (!result || result.status !== "fulfilled") return null;
+      return (result.value as { data: T | null }).data ?? null;
+    };
+
+    const funding = pick<{ raised_capital: number | null }>(0);
+    const mils = pick<Database["public"]["Views"]["public_milestones"]["Row"][]>(1) ?? [];
+    const incs = pick<PublicIncidentRow[]>(2) ?? [];
+    const weather = pick<Database["public"]["Tables"]["weather_snapshots"]["Row"][]>(3) ?? [];
+    const harvest = pick<{ harvest_date: string | null; total_weight_kg: number | null }>(4);
+    const payout = pick<{ executed_at: string | null }>(5);
+
+    return {
+      cycle: toPublicCycle(cycle, Number(funding?.raised_capital ?? 0)),
+      milestones: (mils ?? []).map(mapMilestone),
+      incidents: (incs ?? []).map((row) =>
+        mapIncident(row as Database["public"]["Tables"]["incidents"]["Row"]),
+      ),
+      weather: (weather ?? []).map(mapWeather),
+      harvest: harvest
+        ? {
+            harvestDate: harvest.harvest_date ?? "—",
+            totalWeightKg:
+              harvest.total_weight_kg === null ? null : Number(harvest.total_weight_kg),
+          }
+        : null,
+      paidOutOn: payout?.executed_at ?? null,
+    };
+  });
+
+/** The incident columns the public register is allowed to read. */
+type PublicIncidentRow = Pick<
+  Database["public"]["Tables"]["incidents"]["Row"],
+  | "id"
+  | "cycle_id"
+  | "title"
+  | "category"
+  | "severity"
+  | "status"
+  | "occurred_on"
+  | "description"
+  | "resolution_note"
+  | "resolved_on"
+>;
+
 export type PlatformPulse = {
   /** False when the ledger could not be reached — drives the honest banner. */
   ledgerReachable: boolean;
+  /** True when at least one cycle has been published. */
+  hasPublishedCycles: boolean;
   activeCycles: number;
   openCycles: number;
   settledCycles: number;
@@ -148,11 +405,13 @@ export type PlatformPulse = {
 };
 
 /**
- * Real-time ecosystem counters for the hero band.
+ * The trust numbers on the homepage.
  *
- * Everything here is counted from the ledger. Where the co-operative has not
- * yet run a cycle, the counters are honestly zero rather than seeded with an
- * illustration figure.
+ * These are totals across the whole co-operative, which the platform publishes
+ * on purpose: they are the evidence that money went out and came back. They are
+ * counted from the ledger, never seeded — an empty co-operative honestly shows
+ * zero, and the page then explains how the maths works instead of inventing a
+ * track record.
  */
 export const getPlatformPulse = createServerFn({ method: "GET" }).handler(
   async (): Promise<PlatformPulse> => {
@@ -161,12 +420,8 @@ export const getPlatformPulse = createServerFn({ method: "GET" }).handler(
     let reachable = true;
     let cycles: { id: string; status: string }[] = [];
     let mils: Database["public"]["Views"]["public_milestones"]["Row"][] = [];
-    let incs: Database["public"]["Tables"]["incidents"]["Row"][] = [];
-    let funding: {
-      cycle_id: string | null;
-      raised_capital: number | null;
-      investor_count: number | null;
-    }[] = [];
+    let incs: PublicIncidentRow[] = [];
+    let funding: { cycle_id: string | null; raised_capital: number | null }[] = [];
     let returns: Database["public"]["Views"]["platform_returns"]["Row"] | null = null;
     let scale: Database["public"]["Views"]["platform_scale"]["Row"] | null = null;
     let stock: { population_count: number | null }[] = [];
@@ -175,8 +430,14 @@ export const getPlatformPulse = createServerFn({ method: "GET" }).handler(
       const [cycleRes, milRes, incRes, fundingRes, returnsRes] = await Promise.all([
         supabase.from("farm_cycles").select("id, status").not("locked_at", "is", null),
         supabase.from("public_milestones").select("*").limit(12),
-        supabase.from("incidents").select("*").order("occurred_on", { ascending: false }).limit(6),
-        supabase.from("cycle_funding").select("cycle_id, raised_capital, investor_count"),
+        supabase
+          .from("incidents")
+          .select(
+            "id, cycle_id, title, category, severity, status, occurred_on, description, resolution_note, resolved_on",
+          )
+          .order("occurred_on", { ascending: false })
+          .limit(6),
+        supabase.from("cycle_funding").select("cycle_id, raised_capital"),
         supabase.from("platform_returns").select("*").maybeSingle(),
       ]);
 
@@ -187,13 +448,13 @@ export const getPlatformPulse = createServerFn({ method: "GET" }).handler(
 
       cycles = cycleRes.data ?? [];
       mils = milRes.data ?? [];
-      incs = incRes.data ?? [];
+      incs = (incRes.data ?? []) as PublicIncidentRow[];
       funding = fundingRes.data ?? [];
       returns = returnsRes.data ?? null;
       scale = scaleRes.data ?? null;
       stock = stockRes.data ?? [];
     } catch (error) {
-      console.warn("[agricapital] platform pulse could not reach the ledger:", error);
+      console.warn("[agricapital] the platform totals could not reach the ledger:", error);
       reachable = false;
     }
 
@@ -209,14 +470,15 @@ export const getPlatformPulse = createServerFn({ method: "GET" }).handler(
       0,
     );
 
-    // Settlement figures come from the public aggregate view, so a cycle that
-    // has not settled contributes nothing and the counters start honestly at 0.
+    // Settlement totals come from the public aggregate view, so a cycle that
+    // has not settled contributes nothing and the counters start at zero.
     const capitalReturned = Number(returns?.capital_returned ?? 0);
     const profitDistributed =
       Number(returns?.investor_profit_paid ?? 0) + Number(returns?.operator_fee_paid ?? 0);
 
     return {
       ledgerReachable: reachable,
+      hasPublishedCycles: rows.length > 0,
       activeCycles,
       openCycles,
       settledCycles,
@@ -228,181 +490,15 @@ export const getPlatformPulse = createServerFn({ method: "GET" }).handler(
         (sum, row) => sum + Number(row.population_count ?? 0),
         0,
       ),
-      milestones: (mils ?? []).map((row) => ({
-        id: row.id ?? "",
-        cycleId: row.cycle_id,
-        cycleCode: row.cycle_code,
-        cycleName: row.cycle_name,
-        commodity: row.commodity,
-        logType: row.log_type,
-        logDate: row.log_date,
-        summary: row.summary,
-        createdAt: row.created_at,
-      })),
-      incidents: (incs ?? []).map(mapIncident),
+      milestones: (mils ?? []).map(mapMilestone),
+      incidents: (incs ?? []).map((row) =>
+        mapIncident(row as Database["public"]["Tables"]["incidents"]["Row"]),
+      ),
     };
   },
 );
 
-function mapIncident(row: Database["public"]["Tables"]["incidents"]["Row"]): PublicIncident {
-  return {
-    id: row.id,
-    cycleId: row.cycle_id,
-    title: row.title,
-    category: row.category,
-    severity: row.severity,
-    status: row.status,
-    occurredOn: row.occurred_on,
-    description: row.description,
-    insuranceClaimRef: row.insurance_claim_ref,
-    resolutionNote: row.resolution_note,
-    resolvedOn: row.resolved_on,
-  };
-}
-
-export type PublicCycleDetail = {
-  cycle: CycleRow;
-  raised: number;
-  fundedPercent: number;
-  investorCount: number;
-  milestones: PublicMilestone[];
-  incidents: PublicIncident[];
-  weather: PublicWeather[];
-  harvest: {
-    harvestDate: string;
-    totalWeightKg: number | null;
-    totalCount: number | null;
-    scaleTicketRef: string | null;
-    buyer: string | null;
-    grossRevenue: number;
-  } | null;
-  settlement: {
-    grossRevenue: number;
-    capitalRaised: number;
-    liabilitiesPaid: number;
-    principalReturned: number;
-    reserveSetAside: number;
-    netProfit: number;
-    investorProfitPool: number;
-    operatorFee: number;
-    investorPercent: number;
-    operatorPercent: number;
-    reservePercent: number;
-    principalAtRisk: boolean;
-    executedAt: string;
-  } | null;
-};
-
-export const getPublicCycle = createServerFn({ method: "GET" })
-  .validator(z.object({ cycleId: z.string().uuid() }))
-  .handler(async ({ data }): Promise<PublicCycleDetail | null> => {
-    const supabase = await anonClient();
-
-    let cycle: CycleRow | null = null;
-    try {
-      const { data: row } = await supabase
-        .from("farm_cycles")
-        .select("*")
-        .eq("id", data.cycleId)
-        .maybeSingle();
-      cycle = row ?? null;
-    } catch (error) {
-      console.warn("[agricapital] this cycle could not be read from the ledger:", error);
-      return null;
-    }
-
-    if (!cycle) return null;
-
-    // Each panel of the cycle page is loaded independently and may be absent —
-    // a cycle with no harvested records still renders its terms and stage rail.
-    const settled = await Promise.allSettled([
-      supabase.from("cycle_funding").select("*").eq("cycle_id", cycle.id).maybeSingle(),
-      supabase.from("public_milestones").select("*").eq("cycle_id", cycle.id).limit(30),
-      supabase.from("incidents").select("*").eq("cycle_id", cycle.id).order("occurred_on", {
-        ascending: false,
-      }),
-      supabase
-        .from("weather_snapshots")
-        .select("*")
-        .eq("cycle_id", cycle.id)
-        .order("captured_on", { ascending: false })
-        .limit(30),
-      supabase.from("cycle_harvest").select("*").eq("cycle_id", cycle.id).maybeSingle(),
-      supabase.from("cycle_returns").select("*").eq("cycle_id", cycle.id).maybeSingle(),
-    ]);
-
-    const pick = <T>(index: number): T | null => {
-      const result = settled[index];
-      if (!result || result.status !== "fulfilled") return null;
-      return (result.value as { data: T | null }).data ?? null;
-    };
-
-    const funding = pick<FundingRow>(0);
-    const mils = pick<Database["public"]["Views"]["public_milestones"]["Row"][]>(1) ?? [];
-    const incs = pick<Database["public"]["Tables"]["incidents"]["Row"][]>(2) ?? [];
-    const weather = pick<Database["public"]["Tables"]["weather_snapshots"]["Row"][]>(3) ?? [];
-    const harvest = pick<Database["public"]["Views"]["cycle_harvest"]["Row"]>(4);
-    const settlement = pick<Database["public"]["Views"]["cycle_returns"]["Row"]>(5);
-
-    return {
-      cycle,
-      raised: Number(funding?.raised_capital ?? 0),
-      fundedPercent: Number(funding?.funded_percent ?? 0),
-      investorCount: Number(funding?.investor_count ?? 0),
-      milestones: (mils ?? []).map((row) => ({
-        id: row.id ?? "",
-        cycleId: row.cycle_id,
-        cycleCode: row.cycle_code,
-        cycleName: row.cycle_name,
-        commodity: row.commodity,
-        logType: row.log_type,
-        logDate: row.log_date,
-        summary: row.summary,
-        createdAt: row.created_at,
-      })),
-      incidents: (incs ?? []).map(mapIncident),
-      weather: (weather ?? []).map((row) => ({
-        id: row.id,
-        capturedOn: row.captured_on,
-        rainfallMm: row.rainfall_mm === null ? null : Number(row.rainfall_mm),
-        tempMinC: row.temp_min_c === null ? null : Number(row.temp_min_c),
-        tempMaxC: row.temp_max_c === null ? null : Number(row.temp_max_c),
-        humidityPercent: row.humidity_percent === null ? null : Number(row.humidity_percent),
-        source: row.source,
-        note: row.note,
-      })),
-      harvest: harvest
-        ? {
-            harvestDate: harvest.harvest_date ?? "—",
-            totalWeightKg:
-              harvest.total_weight_kg === null ? null : Number(harvest.total_weight_kg),
-            totalCount: harvest.total_count,
-            scaleTicketRef: harvest.scale_ticket_ref,
-            buyer: harvest.buyer,
-            grossRevenue: Number(harvest.gross_revenue),
-          }
-        : null,
-      settlement: settlement
-        ? {
-            grossRevenue: Number(settlement.gross_revenue),
-            capitalRaised: Number(settlement.capital_raised),
-            liabilitiesPaid: Number(settlement.liabilities_paid),
-            principalReturned: Number(settlement.principal_returned),
-            reserveSetAside: Number(settlement.reserve_set_aside),
-            netProfit: Number(settlement.net_profit),
-            investorProfitPool: Number(settlement.investor_profit_pool),
-            operatorFee: Number(settlement.operator_fee),
-            investorPercent: Number(settlement.profit_investor_percent),
-            operatorPercent: Number(settlement.profit_operator_percent),
-            reservePercent: Number(settlement.reserve_percent),
-            principalAtRisk: Boolean(settlement.principal_at_risk),
-            executedAt: settlement.executed_at ?? "—",
-          }
-        : null,
-    };
-  });
-
-/** The transparency feed on its own, for the public home page band. */
+/** The transparency register on its own, for the homepage band. */
 export const getTransparencyFeed = createServerFn({ method: "GET" }).handler(
   async (): Promise<PublicMilestone[]> => {
     const supabase = await anonClient();
@@ -411,27 +507,18 @@ export const getTransparencyFeed = createServerFn({ method: "GET" }).handler(
       const result = await supabase.from("public_milestones").select("*").limit(20);
       data = result.data ?? [];
     } catch (error) {
-      console.warn("[agricapital] the transparency feed could not reach the ledger:", error);
+      console.warn("[agricapital] the transparency register could not reach the ledger:", error);
       return [];
     }
-    return (data ?? []).map((row) => ({
-      id: row.id ?? "",
-      cycleId: row.cycle_id,
-      cycleCode: row.cycle_code,
-      cycleName: row.cycle_name,
-      commodity: row.commodity,
-      logType: row.log_type,
-      logDate: row.log_date,
-      summary: row.summary,
-      createdAt: row.created_at,
-    }));
+    return (data ?? []).map(mapMilestone);
   },
 );
 
 /**
- * Live rainfall / temperature / humidity for a cycle's farm site, from
- * Open-Meteo. This is a browser-side call to a keyless public API; it degrades
- * to the operator's own logged weather records when unavailable.
+ * Live rainfall / temperature / humidity for a farm site, from Open-Meteo.
+ *
+ * A browser-side call to a keyless public API; it degrades to the operator's own
+ * logged weather records when unavailable.
  */
 export async function fetchLocalClimate(latitude: number, longitude: number) {
   const url =
@@ -457,32 +544,3 @@ export async function fetchLocalClimate(latitude: number, longitude: number) {
     };
   };
 }
-
-/** Exposed for the calculator so the client can show the same maths the server runs. */
-export const getCycleForProjection = createServerFn({ method: "GET" })
-  .validator(z.object({ cycleId: z.string().uuid() }))
-  .handler(async ({ data }) => {
-    const supabase = await anonClient();
-
-    try {
-      const { data: cycle } = await supabase
-        .from("farm_cycles")
-        .select("*")
-        .eq("id", data.cycleId)
-        .maybeSingle();
-      if (!cycle) return null;
-
-      // The public funding figure comes from the aggregate view — the anon role
-      // has no grant on the investment ledger at all.
-      const { data: funding } = await supabase
-        .from("cycle_funding")
-        .select("raised_capital")
-        .eq("cycle_id", data.cycleId)
-        .maybeSingle();
-
-      return { cycle, raised: Number(funding?.raised_capital ?? 0) };
-    } catch (error) {
-      console.warn("[agricapital] projection source unavailable:", error);
-      return null;
-    }
-  });

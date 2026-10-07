@@ -15,9 +15,9 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { NdhFamilySymbol } from "../components/ndh/NdhFamilySymbol";
 import { PreviewRibbon } from "../components/ndh/PreviewRibbon";
 
-const SITE_TITLE = "NDH AgriCapital | Multi-Commodity Farm Investment Ledger";
+const SITE_TITLE = "NDH AgriCapital | Farm capital with the books left open";
 const SITE_DESCRIPTION =
-  "Back Nigeria's farm economy with a ledger you can audit. NDH AgriCapital runs catfish, tilapia, poultry, grain and greenhouse cycles with locked profit splits, a strict settlement waterfall and live verified equity.";
+  "Put money into real Nigerian farm cycles — catfish, tilapia, poultry, grain and greenhouses — and follow what the farm did, what the harvest weighed and who got paid. The rules are fixed before anyone pays in.";
 
 function NotFoundComponent() {
   return (

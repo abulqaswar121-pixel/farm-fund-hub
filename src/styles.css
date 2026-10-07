@@ -1369,6 +1369,28 @@
     }
   }
 
+  /* Narrow phones: the header carries the master lockup and one menu trigger,
+     so the optional "Farm Ledger" badge stands down and the two brand lines
+     tighten rather than pushing the trigger off the row. */
+  @media (max-width: 460px) {
+    .pg-header-inner {
+      gap: 0.5rem;
+      padding-inline: 0.9rem;
+    }
+
+    .pg-header .ndh-brand-badge {
+      display: none;
+    }
+
+    .pg-header .ndh-brand-name {
+      font-size: 0.82rem;
+    }
+
+    .pg-header .ndh-brand-sub {
+      font-size: 0.64rem;
+    }
+  }
+
   /* Preview-only notice (see components/ndh/PreviewRibbon.tsx). Rendered only
      when a build is pointed at the local preview ledger. */
   .ndh-preview-ribbon {

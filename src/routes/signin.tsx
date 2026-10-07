@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowRight, Lock, ShieldCheck, Waves } from "lucide-react";
+import { ArrowRight, Eye, Lock, ShieldCheck, Waves } from "lucide-react";
 import { z } from "zod";
 
 import { BrandLockup } from "@/components/ndh/BrandLockup";
@@ -95,27 +95,42 @@ function SignInPage() {
               <span className="pg-gradient-text">on the record.</span>
             </h1>
             <p className="mt-5 max-w-md text-[0.9rem] leading-7 text-slate-300">
-              Sign in to see your exact verified balance, your equity percentage computed live from
-              the ledger, and the current stage of every cycle you have backed.
+              Sign in to see what you put in, what it is worth today, and how far every cycle you
+              have backed has got — worked out from the ledger each time you look.
             </p>
 
             <ul className="mt-7 space-y-3.5">
               <Assurance
                 icon={<Lock size={16} />}
-                title="Equity has no editable field"
-                body="Your share is derived from verified contributions every time you load the page."
+                title="Your share is worked out, not typed in"
+                body="Nobody can edit it. Your percentage is calculated from payments we have confirmed, every single time."
               />
               <Assurance
                 icon={<Waves size={16} />}
-                title="Settlement in strict priority"
-                body="Suppliers, then your principal, then the co-op reserve, then the locked 70/30 split."
+                title="A fixed order of payments"
+                body="Bills first, then every member's money back, then a small safety slice, then the 70/30 profit share."
               />
               <Assurance
                 icon={<ShieldCheck size={16} />}
-                title="Payments verified server-side"
-                body="Paystack charges are confirmed by the webhook, never by a browser redirect."
+                title="Payments checked on our side"
+                body="A payment only counts once our server has confirmed it with the payment provider — never because a browser said so."
+              />
+              <Assurance
+                icon={<Eye size={16} />}
+                title="Your position stays yours"
+                body="What you put in, and what you are paid, is visible to you in your portal. Other members never see your amounts."
               />
             </ul>
+
+            <div className="mt-7 rounded-2xl border border-navy-line bg-white/[0.05] p-4">
+              <p className="pg-kicker pg-kicker--onDark">What we ask for, and what we do not</p>
+              <p className="mt-2 text-[0.76rem] leading-5 text-slate-400">
+                To open an account we need a name, an email address and a password. We do not ask
+                for your bank details or your card on this page, and we never publish what any
+                member has put in. If you would rather just look, the marketplace and the farm
+                register are open to everyone without an account.
+              </p>
+            </div>
           </div>
 
           <p className="text-[0.68rem] leading-5 text-slate-500">

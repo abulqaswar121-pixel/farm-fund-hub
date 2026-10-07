@@ -1,0 +1,25 @@
+name: Public surface
+
+# The platform promises that a signed-out visitor sees a cycle advertised, never
+# its business published. That promise is code-enforced by
+# `scripts/check-public-surface.mjs`, which reads the public files as text — so
+# this job needs no dependencies and no install step, and it can never be the
+# slow red cross that people learn to ignore.
+#
+# It fails on:
+#   • a private table, private column or per-member figure appearing in a public file;
+#   • the portal-only projection component being imported by a public page;
+#   • any database access inside the public example module.
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  public-surface:
+    name: Public surface guard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run the guard
+        run: node scripts/check-public-surface.mjs

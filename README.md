@@ -56,18 +56,18 @@ from _Portal → Members & roles_.
 
 ## Routes
 
-| Route                          | Who      | What                                                                                                                         |
-| ------------------------------ | -------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `/`                            | public   | Hero band with ledger-counted pulse, live farm ticker, cycle marketplace, four-step lifecycle, locked rules, ROI & profit calculator, transparency register |
-| `/cycles`                      | public   | Marketplace with stock and status filters                                                                                    |
-| `/cycles/$cycleId`             | public   | Cycle terms, funding progress, stage rail, waterfall, farm record, incidents, weather                                        |
-| `/signin`                      | public   | Sign in / create account                                                                                                     |
-| `/portal/investor`             | member   | Portfolio, live telemetry vs target weight, statement with receipts, share transfer board, visit booking, reinvestment       |
-| `/portal/operator`             | operator | Mobile-first quick log: feed, growth sample, mortality, medication, eggs/yield, expense, harvest weigh-in, incident, weather |
-| `/portal/admin`                | admin    | Cycle launcher, contribution verifier, log auditor, settlement engine, payout register, members & roles                      |
-| `/legal/$doc`                  | public   | `terms`, `privacy`, `risk`                                                                                                   |
-| `/api/public/paystack-webhook` | Paystack | The only automatic way equity is ever credited                                                                               |
-| `/api/health`                  | public   | Deployment health: ledger reachability and whether payments are configured                                                   |
+| Route                          | Who      | What                                                                                                                                                                                  |
+| ------------------------------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/`                            | public   | Hero band with ledger-counted pulse, live farm ticker, cycle marketplace, four-step lifecycle in plain words, an example payout walkthrough, the honesty rules, transparency register |
+| `/cycles`                      | public   | Marketplace with stock and status filters                                                                                                                                             |
+| `/cycles/$cycleId`             | public   | Cycle terms, rounded funding progress, stage rail, expected harvest, farm record, incidents, weather                                                                                  |
+| `/signin`                      | public   | Sign in / create account                                                                                                                                                              |
+| `/portal/investor`             | member   | Portfolio, live telemetry vs target weight, statement with receipts, share transfer board, visit booking, reinvestment                                                                |
+| `/portal/operator`             | operator | Mobile-first quick log: feed, growth sample, mortality, medication, eggs/yield, expense, harvest weigh-in, incident, weather                                                          |
+| `/portal/admin`                | admin    | Cycle launcher, contribution verifier, log auditor, settlement engine, payout register, members & roles                                                                               |
+| `/legal/$doc`                  | public   | `terms`, `privacy`, `risk`                                                                                                                                                            |
+| `/api/public/paystack-webhook` | Paystack | The only automatic way equity is ever credited                                                                                                                                        |
+| `/api/health`                  | public   | Deployment health: ledger reachability and whether payments are configured                                                                                                            |
 
 ---
 
@@ -160,7 +160,7 @@ original auth/role base; the five `20261007…` files are AgriCapital:
 20261007120400_…_tilapia.sql                # 'tilapia' added to commodity_type, on its own
 ```
 
-`…120400…` follows the same rule as `…115900…`: adding an enum value and *using*
+`…120400…` follows the same rule as `…115900…`: adding an enum value and _using_
 it in one transaction is refused by PostgreSQL, so it only adds the value. The
 commodity catalogue in `src/lib/agri/commodities.ts` offers tilapia once it has
 run, exactly as the cycle launcher and operator forms do.
@@ -224,12 +224,22 @@ live in `src/styles.css`.
 
 **Homepage rhythm.** Hero band (pill chip, headline, ledger-counted platform
 pulse) → live farm ticker → marketplace grid → the four-step cycle lifecycle in
-Academy numerals (`01`–`04`) → locked rules → returns modeler and transparency
-register in bordered white containers → closing call to action.
+Academy numerals (`01`–`04`, plain title over the ledger's own term) → the
+example payout walkthrough and the transparency register in bordered white
+containers → _How we keep this honest_ (the four checkable promises plus what
+stays private and why) → closing call to action.
+
+**Two voices, one product.** Every public page speaks in the words a first-time
+visitor already owns: _Collecting money_ rather than _funding open_, _bills,
+then members, then profit_ rather than _four-level waterfall_. The ledger's own
+vocabulary stays in the portals, the settlement engine and the code, and where a
+public card does show the term (`01 Capital pooling`) it sits under the plain
+title in small mono type, so a member recognises it later without having to
+learn it first.
 
 **Navigation isolation.** The header carries AgriCapital actions only —
 Marketplace (cycles), How It Works, Transparency Register, Rules and Member Sign
-In. Sibling NDH businesses and the parent directory appear *only* in
+In. Sibling NDH businesses and the parent directory appear _only_ in
 `FamilyFooter`; there is no ecosystem switcher anywhere in the chrome.
 
 **Brand lockup.** Every surface (header, footer, sign-in, portal) renders
@@ -240,8 +250,10 @@ sector badge, `NAJEEB DIGITAL HUB` in Space Grotesk on the top line, and
 The three brand faces (Space Grotesk, DM Sans, Roboto Mono) are self-hosted from
 `public/fonts` with their licences, so a first paint never waits on a third-party
 host. The link-preview card at `public/og-agricapital.png` is generated by
-`scripts/build-og-image.py` and states the platform's locked rules rather than
-any figure, because at unfurl time there are no figures to state honestly.
+`scripts/build-og-image.py` (it imports the sector-badge geometry from
+`build-brand-icons.py`, so the tab icon and the unfurl card wear the same
+sprout). It states what is fixed and where to look rather than any figure,
+because at unfurl time there are no figures to state honestly.
 
 **Icons.** `public/favicon.svg`, `public/favicon.png` and
 `public/apple-touch-icon.png` are built from the master gateway mark by
@@ -253,6 +265,45 @@ master mark changes.
 farmed, from `public/images/commodities/`, with the species tag over it. Those
 photographs are original generated assets committed to the repository; keep them
 in that directory, named after the commodity id.
+
+### What the public may see, and what it may not
+
+A signed-out visitor is allowed to know that a cycle exists and what joining it
+costs. They are not allowed to know the business inside it. That boundary is
+enforced in the query, not in the markup:
+
+| Published publicly                                                                | Withheld until sign-in                                                                         |
+| --------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Produce, photo and species tag; cycle code and name; region-level farm site       | What the cycle expects to earn, what it owes, and its costed plan                              |
+| Target capital, smallest ticket, cycle length, funding window, expected harvest   | Individual contributions, each member's share and the number of investors                      |
+| Funding progress **rounded down** to the nearest ₦10,000 and whole-percent funded | Settlement arithmetic — supplier bills, principal returned, reserve, profit pool, payout lines |
+| Harvest date and total weight; the date a cycle was paid out                      | The scale ticket, the sale value and the trader who collected the harvest                      |
+| Approved farm-log summaries, incident details with severity, weather records      | Expense rows, supplier names, incident cost estimates, audit trails                            |
+
+The rules behind that table:
+
+1. **Explicit column whitelists.** `src/lib/agri.public.functions.ts` names the
+   columns it may read (`PUBLIC_CYCLE_COLUMNS`) — never `select("*")` — and maps
+   every row into a `Public*` type, so a column added to a table later cannot
+   leak into a public page by default.
+2. **Rounded before it leaves the server.** Aggregate progress is floored to
+   ₦10,000 so a member's own contribution cannot be inferred by watching the
+   figure move.
+3. **Aggregate views only.** Public reads go through the `cycle_*` /
+   `platform_*` views; `anon` holds no grant on any ledger table.
+4. **A guard that fails the build.** `node scripts/check-public-surface.mjs`
+   reads the public files as text and refuses to pass if a private table, a
+   private column, a member figure, the portal-only projection component, or any
+   data access inside the public example turns up. Run it before every commit —
+   `.github/workflows/public-surface.yml` runs the same guard on every push and
+   pull request, and needs no install step. It is deliberately dumb, because a
+   dumb check that runs beats a clever one that nobody does.
+5. **A public calculator with no cycle behind it.** Because a cycle's projected
+   revenue is private, the public walkthrough
+   (`src/components/agri/ExampleWalkthrough.tsx`) runs the settlement
+   arithmetic on numbers the visitor sets, through `src/lib/agri/example.ts` —
+   a module the guard also asserts never touches the database. Cycle-specific
+   projection stays behind sign-in.
 
 ### What the live farm ticker may say
 

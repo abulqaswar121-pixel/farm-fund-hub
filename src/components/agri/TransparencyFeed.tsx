@@ -2,23 +2,17 @@ import { Activity, ShieldAlert } from "lucide-react";
 
 import { dateLabel, relativeDays } from "@/lib/agri/format";
 import { COMMODITIES } from "@/lib/agri/commodities";
+import { plainLog } from "@/lib/agri/plain";
 import type { PublicIncident, PublicMilestone } from "@/lib/agri.public.functions";
 
-const LOG_LABEL: Record<string, string> = {
-  feed: "Feed log",
-  growth_sample: "Growth sample",
-  mortality: "Mortality",
-  medication: "Medication",
-  general: "Farm note",
-  harvest: "Harvest",
-  sale: "Sale",
-};
-
 /**
- * The public transparency feed.
+ * The public register of farm entries.
  *
  * Only logs an admin has approved appear here, and only the operator's own
- * public summary line — so the feed can be honest without leaking cost detail.
+ * public line — so the register can be honest without publishing costs,
+ * supplier names or anybody's position. The words are the farm's everyday ones:
+ * "Fed on schedule" rather than "feed log", with the ledger's own label kept in
+ * small type beside it for anyone who wants the term.
  */
 export function TransparencyFeed({
   milestones,
@@ -29,16 +23,16 @@ export function TransparencyFeed({
 }) {
   if (milestones.length === 0) {
     return (
-      <div className="pg-card flex flex-col items-center gap-2 px-6 py-12 text-center">
+      <div className="flex flex-col items-center gap-2 px-6 py-12 text-center">
         <span className="grid size-11 place-items-center rounded-full bg-porcelain text-ink-mute">
           <Activity size={18} />
         </span>
         <p className="font-display text-[0.95rem] font-semibold text-ink-deep">
-          No farm activity published yet
+          Nothing has been recorded yet
         </p>
         <p className="max-w-sm text-[0.78rem] leading-5 text-ink-mute">
-          As soon as the first cycle is stocked and the operator&apos;s first log is approved, the
-          field record appears here — dated, attributed to a cycle and permanent.
+          The moment the first stock is placed and the farm team&apos;s first entry has been checked
+          by a second person, it appears here — dated, tied to its cycle and kept.
         </p>
       </div>
     );
@@ -49,8 +43,9 @@ export function TransparencyFeed({
       {milestones.slice(0, limit).map((milestone, index) => {
         const commodity = COMMODITIES.find((item) => item.id === milestone.commodity);
         const Icon = commodity?.icon ?? Activity;
+        const log = plainLog(milestone.logType);
         return (
-          <li key={milestone.id} className="relative flex gap-3.5 pb-4 last:pb-0">
+          <li key={milestone.id} className="relative flex min-w-0 gap-3.5 pb-4 last:pb-0">
             {index < Math.min(limit, milestones.length) - 1 ? (
               <span
                 className="absolute left-[0.68rem] top-7 h-[calc(100%-1rem)] w-px bg-hairline"
@@ -65,14 +60,17 @@ export function TransparencyFeed({
                 <span className="font-mono text-[0.66rem] font-semibold uppercase tracking-wider text-ink-soft">
                   {milestone.cycleCode}
                 </span>
-                <span className="pg-chip pg-chip--signal">
-                  {LOG_LABEL[milestone.logType ?? ""] ?? "Farm log"}
+                <span className="pg-chip pg-chip--signal">{log.headline}</span>
+                <span className="font-mono text-[0.6rem] uppercase tracking-wider text-ink-mute">
+                  {log.label}
                 </span>
                 <span className="text-[0.66rem] text-ink-mute">
                   {dateLabel(milestone.logDate)} · {relativeDays(milestone.logDate)}
                 </span>
               </div>
-              <p className="mt-1 text-[0.8rem] leading-6 text-ink-soft">{milestone.summary}</p>
+              {milestone.summary ? (
+                <p className="mt-1 text-[0.8rem] leading-6 text-ink-soft">{milestone.summary}</p>
+              ) : null}
             </div>
           </li>
         );
@@ -88,6 +86,21 @@ const SEVERITY_TONE: Record<string, string> = {
   critical: "pg-chip--rose",
 };
 
+/** How serious, said in words rather than in ledger codes. */
+const SEVERITY_WORD: Record<string, string> = {
+  low: "Minor",
+  moderate: "Moderate",
+  serious: "Serious",
+  critical: "Critical",
+};
+
+const STATUS_WORD: Record<string, string> = {
+  open: "Still being handled",
+  monitoring: "Being watched",
+  resolved: "Sorted out",
+  closed: "Closed",
+};
+
 /**
  * The incident and insurance register.
  *
@@ -97,15 +110,15 @@ const SEVERITY_TONE: Record<string, string> = {
 export function IncidentRegister({ incidents }: { incidents: PublicIncident[] }) {
   if (incidents.length === 0) {
     return (
-      <div className="rounded-xl border border-hairline bg-white px-4 py-6 text-center">
+      <div className="rounded-xl border border-hairline bg-porcelain px-4 py-6 text-center">
         <p className="flex items-center justify-center gap-2 text-[0.8rem] font-semibold text-mint-deep">
           <ShieldAlert size={15} aria-hidden="true" />
-          No incidents on the register
+          Nothing on the register
         </p>
         <p className="mx-auto mt-1.5 max-w-md text-[0.75rem] leading-5 text-ink-mute">
-          Flooding, disease, feed price shocks, equipment failure and power outages are all logged
-          here with a severity, a status and a resolution note. An empty register means none have
-          been reported — not that none are watched for.
+          Flooding, disease, feed price shocks, breakdowns and power cuts are all recorded here,
+          with how serious each one is and what was done about it. An empty register means none have
+          been reported — not that nobody is watching for them.
         </p>
       </div>
     );
@@ -114,38 +127,40 @@ export function IncidentRegister({ incidents }: { incidents: PublicIncident[] })
   return (
     <ul className="m-0 list-none space-y-2.5 p-0">
       {incidents.map((incident) => (
-        <li key={incident.id} className="pg-card p-4">
+        <li
+          key={incident.id}
+          className="min-w-0 rounded-xl border border-hairline bg-porcelain p-4"
+        >
           <div className="flex flex-wrap items-start justify-between gap-2">
             <div className="min-w-0">
-              <p className="font-display text-[0.88rem] font-semibold text-ink-deep">
+              <p className="font-display text-[0.88rem] font-semibold leading-snug text-ink-deep">
                 {incident.title}
               </p>
               <p className="mt-0.5 text-[0.68rem] text-ink-mute">
-                {incident.category} · occurred {dateLabel(incident.occurredOn)}
-                {incident.cycleId ? " · linked to a running cycle" : ""}
+                {incident.category} · started {dateLabel(incident.occurredOn)}
+                {incident.cycleId ? " · tied to a running cycle" : ""}
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-1.5">
               <span className={`pg-chip ${SEVERITY_TONE[incident.severity] ?? "pg-chip"}`}>
-                {incident.severity}
+                {SEVERITY_WORD[incident.severity] ?? incident.severity}
               </span>
               <span
-                className={`pg-chip ${incident.status === "resolved" ? "pg-chip--mint" : "pg-chip--amber"}`}
+                className={`pg-chip ${
+                  incident.status === "resolved" || incident.status === "closed"
+                    ? "pg-chip--mint"
+                    : "pg-chip--amber"
+                }`}
               >
-                {incident.status}
+                {STATUS_WORD[incident.status] ?? incident.status}
               </span>
             </div>
           </div>
           <p className="mt-2 text-[0.8rem] leading-6 text-ink-soft">{incident.description}</p>
           {incident.resolutionNote ? (
             <p className="mt-2 rounded-lg border border-mint/30 bg-mint-soft px-3 py-2 text-[0.76rem] leading-5 text-mint-deep">
-              <strong className="font-semibold">Resolution.</strong> {incident.resolutionNote}
+              <strong className="font-semibold">What was done.</strong> {incident.resolutionNote}
               {incident.resolvedOn ? ` (${dateLabel(incident.resolvedOn)})` : ""}
-            </p>
-          ) : null}
-          {incident.insuranceClaimRef ? (
-            <p className="mt-2 font-mono text-[0.68rem] text-ink-mute">
-              Insurance claim {incident.insuranceClaimRef}
             </p>
           ) : null}
         </li>
