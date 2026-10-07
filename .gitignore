@@ -34,3 +34,6 @@ dist-ssr
 # Python (scripts/preview-ledger)
 __pycache__/
 *.py[cod]
+
+# Local preview only: never committed, never shipped
+scripts/preview-ledger/seed_demo.py
