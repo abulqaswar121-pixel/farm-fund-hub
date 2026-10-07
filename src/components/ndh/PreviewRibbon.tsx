@@ -11,11 +11,7 @@ export function PreviewRibbon() {
   if (import.meta.env["VITE_PREVIEW_LEDGER"] !== "true") return null;
 
   return (
-    <p
-      className="ndh-preview-ribbon"
-      role="note"
-      data-testid="preview-ribbon"
-    >
+    <p className="ndh-preview-ribbon" role="note" data-testid="preview-ribbon">
       Preview build · figures come from a local development ledger, not from member money
     </p>
   );

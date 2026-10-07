@@ -72,8 +72,8 @@ export function GrowthChart({
     return (
       <div className="grid h-[16rem] place-items-center rounded-xl border border-hairline bg-porcelain">
         <p className="fig text-[0.75rem] text-ink-mute">
-          {samples.length} sample{samples.length === 1 ? "" : "s"} ·{" "}
-          {feedSeries.length} feed entr{feedSeries.length === 1 ? "y" : "ies"} ready
+          {samples.length} sample{samples.length === 1 ? "" : "s"} · {feedSeries.length} feed entr
+          {feedSeries.length === 1 ? "y" : "ies"} ready
         </p>
       </div>
     );
@@ -113,7 +113,12 @@ export function GrowthChart({
                 y={targetWeightG}
                 stroke="#10b981"
                 strokeDasharray="6 4"
-                label={{ value: `Target ${number(targetWeightG, 0)} g`, fontSize: 10, fill: "#059669", position: "insideTopRight" }}
+                label={{
+                  value: `Target ${number(targetWeightG, 0)} g`,
+                  fontSize: 10,
+                  fill: "#059669",
+                  position: "insideTopRight",
+                }}
               />
             ) : null}
             <Line
@@ -165,9 +170,8 @@ export function GrowthChart({
       ) : null}
 
       <p className="text-[0.68rem] text-ink-mute">
-        Latest sample{" "}
-        {samples.length ? dateLabel(samples[samples.length - 1]?.date ?? null) : "—"} · every
-        point below is an operator entry, approved by an admin.
+        Latest sample {samples.length ? dateLabel(samples[samples.length - 1]?.date ?? null) : "—"}{" "}
+        · every point below is an operator entry, approved by an admin.
       </p>
     </div>
   );

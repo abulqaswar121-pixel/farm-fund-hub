@@ -14,13 +14,13 @@ fallback that would ever reach for it.
 
 ## What it is faithful about
 
-* every request runs in a real PostgreSQL session as `anon`, `authenticated` or
+- every request runs in a real PostgreSQL session as `anon`, `authenticated` or
   `service_role`, with `request.jwt.claim.sub` set, so the project's actual RLS
   policies and `auth.uid()` behave exactly as they do behind PostgREST;
-* the migrations in `supabase/migrations` are applied unmodified, so the
+- the migrations in `supabase/migrations` are applied unmodified, so the
   waterfall, the share-transfer settlement and the rollover guards under test
   are the real ones;
-* object requests (`Accept: application/vnd.pgrst.object+json`) return
+- object requests (`Accept: application/vnd.pgrst.object+json`) return
   `PGRST116` the way PostgREST does, so `.single()` / `.maybeSingle()` behave
   identically.
 

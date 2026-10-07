@@ -42,7 +42,9 @@ export function WaterfallLadder({
               ) : null}
             </div>
             {!compact ? (
-              <p className="mt-1 text-[0.75rem] leading-5 text-ink-mute">{definition.description}</p>
+              <p className="mt-1 text-[0.75rem] leading-5 text-ink-mute">
+                {definition.description}
+              </p>
             ) : null}
             {definition.level === 4 ? (
               <p className="pg-chip pg-chip--locked mt-2">

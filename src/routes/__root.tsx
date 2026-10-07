@@ -100,13 +100,29 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       // Roboto Mono for every figure the platform prints. The faces are served
       // from /fonts in this repository (see the @font-face block in
       // src/styles.css), so a first paint never waits on a third-party host.
-      { rel: "preload", href: "/fonts/dm-sans-latin-400.woff2", as: "font", type: "font/woff2", crossOrigin: "anonymous" },
-      { rel: "preload", href: "/fonts/space-grotesk-latin-600.woff2", as: "font", type: "font/woff2", crossOrigin: "anonymous" },
-      { rel: "preload", href: "/fonts/roboto-mono-latin-400.woff2", as: "font", type: "font/woff2", crossOrigin: "anonymous" },
+      {
+        rel: "preload",
+        href: "/fonts/dm-sans-latin-400.woff2",
+        as: "font",
+        type: "font/woff2",
+        crossOrigin: "anonymous",
+      },
+      {
+        rel: "preload",
+        href: "/fonts/space-grotesk-latin-600.woff2",
+        as: "font",
+        type: "font/woff2",
+        crossOrigin: "anonymous",
+      },
+      {
+        rel: "preload",
+        href: "/fonts/roboto-mono-latin-400.woff2",
+        as: "font",
+        type: "font/woff2",
+        crossOrigin: "anonymous",
+      },
     ],
-    scripts: [
-      { src: "https://js.paystack.co/v1/inline.js", async: true },
-    ],
+    scripts: [{ src: "https://js.paystack.co/v1/inline.js", async: true }],
   }),
   shellComponent: RootShell,
   component: RootComponent,

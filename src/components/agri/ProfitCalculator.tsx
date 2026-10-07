@@ -212,7 +212,9 @@ function Row({
         {highlight ? <TrendingUp size={12} className="text-mint" aria-hidden="true" /> : null}
         {label}
       </span>
-      <span className={`fig text-[0.85rem] font-semibold ${highlight ? "text-mint" : "text-white"}`}>
+      <span
+        className={`fig text-[0.85rem] font-semibold ${highlight ? "text-mint" : "text-white"}`}
+      >
         {money(value)}
       </span>
     </li>

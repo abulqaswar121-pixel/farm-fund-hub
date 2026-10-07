@@ -16,9 +16,7 @@ export const Route = createFileRoute("/api/health")({
         };
 
         try {
-          const { supabasePublic } = await import(
-            "@/integrations/supabase/client.public.server"
-          );
+          const { supabasePublic } = await import("@/integrations/supabase/client.public.server");
           const { error } = await supabasePublic
             .from("farm_cycles")
             .select("id", { count: "exact", head: true })

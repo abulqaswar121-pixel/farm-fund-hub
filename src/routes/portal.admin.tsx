@@ -23,7 +23,15 @@ import {
 
 import { StageRail } from "@/components/agri/StageRail";
 import { WaterfallLadder } from "@/components/agri/WaterfallLadder";
-import { Card, EmptyState, Figure, Money, Notice, SectionHeader, StatusChip } from "@/components/ndh/ledger-ui";
+import {
+  Card,
+  EmptyState,
+  Figure,
+  Money,
+  Notice,
+  SectionHeader,
+  StatusChip,
+} from "@/components/ndh/ledger-ui";
 import { COMMODITIES, CYCLE_STATUS_LABEL, type CycleStatus } from "@/lib/agri/commodities";
 import { dateLabel, dateTimeLabel, money, number, percent } from "@/lib/agri/format";
 import { DEFAULT_RULES, runWaterfall, validateRules, type CycleRules } from "@/lib/agri/rules";
@@ -54,14 +62,7 @@ export const Route = createFileRoute("/portal/admin")({
   component: AdminPortal,
 });
 
-type Tab =
-  | "overview"
-  | "cycles"
-  | "verification"
-  | "logs"
-  | "settlement"
-  | "members"
-  | "board";
+type Tab = "overview" | "cycles" | "verification" | "logs" | "settlement" | "members" | "board";
 
 const TABS: { id: Tab; label: string; icon: typeof Gauge }[] = [
   { id: "overview", label: "Overview", icon: Gauge },
@@ -233,7 +234,11 @@ function AdminPortal() {
               />
             </Card>
             <Card className="p-4">
-              <Figure label="Members" value={number(console_.kpis.members)} caption="Excluding staff" />
+              <Figure
+                label="Members"
+                value={number(console_.kpis.members)}
+                caption="Excluding staff"
+              />
             </Card>
             <Card className="p-4">
               <Figure
@@ -342,7 +347,11 @@ function AdminPortal() {
             kicker="Operator log auditor"
             title="Approve what the farm filed"
             blurb="Approving a log publishes the operator's public summary line to the transparency feed. Flagging it sends it back with your note — the entry itself is never deleted."
-            action={<span className="pg-chip pg-chip--amber">{console_.logsAwaitingReview.length} in queue</span>}
+            action={
+              <span className="pg-chip pg-chip--amber">
+                {console_.logsAwaitingReview.length} in queue
+              </span>
+            }
           />
           {console_.logsAwaitingReview.length > 0 ? (
             <div className="space-y-3">
@@ -495,7 +504,11 @@ function CycleLauncher({
         title="Publish a cycle with its terms already frozen"
         blurb="Everything typed here is written into the cycle at creation. The moment you publish, the target capital, split, reserve and minimum ticket become immutable — the database will reject any later change."
         action={
-          <button type="button" onClick={() => setOpen((v) => !v)} className="pg-btn pg-btn--primary">
+          <button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            className="pg-btn pg-btn--primary"
+          >
             {open ? <X size={15} /> : <Plus size={15} />}
             {open ? "Close launcher" : "New cycle"}
           </button>
@@ -555,7 +568,9 @@ function CycleLauncher({
                 className="pg-input"
                 inputMode="decimal"
                 value={form.targetCapital}
-                onChange={(event) => set("targetCapital", event.target.value.replace(/[^0-9.]/g, ""))}
+                onChange={(event) =>
+                  set("targetCapital", event.target.value.replace(/[^0-9.]/g, ""))
+                }
                 placeholder="3000000"
               />
             </Field>
@@ -570,7 +585,10 @@ function CycleLauncher({
                 placeholder="50000"
               />
             </Field>
-            <Field label="Projected harvest revenue (₦)" hint="From the costed plan — drives the public calculator">
+            <Field
+              label="Projected harvest revenue (₦)"
+              hint="From the costed plan — drives the public calculator"
+            >
               <input
                 className="pg-input"
                 inputMode="decimal"
@@ -581,7 +599,10 @@ function CycleLauncher({
                 placeholder="4200000"
               />
             </Field>
-            <Field label="Projected supplier liabilities (₦)" hint="Expected unpaid balances at settlement (Level 1)">
+            <Field
+              label="Projected supplier liabilities (₦)"
+              hint="Expected unpaid balances at settlement (Level 1)"
+            >
               <input
                 className="pg-input"
                 inputMode="decimal"
@@ -914,7 +935,10 @@ function VerificationQueue({
             </label>
             <button
               type="button"
-              disabled={busyId === investment.id || !(references[investment.id] ?? investment.bankReference ?? "").trim()}
+              disabled={
+                busyId === investment.id ||
+                !(references[investment.id] ?? investment.bankReference ?? "").trim()
+              }
               onClick={async () => {
                 setBusyId(investment.id);
                 try {
@@ -1119,12 +1143,17 @@ function SettlementEngine({
 
   const rules: CycleRules = settlement
     ? {
-        investorSharePercent: settlement.investorProfitPool + settlement.operatorFee > 0
-          ? (settlement.investorProfitPool / (settlement.investorProfitPool + settlement.operatorFee)) * 100
-          : DEFAULT_RULES.investorSharePercent,
-        operatorSharePercent: settlement.investorProfitPool + settlement.operatorFee > 0
-          ? (settlement.operatorFee / (settlement.investorProfitPool + settlement.operatorFee)) * 100
-          : DEFAULT_RULES.operatorSharePercent,
+        investorSharePercent:
+          settlement.investorProfitPool + settlement.operatorFee > 0
+            ? (settlement.investorProfitPool /
+                (settlement.investorProfitPool + settlement.operatorFee)) *
+              100
+            : DEFAULT_RULES.investorSharePercent,
+        operatorSharePercent:
+          settlement.investorProfitPool + settlement.operatorFee > 0
+            ? (settlement.operatorFee / (settlement.investorProfitPool + settlement.operatorFee)) *
+              100
+            : DEFAULT_RULES.operatorSharePercent,
         reservePercent: DEFAULT_RULES.reservePercent,
       }
     : DEFAULT_RULES;
@@ -1348,9 +1377,7 @@ function SettlementEngine({
                     <td className="num">
                       <Money value={row.capital} />
                     </td>
-                    <td className="num fig text-signal-deep">
-                      {percent(row.equityPercent, 4)}
-                    </td>
+                    <td className="num fig text-signal-deep">{percent(row.equityPercent, 4)}</td>
                     <td className="num fig">
                       {money((row.equityPercent / 100) * preview.principalReturned)}
                     </td>
@@ -1385,7 +1412,11 @@ function SettlementEngine({
             </div>
             <StatusChip
               status={settlement.principalAtRisk ? "failed" : "success"}
-              label={settlement.principalAtRisk ? "principal part-returned" : "principal returned in full"}
+              label={
+                settlement.principalAtRisk
+                  ? "principal part-returned"
+                  : "principal returned in full"
+              }
             />
           </div>
 
@@ -1393,7 +1424,10 @@ function SettlementEngine({
             <WaterfallLadder
               rules={rules}
               amounts={[
-                { level: 1, amount: settlement.grossRevenue > 0 ? settlement.principalReturned * 0 : 0 },
+                {
+                  level: 1,
+                  amount: settlement.grossRevenue > 0 ? settlement.principalReturned * 0 : 0,
+                },
                 { level: 2, amount: settlement.principalReturned },
                 { level: 3, amount: settlement.reserveSetAside },
                 { level: 4, amount: settlement.netProfit },
@@ -1418,7 +1452,8 @@ function SettlementEngine({
                 disabled={busy}
                 onClick={async () => {
                   const destination = console_.cycles.find(
-                    (row) => row.id !== cycleId && (row.status === "open" || row.status === "funded"),
+                    (row) =>
+                      row.id !== cycleId && (row.status === "open" || row.status === "funded"),
                   );
                   if (!destination) {
                     onDone("info", "No open cycle to roll into yet.");
@@ -1479,12 +1514,7 @@ function SettlementEngine({
               </thead>
               <tbody>
                 {lines.map((line) => (
-                  <PayoutRow
-                    key={line.id}
-                    line={line}
-                    payLine={payLine}
-                    onDone={onDone}
-                  />
+                  <PayoutRow key={line.id} line={line} payLine={payLine} onDone={onDone} />
                 ))}
                 <tr className="total-row">
                   <td>Total</td>
@@ -1543,9 +1573,7 @@ function PayoutRow({
     paidAt: string | null;
   };
   onDone: (tone: "success" | "error" | "info", text: string) => void;
-  payLine: (args: {
-    data: { lineId: string; payoutReference: string };
-  }) => Promise<unknown>;
+  payLine: (args: { data: { lineId: string; payoutReference: string } }) => Promise<unknown>;
 }) {
   const [reference, setReference] = useState(line.payoutReference ?? "");
   const [busy, setBusy] = useState(false);
@@ -1598,7 +1626,10 @@ function PayoutRow({
                   });
                   onDone("success", `${line.memberName}'s payout marked as paid.`);
                 } catch (error) {
-                  onDone("error", error instanceof Error ? error.message : "Unable to mark as paid");
+                  onDone(
+                    "error",
+                    error instanceof Error ? error.message : "Unable to mark as paid",
+                  );
                 }
                 setBusy(false);
               }}
@@ -1632,7 +1663,9 @@ function MemberRow({
       <td className="font-medium text-ink-deep">{member.fullName}</td>
       <td>
         <StatusChip
-          status={member.role === "admin" ? "failed" : member.role === "operator" ? "info" : "success"}
+          status={
+            member.role === "admin" ? "failed" : member.role === "operator" ? "info" : "success"
+          }
           label={ROLE_LABEL[member.role]}
         />
       </td>
@@ -1655,7 +1688,10 @@ function MemberRow({
                   role: event.target.value as "admin" | "operator" | "member",
                 },
               });
-              onDone("success", `${member.fullName} is now ${ROLE_LABEL[event.target.value as "admin"].toLowerCase()}.`);
+              onDone(
+                "success",
+                `${member.fullName} is now ${ROLE_LABEL[event.target.value as "admin"].toLowerCase()}.`,
+              );
             } catch (error) {
               onDone("error", error instanceof Error ? error.message : "Unable to change role");
             }
@@ -1742,7 +1778,10 @@ function BoardAndRegister({
                             setBusy(true);
                             try {
                               await settle({ data: { transferId: transfer.id } });
-                              onDone("success", "Transfer settled. Equity has moved in the ledger.");
+                              onDone(
+                                "success",
+                                "Transfer settled. Equity has moved in the ledger.",
+                              );
                             } catch (error) {
                               onDone(
                                 "error",

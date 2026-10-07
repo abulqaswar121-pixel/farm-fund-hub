@@ -73,7 +73,11 @@ export function ClimatePanel({ logged }: { logged: LoggedWeather[] }) {
         </div>
         <span className={`pg-chip ${state === "live" ? "pg-chip--signal" : "pg-chip--amber"}`}>
           <Satellite size={11} aria-hidden="true" />
-          {state === "live" ? "Live forecast" : state === "loading" ? "Connecting…" : "Field record"}
+          {state === "live"
+            ? "Live forecast"
+            : state === "loading"
+              ? "Connecting…"
+              : "Field record"}
         </span>
       </div>
 
@@ -121,8 +125,12 @@ export function ClimatePanel({ logged }: { logged: LoggedWeather[] }) {
                     <td className="num fig">
                       {number(daily?.precipitation_sum?.[index] ?? 0, 1)} mm
                     </td>
-                    <td className="num fig">{number(daily?.temperature_2m_min?.[index] ?? 0, 1)}°</td>
-                    <td className="num fig">{number(daily?.temperature_2m_max?.[index] ?? 0, 1)}°</td>
+                    <td className="num fig">
+                      {number(daily?.temperature_2m_min?.[index] ?? 0, 1)}°
+                    </td>
+                    <td className="num fig">
+                      {number(daily?.temperature_2m_max?.[index] ?? 0, 1)}°
+                    </td>
                     <td className="num fig">
                       {number(daily?.relative_humidity_2m_mean?.[index] ?? 0, 0)}%
                     </td>
@@ -143,9 +151,7 @@ export function ClimatePanel({ logged }: { logged: LoggedWeather[] }) {
             icon={<Droplets size={14} />}
             label="Humidity"
             value={
-              latestLog.humidityPercent === null
-                ? "—"
-                : `${number(latestLog.humidityPercent, 0)}%`
+              latestLog.humidityPercent === null ? "—" : `${number(latestLog.humidityPercent, 0)}%`
             }
           />
         </div>
@@ -170,15 +176,7 @@ export function ClimatePanel({ logged }: { logged: LoggedWeather[] }) {
   );
 }
 
-function Metric({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-}) {
+function Metric({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
     <div className="px-4 py-3">
       <p className="pg-kicker flex items-center gap-1.5">

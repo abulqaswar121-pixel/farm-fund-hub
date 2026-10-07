@@ -32,13 +32,7 @@ export const ECOSYSTEM_CATEGORIES: {
 ];
 
 export type SubsidiaryId =
-  | "agency"
-  | "academy"
-  | "agricapital"
-  | "estore"
-  | "schooldesk"
-  | "travel"
-  | "ihospital";
+  "agency" | "academy" | "agricapital" | "estore" | "schooldesk" | "travel" | "ihospital";
 
 /** `live` is launched and public, `preview` is a working pre-launch build. */
 export type LaunchState = "live" | "preview" | "coming";

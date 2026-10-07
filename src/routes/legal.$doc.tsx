@@ -59,7 +59,10 @@ function LegalPage() {
         {id === "terms" ? <Terms /> : id === "privacy" ? <Privacy /> : <Risk />}
         <p className="mt-10 border-t border-hairline pt-5 text-[0.72rem] leading-5 text-ink-mute">
           Questions about this page? Email{" "}
-          <a href={`mailto:${NDH_CONTACT.support}`} className="font-semibold text-signal-deep no-underline">
+          <a
+            href={`mailto:${NDH_CONTACT.support}`}
+            className="font-semibold text-signal-deep no-underline"
+          >
             {NDH_CONTACT.support}
           </a>{" "}
           or call {NDH_CONTACT.phone}. Parent gateway:{" "}
@@ -103,9 +106,9 @@ function Terms() {
       <Section heading="1. What this platform is">
         <p>
           NDH AgriCapital is a co-operative agricultural investment programme. Members contribute
-          capital to specific, individually identified production cycles — a pond of catfish, a house
-          of broilers, a hectare of grain. Contributions buy an equity share of that cycle&apos;s
-          outcome, not a deposit with a fixed interest rate.
+          capital to specific, individually identified production cycles — a pond of catfish, a
+          house of broilers, a hectare of grain. Contributions buy an equity share of that
+          cycle&apos;s outcome, not a deposit with a fixed interest rate.
         </p>
         <p>
           NDH AgriCapital is not a bank, a deposit-taking institution or a licensed fund manager. No
@@ -158,7 +161,10 @@ function Terms() {
         <p>
           The ledger is append-oriented. Verified contributions, approved farm logs and executed
           settlements are not silently rewritten. If you believe a figure is wrong, contact{" "}
-          <a href={`mailto:${NDH_CONTACT.support}`} className="font-semibold text-signal-deep no-underline">
+          <a
+            href={`mailto:${NDH_CONTACT.support}`}
+            className="font-semibold text-signal-deep no-underline"
+          >
             {NDH_CONTACT.support}
           </a>{" "}
           and the correction will be made as a new, visible entry rather than an edit.
@@ -182,18 +188,18 @@ function Privacy() {
       <Head {...doc} />
       <Section heading="1. What we hold">
         <p>
-          Your name and email address; your access level; records of contributions you make and their
-          verification status; payout lines from settlements; any transfer offer, farm visit request
-          or reinvestment instruction you create.
+          Your name and email address; your access level; records of contributions you make and
+          their verification status; payout lines from settlements; any transfer offer, farm visit
+          request or reinvestment instruction you create.
         </p>
       </Section>
       <Section heading="2. Who can see it">
         <p>
           Row Level Security is enforced in the database, not the interface. You can read only your
-          own contribution records, your own payout lines and your own bookings. Other members cannot
-          see your holdings. Farm operators can see farm logs and expenses but cannot see your
-          capital. Administrators can see the contribution book in order to verify transfers and run
-          settlements.
+          own contribution records, your own payout lines and your own bookings. Other members
+          cannot see your holdings. Farm operators can see farm logs and expenses but cannot see
+          your capital. Administrators can see the contribution book in order to verify transfers
+          and run settlements.
         </p>
         <p>
           Aggregate figures — how much a cycle has raised, how many members it has, what the harvest
@@ -202,25 +208,28 @@ function Privacy() {
       </Section>
       <Section heading="3. Payments">
         <p>
-          Card payments are processed by Paystack. NDH AgriCapital never receives or stores your card
-          details. Your Paystack reference is stored on the ledger row so a payment can be traced and
-          reconciled. Paystack secret keys are held server-side only and are never included in
-          anything sent to your browser.
+          Card payments are processed by Paystack. NDH AgriCapital never receives or stores your
+          card details. Your Paystack reference is stored on the ledger row so a payment can be
+          traced and reconciled. Paystack secret keys are held server-side only and are never
+          included in anything sent to your browser.
         </p>
       </Section>
       <Section heading="4. What is published about the farm">
         <p>
           Farm milestones, harvest weigh-ins, settlement totals, incidents and weather observations
-          are published deliberately. Approved logs are published with the operator&apos;s own public
-          summary line only — internal notes, costs and reasons are not published.
+          are published deliberately. Approved logs are published with the operator&apos;s own
+          public summary line only — internal notes, costs and reasons are not published.
         </p>
       </Section>
       <Section heading="5. Retention and your requests">
         <p>
-          Ledger records are retained for as long as the co-operative exists and you remain a member,
-          because they are the evidence behind settled payouts. You may ask for a copy of your own
-          records, or ask us to correct your name or contact details, by emailing{" "}
-          <a href={`mailto:${NDH_CONTACT.support}`} className="font-semibold text-signal-deep no-underline">
+          Ledger records are retained for as long as the co-operative exists and you remain a
+          member, because they are the evidence behind settled payouts. You may ask for a copy of
+          your own records, or ask us to correct your name or contact details, by emailing{" "}
+          <a
+            href={`mailto:${NDH_CONTACT.support}`}
+            className="font-semibold text-signal-deep no-underline"
+          >
             {NDH_CONTACT.support}
           </a>
           .
@@ -237,10 +246,10 @@ function Risk() {
       <Head {...doc} />
       <Section heading="1. You can lose money">
         <p>
-          A cycle can fail. Disease, flooding, a feed price spike, power failure, theft or a collapse
-          in buyer prices can reduce or eliminate the harvest, and can prevent even the return of
-          100% of principal at Level 2 of the waterfall. There is no guarantee of capital return and
-          no guarantee of profit.
+          A cycle can fail. Disease, flooding, a feed price spike, power failure, theft or a
+          collapse in buyer prices can reduce or eliminate the harvest, and can prevent even the
+          return of 100% of principal at Level 2 of the waterfall. There is no guarantee of capital
+          return and no guarantee of profit.
         </p>
       </Section>
       <Section heading="2. Projections are not promises">
@@ -263,8 +272,8 @@ function Risk() {
         <p>
           Livestock and crops die, and weather does not follow a plan. The platform publishes
           incidents openly and holds an emergency reserve at Level 3 of each settlement precisely
-          because these events are expected rather than exceptional. A reserve set aside for a future
-          cycle is not available to rescue the cycle that is currently running.
+          because these events are expected rather than exceptional. A reserve set aside for a
+          future cycle is not available to rescue the cycle that is currently running.
         </p>
       </Section>
       <Section heading="5. Concentration">
@@ -276,9 +285,9 @@ function Risk() {
       </Section>
       <Section heading="6. Not financial advice">
         <p>
-          Nothing on this platform — including the concierge assistant, the calculator and the public
-          transparency data — is financial, tax or legal advice. If you need advice, speak to someone
-          qualified who knows your circumstances.
+          Nothing on this platform — including the concierge assistant, the calculator and the
+          public transparency data — is financial, tax or legal advice. If you need advice, speak to
+          someone qualified who knows your circumstances.
         </p>
       </Section>
     </>

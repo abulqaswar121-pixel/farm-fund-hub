@@ -212,7 +212,9 @@ function SignInPage() {
               }}
               className="mt-5 text-[0.83rem] font-semibold text-signal-deep underline underline-offset-4"
             >
-              {isSignIn ? "New to the co-operative? Create an account" : "Already a member? Sign in"}
+              {isSignIn
+                ? "New to the co-operative? Create an account"
+                : "Already a member? Sign in"}
             </button>
 
             <p className="mt-9 border-t border-hairline pt-5 text-[0.75rem] leading-5 text-ink-mute">
@@ -221,7 +223,11 @@ function SignInPage() {
                 farm marketplace
               </Link>{" "}
               and the{" "}
-              <Link to="/" hash="transparency" className="font-semibold text-signal-deep no-underline">
+              <Link
+                to="/"
+                hash="transparency"
+                className="font-semibold text-signal-deep no-underline"
+              >
                 transparency feed
               </Link>{" "}
               are fully public — no account needed.
@@ -235,15 +241,7 @@ function SignInPage() {
   );
 }
 
-function Assurance({
-  icon,
-  title,
-  body,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  body: string;
-}) {
+function Assurance({ icon, title, body }: { icon: React.ReactNode; title: string; body: string }) {
   return (
     <li className="flex gap-3">
       <span className="mt-0.5 grid size-7 shrink-0 place-items-center rounded-lg bg-white/10 text-signal">

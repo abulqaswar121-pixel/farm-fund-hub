@@ -198,7 +198,8 @@ export const STAGES: Stage[] = [
     id: "sale_settlement",
     index: 5,
     name: "Sale & Settlement",
-    description: "Market revenue is received and logged against the cycle with the receipts attached.",
+    description:
+      "Market revenue is received and logged against the cycle with the receipts attached.",
     owner: "admin",
   },
   {

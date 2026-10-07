@@ -172,7 +172,8 @@ export const getMemberWorkspace = createServerFn({ method: "GET" })
     const identity: MemberIdentity = {
       id: userId,
       email: authUser.user.email ?? "",
-      fullName: profile?.full_name ?? (authUser.user.user_metadata?.["full_name"] as string) ?? "Member",
+      fullName:
+        profile?.full_name ?? (authUser.user.user_metadata?.["full_name"] as string) ?? "Member",
       role,
     };
 
@@ -201,15 +202,11 @@ export const getMemberWorkspace = createServerFn({ method: "GET" })
       .select("*")
       .order("created_at", { ascending: false });
 
-    const distributionIds = Array.from(
-      new Set((lineRows ?? []).map((row) => row.distribution_id)),
-    );
+    const distributionIds = Array.from(new Set((lineRows ?? []).map((row) => row.distribution_id)));
     const { data: distributionRows } = distributionIds.length
       ? await supabase.from("waterfall_distributions").select("*").in("id", distributionIds)
       : { data: [] };
-    const distributionMap = new Map(
-      (distributionRows ?? []).map((row) => [row.id, row]),
-    );
+    const distributionMap = new Map((distributionRows ?? []).map((row) => [row.id, row]));
 
     // Live equity per cycle. The RPC derives it from the ledger on every call
     // and can only ever answer for the caller.
@@ -238,7 +235,9 @@ export const getMemberWorkspace = createServerFn({ method: "GET" })
         targetCapital: Number(cycle.target_capital),
         minimumTicket: Number(cycle.minimum_ticket),
         raised: Number(fundingMap.get(cycleId)?.raised_capital ?? position.cycle_capital ?? 0),
-        fundedPercent: Number(fundingMap.get(cycleId)?.funded_percent ?? position.funded_percent ?? 0),
+        fundedPercent: Number(
+          fundingMap.get(cycleId)?.funded_percent ?? position.funded_percent ?? 0,
+        ),
         myCapital: Number(position.member_capital ?? 0),
         equityPercent: Number(position.equity_percent ?? 0),
         investorCount: Number(position.investor_count ?? 0),
@@ -298,15 +297,11 @@ export const getMemberWorkspace = createServerFn({ method: "GET" })
       .select("*")
       .order("created_at", { ascending: false });
 
-    const transferCycleIds = Array.from(
-      new Set((transferRows ?? []).map((row) => row.cycle_id)),
-    );
+    const transferCycleIds = Array.from(new Set((transferRows ?? []).map((row) => row.cycle_id)));
     const transferCycles = transferCycleIds.length
       ? await supabase.from("farm_cycles").select("id, code").in("id", transferCycleIds)
       : { data: [] };
-    const transferCycleMap = new Map(
-      (transferCycles.data ?? []).map((row) => [row.id, row.code]),
-    );
+    const transferCycleMap = new Map((transferCycles.data ?? []).map((row) => [row.id, row.code]));
 
     // A member's own verified capital per cycle, so an offer can be checked
     // against what they actually hold before it is submitted.
@@ -413,10 +408,7 @@ export const getMemberWorkspace = createServerFn({ method: "GET" })
     };
   });
 
-function mapInvestment(
-  row: InvestmentRow,
-  cycleMap: Map<string, CycleRow>,
-): MemberInvestment {
+function mapInvestment(row: InvestmentRow, cycleMap: Map<string, CycleRow>): MemberInvestment {
   const cycle = cycleMap.get(row.cycle_id);
   return {
     id: row.id,
@@ -659,7 +651,11 @@ export const confirmContribution = createServerFn({ method: "POST" })
       data?: { status?: string; amount?: number; reference?: string };
     };
 
-    if (!result.status || result.data?.status !== "success" || result.data.reference !== data.reference) {
+    if (
+      !result.status ||
+      result.data?.status !== "success" ||
+      result.data.reference !== data.reference
+    ) {
       throw new Error("That payment was not verified — no equity has been credited");
     }
 
@@ -782,7 +778,9 @@ export const createShareOffer = createServerFn({ method: "POST" })
   )
   .handler(async ({ context, data }) => {
     if (data.askingPrice > data.capitalAmount) {
-      throw new Error("Offers on this board must be at par or below — the co-op does not allow a premium");
+      throw new Error(
+        "Offers on this board must be at par or below — the co-op does not allow a premium",
+      );
     }
     const { error } = await context.supabase.from("share_transfers").insert({
       cycle_id: data.cycleId,

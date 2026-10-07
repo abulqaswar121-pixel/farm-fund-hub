@@ -160,7 +160,7 @@ export const getOperatorWorkspace = createServerFn({ method: "GET" })
         isPayable: row.is_payable,
       })),
       incidents: (incidents ?? []).map((row) =>
-        mapIncident(row, row.cycle_id ? cycleMap.get(row.cycle_id)?.code ?? null : null),
+        mapIncident(row, row.cycle_id ? (cycleMap.get(row.cycle_id)?.code ?? null) : null),
       ),
       awaitingReview: mapped.filter((log) => log.reviewStatus === "pending").length,
       totals: {
@@ -584,7 +584,9 @@ export const getAdminConsole = createServerFn({ method: "GET" })
         .order("executed_at", { ascending: false }),
       supabase.from("user_roles").select("user_id, role, created_at"),
       supabase.from("profiles").select("id, full_name"),
-      supabase.from("cycle_investments").select("member_id, cycle_id, amount, transferred_out, status"),
+      supabase
+        .from("cycle_investments")
+        .select("member_id, cycle_id, amount, transferred_out, status"),
       supabase.from("incidents").select("*").order("occurred_on", { ascending: false }).limit(60),
       supabase.from("share_transfers").select("*").order("created_at", { ascending: false }),
       supabase.from("farm_visits").select("*").order("visit_date", { ascending: true }).limit(60),
@@ -592,7 +594,9 @@ export const getAdminConsole = createServerFn({ method: "GET" })
 
     const cycleMap = new Map<string, CycleRow>((cycles ?? []).map((row) => [row.id, row]));
     const fundingMap = new Map((funding ?? []).map((row) => [row.cycle_id ?? "", row]));
-    const nameMap = new Map((profiles ?? []).map((row) => [row.id, row.full_name ?? "Unnamed member"]));
+    const nameMap = new Map(
+      (profiles ?? []).map((row) => [row.id, row.full_name ?? "Unnamed member"]),
+    );
 
     const verified = (investmentRows ?? []).filter((row) => row.status === "success");
 
@@ -674,7 +678,7 @@ export const getAdminConsole = createServerFn({ method: "GET" })
       })),
       members: members.sort((a, b) => b.verifiedCapital - a.verifiedCapital),
       incidents: (incidents ?? []).map((row) =>
-        mapIncident(row, row.cycle_id ? cycleMap.get(row.cycle_id)?.code ?? null : null),
+        mapIncident(row, row.cycle_id ? (cycleMap.get(row.cycle_id)?.code ?? null) : null),
       ),
       transfers: (transfers ?? []).map((row) => ({
         id: row.id,
@@ -688,7 +692,7 @@ export const getAdminConsole = createServerFn({ method: "GET" })
       visits: (visits ?? []).map((row) => ({
         id: row.id,
         cycleId: row.cycle_id,
-        cycleCode: row.cycle_id ? cycleMap.get(row.cycle_id)?.code ?? null : null,
+        cycleCode: row.cycle_id ? (cycleMap.get(row.cycle_id)?.code ?? null) : null,
         visitDate: row.visit_date,
         slot: row.slot,
         guests: row.guests,
@@ -745,9 +749,18 @@ export const createFarmCycle = createServerFn({ method: "POST" })
       operatorPercent: z.number().positive().max(99),
       reservePercent: z.number().min(5).max(10),
       cycleWeeks: z.number().int().min(1).max(104),
-      fundingClosesOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-      stockingOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-      projectedHarvestOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+      fundingClosesOn: z
+        .string()
+        .regex(/^\d{4}-\d{2}-\d{2}$/)
+        .optional(),
+      stockingOn: z
+        .string()
+        .regex(/^\d{4}-\d{2}-\d{2}$/)
+        .optional(),
+      projectedHarvestOn: z
+        .string()
+        .regex(/^\d{4}-\d{2}-\d{2}$/)
+        .optional(),
     }),
   )
   .handler(async ({ context, data }) => {
@@ -1224,9 +1237,7 @@ export const applyRollovers = createServerFn({ method: "POST" })
       .select("member_id, mode, preferred_cycle_id")
       .neq("mode", "off");
 
-    const instructionMap = new Map(
-      (instructions ?? []).map((row) => [row.member_id, row]),
-    );
+    const instructionMap = new Map((instructions ?? []).map((row) => [row.member_id, row]));
 
     let moved = 0;
     const skipped: string[] = [];
@@ -1234,7 +1245,10 @@ export const applyRollovers = createServerFn({ method: "POST" })
     for (const line of lines ?? []) {
       const instruction = instructionMap.get(line.member_id);
       if (!instruction) continue;
-      if (instruction.preferred_cycle_id && instruction.preferred_cycle_id !== data.destinationCycleId) {
+      if (
+        instruction.preferred_cycle_id &&
+        instruction.preferred_cycle_id !== data.destinationCycleId
+      ) {
         continue;
       }
 

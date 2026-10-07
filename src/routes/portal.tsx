@@ -10,10 +10,7 @@ import { resolveCallerRole, ROLE_LABEL, type AppRole } from "@/lib/agri/roles";
 
 export const Route = createFileRoute("/portal")({
   head: () => ({
-    meta: [
-      { title: "Member Portal | NDH AgriCapital" },
-      { name: "robots", content: "noindex" },
-    ],
+    meta: [{ title: "Member Portal | NDH AgriCapital" }, { name: "robots", content: "noindex" }],
   }),
   component: PortalLayout,
 });
@@ -38,7 +35,9 @@ export function usePortalContext() {
 
 function PortalLayout() {
   const [state, setState] = useState<
-    { status: "loading" } | { status: "signedout" } | { status: "ready"; role: AppRole; userId: string; email: string }
+    | { status: "loading" }
+    | { status: "signedout" }
+    | { status: "ready"; role: AppRole; userId: string; email: string }
   >({ status: "loading" });
 
   useEffect(() => {
@@ -122,7 +121,11 @@ function PortalHeader({
 
   const tabs = [
     { to: "/portal/investor", label: "Investor", visible: true },
-    { to: "/portal/operator", label: "Farm operator", visible: role === "admin" || role === "operator" },
+    {
+      to: "/portal/operator",
+      label: "Farm operator",
+      visible: role === "admin" || role === "operator",
+    },
     { to: "/portal/admin", label: "Admin & treasury", visible: role === "admin" },
   ].filter((tab) => tab.visible);
 

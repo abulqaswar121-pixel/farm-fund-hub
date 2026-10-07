@@ -106,8 +106,8 @@ function PublicHome() {
             <p className="mt-5 max-w-xl text-[0.95rem] leading-7 text-slate-300">
               NDH AgriCapital pools member capital into real production cycles — catfish ponds,
               broiler and layer houses, grain fields and greenhouses — and runs every one of them on
-              a ledger you can audit: locked profit splits, a strict settlement waterfall, and equity
-              calculated live from verified contributions.
+              a ledger you can audit: locked profit splits, a strict settlement waterfall, and
+              equity calculated live from verified contributions.
             </p>
 
             <div className="mt-7 flex flex-wrap items-center gap-3">
@@ -322,11 +322,17 @@ function PublicHome() {
                   <p className="mt-3 font-display text-[0.85rem] font-semibold text-ink-deep">
                     {commodity.name}
                   </p>
-                  <p className="mt-1.5 text-[0.72rem] leading-5 text-ink-mute">{commodity.summary}</p>
+                  <p className="mt-1.5 text-[0.72rem] leading-5 text-ink-mute">
+                    {commodity.summary}
+                  </p>
                   <ul className="mt-2.5 space-y-1">
                     {commodity.telemetry.slice(0, 2).map((line) => (
                       <li key={line} className="flex gap-1.5 text-[0.68rem] text-ink-soft">
-                        <BadgeCheck size={11} className="mt-0.5 shrink-0 text-mint" aria-hidden="true" />
+                        <BadgeCheck
+                          size={11}
+                          className="mt-0.5 shrink-0 text-mint"
+                          aria-hidden="true"
+                        />
                         {line}
                       </li>
                     ))}
@@ -344,14 +350,17 @@ function PublicHome() {
       {/* ---------------------------------------------------------------- *
        * Locked rules
        * ---------------------------------------------------------------- */}
-      <section id="rules" className="mx-auto max-w-[var(--page)] scroll-mt-20 px-[var(--gutter)] py-14">
+      <section
+        id="rules"
+        className="mx-auto max-w-[var(--page)] scroll-mt-20 px-[var(--gutter)] py-14"
+      >
         <p className="pg-kicker">Locked from the start</p>
         <h2 className="mt-1.5 text-[1.5rem] leading-tight text-ink-deep md:text-[1.85rem]">
           Zero post-harvest disputes, by construction
         </h2>
         <p className="mt-1.5 max-w-3xl text-[0.85rem] leading-6 text-ink-soft">
-          Every term below is written into the cycle at publication and enforced by the database, not
-          by good intentions. Nothing here can be edited once a cycle has taken a single naira.
+          Every term below is written into the cycle at publication and enforced by the database,
+          not by good intentions. Nothing here can be edited once a cycle has taken a single naira.
         </p>
 
         <div className="mt-6 grid gap-5 lg:grid-cols-[1.05fr_0.95fr]">
@@ -369,8 +378,8 @@ function PublicHome() {
                   <span className="fig text-[0.72rem] text-ink-deep">
                     (your verified contributions ÷ all verified contributions) × 100
                   </span>
-                  , recomputed on every read. There is no equity column for anyone to edit — not even
-                  an administrator.
+                  , recomputed on every read. There is no equity column for anyone to edit — not
+                  even an administrator.
                 </>
               }
             />
@@ -510,8 +519,8 @@ function PublicHome() {
               </h2>
               <p className="mt-3 max-w-xl text-[0.85rem] leading-6 text-slate-300">
                 Membership is free and takes a minute. You will see every published cycle, the full
-                settlement history, and — once you contribute — your exact equity, computed live from
-                the ledger.
+                settlement history, and — once you contribute — your exact equity, computed live
+                from the ledger.
               </p>
             </div>
             <div className="flex flex-wrap gap-3 md:justify-end">
@@ -538,12 +547,7 @@ function PublicHome() {
               value={percent(DEFAULT_RULES.investorSharePercent, 0)}
               caption="Of net profit, pro-rata to equity"
             />
-            <Figure
-              onDark
-              label="Settlement levels"
-              value="4"
-              caption="Strict priority, audited"
-            />
+            <Figure onDark label="Settlement levels" value="4" caption="Strict priority, audited" />
           </div>
         </div>
       </section>
@@ -554,15 +558,7 @@ function PublicHome() {
   );
 }
 
-function LockedRow({
-  icon,
-  title,
-  body,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  body: string;
-}) {
+function LockedRow({ icon, title, body }: { icon: React.ReactNode; title: string; body: string }) {
   return (
     <li className="flex gap-3">
       <span className="mt-0.5 grid size-7 shrink-0 place-items-center rounded-lg bg-white/10 text-signal">
@@ -590,7 +586,9 @@ function RuleCard({
   return (
     <div className="pg-card p-4">
       <div className="flex items-center gap-2.5">
-        <span className="grid size-8 place-items-center rounded-lg bg-navy text-signal">{icon}</span>
+        <span className="grid size-8 place-items-center rounded-lg bg-navy text-signal">
+          {icon}
+        </span>
         <p className="font-display text-[0.88rem] font-semibold text-ink-deep">{title}</p>
       </div>
       <p className="mt-2.5 text-[0.78rem] leading-6 text-ink-soft">{body}</p>
@@ -598,15 +596,7 @@ function RuleCard({
   );
 }
 
-function Innovation({
-  icon,
-  title,
-  body,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  body: string;
-}) {
+function Innovation({ icon, title, body }: { icon: React.ReactNode; title: string; body: string }) {
   return (
     <div className="pg-card pg-card--lift p-5">
       <span className="grid size-10 place-items-center rounded-xl bg-[image:var(--grad-master)] text-navy-deep">

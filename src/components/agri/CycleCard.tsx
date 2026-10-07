@@ -29,9 +29,7 @@ export function CycleCard({ card }: { card: PublicCycleCard }) {
   const Icon = commodity?.icon ?? Sprout;
   const rules = readRules(cycle);
   const daysToClose = cycle.funding_closes_on
-    ? Math.ceil(
-        (new Date(cycle.funding_closes_on).getTime() - Date.now()) / (24 * 60 * 60 * 1000),
-      )
+    ? Math.ceil((new Date(cycle.funding_closes_on).getTime() - Date.now()) / (24 * 60 * 60 * 1000))
     : null;
 
   return (
@@ -49,7 +47,9 @@ export function CycleCard({ card }: { card: PublicCycleCard }) {
             <p className="font-mono text-[0.65rem] uppercase tracking-widest text-signal">
               {cycle.code}
             </p>
-            <p className="font-display text-[0.95rem] font-bold">{commodity?.name ?? "Farm stock"}</p>
+            <p className="font-display text-[0.95rem] font-bold">
+              {commodity?.name ?? "Farm stock"}
+            </p>
           </div>
         </div>
         <span className={`pg-chip ${STATUS_TONE[cycle.status] ?? "pg-chip"}`}>

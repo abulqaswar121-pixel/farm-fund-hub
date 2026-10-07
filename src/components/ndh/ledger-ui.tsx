@@ -56,9 +56,7 @@ export function Kicker({
   onDark?: boolean;
   className?: string;
 }) {
-  return (
-    <p className={cn("pg-kicker", onDark && "pg-kicker--onDark", className)}>{children}</p>
-  );
+  return <p className={cn("pg-kicker", onDark && "pg-kicker--onDark", className)}>{children}</p>;
 }
 
 export function Figure({
@@ -89,7 +87,12 @@ export function Figure({
         {value}
       </p>
       {caption ? (
-        <p className={cn("mt-1 text-[0.7rem] leading-4", onDark ? "text-slate-400" : "text-ink-mute")}>
+        <p
+          className={cn(
+            "mt-1 text-[0.7rem] leading-4",
+            onDark ? "text-slate-400" : "text-ink-mute",
+          )}
+        >
           {caption}
         </p>
       ) : null}
@@ -174,9 +177,7 @@ export function Card({
   className?: string;
   lift?: boolean;
 }) {
-  return (
-    <div className={cn("pg-card", lift && "pg-card--lift", className)}>{children}</div>
-  );
+  return <div className={cn("pg-card", lift && "pg-card--lift", className)}>{children}</div>;
 }
 
 export function SectionHeader({
@@ -202,7 +203,9 @@ export function SectionHeader({
         <h2 className="mt-1.5 text-[1.45rem] leading-tight text-ink-deep md:text-[1.7rem]">
           {title}
         </h2>
-        {blurb ? <p className="mt-1.5 max-w-2xl text-[0.83rem] leading-6 text-ink-soft">{blurb}</p> : null}
+        {blurb ? (
+          <p className="mt-1.5 max-w-2xl text-[0.83rem] leading-6 text-ink-soft">{blurb}</p>
+        ) : null}
       </div>
       {action ? <div className="flex shrink-0 flex-wrap items-center gap-2">{action}</div> : null}
     </div>

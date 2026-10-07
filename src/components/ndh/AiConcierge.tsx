@@ -176,7 +176,10 @@ export function AiConcierge() {
             </div>
           </div>
 
-          <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto bg-porcelain px-3.5 py-4">
+          <div
+            ref={scrollRef}
+            className="flex-1 space-y-3 overflow-y-auto bg-porcelain px-3.5 py-4"
+          >
             {messages.map((message) => (
               <div key={message.id}>
                 <div

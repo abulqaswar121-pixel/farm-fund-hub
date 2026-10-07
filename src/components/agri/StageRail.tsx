@@ -17,7 +17,8 @@ export function StageRail({ currentStage }: { currentStage: string }) {
         return (
           <div key={stage.id} className="pg-stage" data-state={state} role="listitem">
             <span>
-              Stage {stage.index} / {state === "active" ? "now" : state === "done" ? "done" : "next"}
+              Stage {stage.index} /{" "}
+              {state === "active" ? "now" : state === "done" ? "done" : "next"}
             </span>
             <strong>{stage.name}</strong>
           </div>

@@ -340,10 +340,7 @@ export function investorPayout(
 }
 
 /** Pro-rata split of a pool across an equity table. Used by the admin engine. */
-export function distributeProRata(
-  pool: number,
-  equity: Map<string, number>,
-): Map<string, number> {
+export function distributeProRata(pool: number, equity: Map<string, number>): Map<string, number> {
   const out = new Map<string, number>();
   for (const [memberId, percent] of equity) {
     out.set(memberId, round2((percent / 100) * pool));
@@ -407,7 +404,8 @@ export function projectInvestment(input: ProjectionInput): ProjectionResult {
     investorPrincipal,
     investorProfit,
     investorTotal,
-    roiPercent: input.amount > 0 ? round2(((investorTotal - input.amount) / input.amount) * 100) : 0,
+    roiPercent:
+      input.amount > 0 ? round2(((investorTotal - input.amount) / input.amount) * 100) : 0,
   };
 }
 

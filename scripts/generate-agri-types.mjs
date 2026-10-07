@@ -383,7 +383,8 @@ const ENUMS = {
     '"funding_open" | "stocking" | "operational" | "harvest_weighin" | "sale_settlement" | "waterfall_distribution"',
   investment_method: '"paystack" | "manual" | "rollover"',
   investment_status: '"pending" | "success" | "failed"',
-  log_type: '"feed" | "growth_sample" | "mortality" | "medication" | "general" | "harvest" | "sale"',
+  log_type:
+    '"feed" | "growth_sample" | "mortality" | "medication" | "general" | "harvest" | "sale"',
   review_status: '"pending" | "approved" | "flagged"',
   transfer_status: '"offered" | "claimed" | "settled" | "withdrawn"',
   visit_status: '"requested" | "confirmed" | "declined" | "completed" | "cancelled"',
@@ -486,4 +487,6 @@ ${constantsBlock}
 `;
 
 writeFileSync(target, output);
-console.log(`Rewrote ${target}: ${Object.keys(TABLES).length} tables, ${Object.keys(VIEWS).length} views, ${Object.keys(FUNCTIONS).length} functions, ${Object.keys(ENUMS).length} enums.`);
+console.log(
+  `Rewrote ${target}: ${Object.keys(TABLES).length} tables, ${Object.keys(VIEWS).length} views, ${Object.keys(FUNCTIONS).length} functions, ${Object.keys(ENUMS).length} enums.`,
+);

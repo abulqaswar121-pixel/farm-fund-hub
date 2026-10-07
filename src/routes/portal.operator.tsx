@@ -58,14 +58,56 @@ const ACTIONS: {
   tone: string;
 }[] = [
   { id: "feed", label: "Feed", hint: "Bags or kilos given out", icon: Flame, tone: "tone-cyan" },
-  { id: "growth", label: "Sample weight", hint: "10 fish sampled: 450 g avg", icon: Scale, tone: "tone-emerald" },
+  {
+    id: "growth",
+    label: "Sample weight",
+    hint: "10 fish sampled: 450 g avg",
+    icon: Scale,
+    tone: "tone-emerald",
+  },
   { id: "mortality", label: "Mortality", hint: "Count and cause", icon: Skull, tone: "tone-rose" },
-  { id: "medication", label: "Medication", hint: "What was administered", icon: Pill, tone: "tone-violet" },
-  { id: "crates", label: "Eggs / yield", hint: "Crates or bags collected", icon: Bird, tone: "tone-amber" },
-  { id: "expense", label: "Expense", hint: "Direct spend with receipt", icon: Receipt, tone: "tone-sky" },
-  { id: "harvest", label: "Weigh-in", hint: "Total harvest weight", icon: Baby, tone: "tone-emerald" },
-  { id: "incident", label: "Incident", hint: "Flood, outage, breakdown", icon: ShieldAlert, tone: "tone-rose" },
-  { id: "weather", label: "Weather", hint: "Rain, temperature, humidity", icon: CloudRain, tone: "tone-cyan" },
+  {
+    id: "medication",
+    label: "Medication",
+    hint: "What was administered",
+    icon: Pill,
+    tone: "tone-violet",
+  },
+  {
+    id: "crates",
+    label: "Eggs / yield",
+    hint: "Crates or bags collected",
+    icon: Bird,
+    tone: "tone-amber",
+  },
+  {
+    id: "expense",
+    label: "Expense",
+    hint: "Direct spend with receipt",
+    icon: Receipt,
+    tone: "tone-sky",
+  },
+  {
+    id: "harvest",
+    label: "Weigh-in",
+    hint: "Total harvest weight",
+    icon: Baby,
+    tone: "tone-emerald",
+  },
+  {
+    id: "incident",
+    label: "Incident",
+    hint: "Flood, outage, breakdown",
+    icon: ShieldAlert,
+    tone: "tone-rose",
+  },
+  {
+    id: "weather",
+    label: "Weather",
+    hint: "Rain, temperature, humidity",
+    icon: CloudRain,
+    tone: "tone-cyan",
+  },
 ];
 
 function OperatorPortal() {
@@ -82,7 +124,10 @@ function OperatorPortal() {
     try {
       const data = await load();
       setWorkspace(data);
-      setCycleId((current) => current || data.cycles.find((c) => c.status === "active")?.id || data.cycles[0]?.id || "");
+      setCycleId(
+        (current) =>
+          current || data.cycles.find((c) => c.status === "active")?.id || data.cycles[0]?.id || "",
+      );
     } catch {
       setFailed(true);
     }
@@ -113,8 +158,8 @@ function OperatorPortal() {
             </button>
           }
         >
-          Your access level may not include farm operations, or the service is briefly
-          unavailable. Nothing you have already filed is lost.
+          Your access level may not include farm operations, or the service is briefly unavailable.
+          Nothing you have already filed is lost.
         </EmptyState>
       </Card>
     );
@@ -280,7 +325,10 @@ function OperatorPortal() {
           {workspace.recentLogs.length > 0 ? (
             <ul className="m-0 list-none divide-y divide-hairline p-0">
               {workspace.recentLogs.slice(0, 12).map((log) => (
-                <li key={log.id} className="flex flex-wrap items-start justify-between gap-3 px-4 py-3">
+                <li
+                  key={log.id}
+                  className="flex flex-wrap items-start justify-between gap-3 px-4 py-3"
+                >
                   <div className="min-w-0">
                     <p className="text-[0.8rem] font-semibold capitalize text-ink-deep">
                       {log.cycleCode} · {log.logType.replace(/_/g, " ")}
@@ -296,9 +344,7 @@ function OperatorPortal() {
                       {log.cratesCollected !== null
                         ? ` · ${number(log.cratesCollected, 0)} crates`
                         : ""}
-                      {log.bagsHarvested !== null
-                        ? ` · ${number(log.bagsHarvested, 0)} bags`
-                        : ""}
+                      {log.bagsHarvested !== null ? ` · ${number(log.bagsHarvested, 0)} bags` : ""}
                     </p>
                     {log.notes ? (
                       <p className="mt-1 text-[0.72rem] leading-5 text-ink-soft">{log.notes}</p>
@@ -310,7 +356,13 @@ function OperatorPortal() {
                     ) : null}
                   </div>
                   <StatusChip
-                    status={log.reviewStatus === "approved" ? "success" : log.reviewStatus === "flagged" ? "failed" : "pending"}
+                    status={
+                      log.reviewStatus === "approved"
+                        ? "success"
+                        : log.reviewStatus === "flagged"
+                          ? "failed"
+                          : "pending"
+                    }
                     label={log.reviewStatus}
                   />
                 </li>
@@ -330,7 +382,10 @@ function OperatorPortal() {
             {workspace.expenses.length > 0 ? (
               <ul className="m-0 list-none divide-y divide-hairline p-0">
                 {workspace.expenses.slice(0, 8).map((expense) => (
-                  <li key={expense.id} className="flex items-center justify-between gap-3 px-4 py-3">
+                  <li
+                    key={expense.id}
+                    className="flex items-center justify-between gap-3 px-4 py-3"
+                  >
                     <div className="min-w-0">
                       <p className="text-[0.78rem] font-semibold text-ink-deep">
                         {expense.category}
@@ -952,7 +1007,11 @@ function QuickLogForm({
           </>
         ) : null}
 
-        {action === "feed" || action === "growth" || action === "mortality" || action === "medication" || action === "crates" ? (
+        {action === "feed" ||
+        action === "growth" ||
+        action === "mortality" ||
+        action === "medication" ||
+        action === "crates" ? (
           <>
             <Field label="Internal note (not published)" className="sm:col-span-2">
               <input

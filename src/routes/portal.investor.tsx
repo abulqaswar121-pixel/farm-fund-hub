@@ -152,8 +152,8 @@ function InvestorPortal() {
             Good day, {workspace.identity.fullName.split(" ")[0]}
           </h1>
           <p className="mt-1.5 max-w-2xl text-[0.83rem] leading-6 text-ink-soft">
-            Your equity share below is recomputed from verified contributions on every load. There is
-            no stored equity field for anyone to adjust.
+            Your equity share below is recomputed from verified contributions on every load. There
+            is no stored equity field for anyone to adjust.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -272,7 +272,9 @@ function InvestorPortal() {
                 <Card className="p-5">
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div>
-                      <p className="pg-kicker">{activePosition.code} · {commodity?.name}</p>
+                      <p className="pg-kicker">
+                        {activePosition.code} · {commodity?.name}
+                      </p>
                       <h2 className="mt-1 font-display text-[1.2rem] font-semibold text-ink-deep">
                         {activePosition.name}
                       </h2>
@@ -326,7 +328,10 @@ function InvestorPortal() {
                     <div className="mt-5 rounded-xl border border-mint/30 bg-mint-soft p-4">
                       <p className="pg-kicker text-mint-deep">Settled — your payout</p>
                       <dl className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
-                        <Figure label="Principal" value={money(activePosition.settlement.principal)} />
+                        <Figure
+                          label="Principal"
+                          value={money(activePosition.settlement.principal)}
+                        />
                         <Figure
                           label="Profit"
                           value={money(activePosition.settlement.profit)}
@@ -361,9 +366,10 @@ function InvestorPortal() {
                       <p className="pg-kicker mb-2">Payout arithmetic for this cycle</p>
                       <div className="rounded-xl border border-hairline bg-porcelain p-4 text-[0.78rem] leading-6 text-ink-soft">
                         <p>
-                          Level 2 returns <strong className="text-ink-deep">100% of principal</strong>{" "}
-                          to every verified contributor pro-rata. Your share is your capital divided
-                          by the cycle&apos;s verified capital.
+                          Level 2 returns{" "}
+                          <strong className="text-ink-deep">100% of principal</strong> to every
+                          verified contributor pro-rata. Your share is your capital divided by the
+                          cycle&apos;s verified capital.
                         </p>
                         <p className="mt-2">
                           Level 4 splits what is left:{" "}
@@ -417,8 +423,7 @@ function InvestorPortal() {
                       {cycle.name}
                     </p>
                     <p className="fig mt-2 text-[0.72rem] text-ink-mute">
-                      {percent(cycle.fundedPercent, 1)} funded · min{" "}
-                      {money(cycle.minimumTicket)}
+                      {percent(cycle.fundedPercent, 1)} funded · min {money(cycle.minimumTicket)}
                     </p>
                     <div className="pg-meter mt-2">
                       <span style={{ width: `${Math.min(100, cycle.fundedPercent)}%` }} />
@@ -502,9 +507,7 @@ function InvestorPortal() {
                   />
                   <Figure
                     label="Feed conversion"
-                    value={
-                      telemetry?.totals.fcr ? number(telemetry.totals.fcr, 2) : "—"
-                    }
+                    value={telemetry?.totals.fcr ? number(telemetry.totals.fcr, 2) : "—"}
                     caption="kg feed per kg biomass gained"
                   />
                 </dl>
@@ -674,7 +677,9 @@ function InvestorPortal() {
                           <span className="font-mono text-[0.72rem] font-semibold text-ink-soft">
                             {payout.cycleCode}
                           </span>
-                          <span className="ml-2 text-[0.7rem] text-ink-mute">{payout.cycleName}</span>
+                          <span className="ml-2 text-[0.7rem] text-ink-mute">
+                            {payout.cycleName}
+                          </span>
                         </td>
                         <td className="num">
                           <Money value={payout.capital} />
@@ -798,7 +803,10 @@ function ContributeForm({
         },
       });
     } catch (error) {
-      await onDone(error instanceof Error ? error.message : "Unable to start that payment", "error");
+      await onDone(
+        error instanceof Error ? error.message : "Unable to start that payment",
+        "error",
+      );
       setBusy(false);
     }
   }
@@ -815,7 +823,10 @@ function ContributeForm({
       );
       setBankReference("");
     } catch (error) {
-      await onDone(error instanceof Error ? error.message : "Unable to submit that transfer", "error");
+      await onDone(
+        error instanceof Error ? error.message : "Unable to submit that transfer",
+        "error",
+      );
     }
     setBusy(false);
   }
@@ -1250,7 +1261,10 @@ function VisitsPanel({
         {workspace.visits.length > 0 ? (
           <ul className="m-0 list-none divide-y divide-hairline p-0">
             {workspace.visits.map((visit) => (
-              <li key={visit.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
+              <li
+                key={visit.id}
+                className="flex flex-wrap items-center justify-between gap-3 px-4 py-3"
+              >
                 <div>
                   <p className="text-[0.82rem] font-semibold text-ink-deep">
                     {dateLabel(visit.visitDate)} · {visit.slot}
@@ -1354,8 +1368,8 @@ function RolloverPanel({
       </h2>
       <p className="mt-2 max-w-3xl text-[0.8rem] leading-6 text-ink-soft">
         Choose what happens to your settlement before it is paid. When the treasury closes a cycle,
-        members with an instruction have their chosen portion credited into the next open cycle — and
-        the movement is recorded with the source cycle attached, so the money stays traceable.
+        members with an instruction have their chosen portion credited into the next open cycle —
+        and the movement is recorded with the source cycle attached, so the money stays traceable.
       </p>
 
       <fieldset className="mt-4 space-y-2">

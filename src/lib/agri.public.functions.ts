@@ -162,8 +162,11 @@ export const getPlatformPulse = createServerFn({ method: "GET" }).handler(
     let cycles: { id: string; status: string }[] = [];
     let mils: Database["public"]["Views"]["public_milestones"]["Row"][] = [];
     let incs: Database["public"]["Tables"]["incidents"]["Row"][] = [];
-    let funding: { cycle_id: string | null; raised_capital: number | null; investor_count: number | null }[] =
-      [];
+    let funding: {
+      cycle_id: string | null;
+      raised_capital: number | null;
+      investor_count: number | null;
+    }[] = [];
     let returns: Database["public"]["Views"]["platform_returns"]["Row"] | null = null;
     let scale: Database["public"]["Views"]["platform_scale"]["Row"] | null = null;
     let stock: { population_count: number | null }[] = [];
@@ -196,7 +199,9 @@ export const getPlatformPulse = createServerFn({ method: "GET" }).handler(
 
     const rows = cycles ?? [];
     const activeCycles = rows.filter((row) => row.status === "active").length;
-    const openCycles = rows.filter((row) => row.status === "open" || row.status === "funded").length;
+    const openCycles = rows.filter(
+      (row) => row.status === "open" || row.status === "funded",
+    ).length;
     const settledCycles = rows.filter((row) => row.status === "settled").length;
 
     const capitalDeployed = (funding ?? []).reduce(
@@ -326,7 +331,7 @@ export const getPublicCycle = createServerFn({ method: "GET" })
       supabase.from("cycle_returns").select("*").eq("cycle_id", cycle.id).maybeSingle(),
     ]);
 
-    const pick = <T,>(index: number): T | null => {
+    const pick = <T>(index: number): T | null => {
       const result = settled[index];
       if (!result || result.status !== "fulfilled") return null;
       return (result.value as { data: T | null }).data ?? null;
@@ -362,15 +367,15 @@ export const getPublicCycle = createServerFn({ method: "GET" })
         rainfallMm: row.rainfall_mm === null ? null : Number(row.rainfall_mm),
         tempMinC: row.temp_min_c === null ? null : Number(row.temp_min_c),
         tempMaxC: row.temp_max_c === null ? null : Number(row.temp_max_c),
-        humidityPercent:
-          row.humidity_percent === null ? null : Number(row.humidity_percent),
+        humidityPercent: row.humidity_percent === null ? null : Number(row.humidity_percent),
         source: row.source,
         note: row.note,
       })),
       harvest: harvest
         ? {
             harvestDate: harvest.harvest_date ?? "—",
-            totalWeightKg: harvest.total_weight_kg === null ? null : Number(harvest.total_weight_kg),
+            totalWeightKg:
+              harvest.total_weight_kg === null ? null : Number(harvest.total_weight_kg),
             totalCount: harvest.total_count,
             scaleTicketRef: harvest.scale_ticket_ref,
             buyer: harvest.buyer,

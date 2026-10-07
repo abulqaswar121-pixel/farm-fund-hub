@@ -421,7 +421,9 @@
     padding: 0.4rem 0.15rem;
     text-decoration: none;
     border-bottom: 2px solid transparent;
-    transition: color 0.16s ease, border-color 0.16s ease;
+    transition:
+      color 0.16s ease,
+      border-color 0.16s ease;
   }
 
   .pg-nav-link:hover {
@@ -450,7 +452,9 @@
     font-size: 0.78rem;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.16s ease, border-color 0.16s ease;
+    transition:
+      background 0.16s ease,
+      border-color 0.16s ease;
   }
 
   .pg-menu-trigger:hover {
@@ -614,7 +618,10 @@
   }
 
   .pg-card--lift {
-    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    transition:
+      transform 0.18s ease,
+      box-shadow 0.18s ease,
+      border-color 0.18s ease;
   }
 
   .pg-card--lift:hover {
@@ -840,7 +847,9 @@
     color: #cbd5e1;
     text-decoration: none;
     white-space: nowrap;
-    transition: background 0.14s ease, color 0.14s ease;
+    transition:
+      background 0.14s ease,
+      color 0.14s ease;
   }
 
   .pg-portal-tab:hover {
@@ -868,7 +877,10 @@
     font-size: 0.84rem;
     font-weight: 600;
     cursor: pointer;
-    transition: transform 0.14s ease, box-shadow 0.14s ease, background 0.14s ease;
+    transition:
+      transform 0.14s ease,
+      box-shadow 0.14s ease,
+      background 0.14s ease;
   }
 
   .pg-btn:disabled {
@@ -956,7 +968,10 @@
       radial-gradient(circle at 12% 22%, rgba(34, 211, 238, 0.16) 0 1.5px, transparent 1.5px),
       radial-gradient(circle at 78% 68%, rgba(169, 161, 235, 0.14) 0 1.5px, transparent 1.5px),
       radial-gradient(circle at 46% 88%, rgba(34, 211, 238, 0.1) 0 1.5px, transparent 1.5px);
-    background-size: 220px 220px, 300px 300px, 260px 260px;
+    background-size:
+      220px 220px,
+      300px 300px,
+      260px 260px;
   }
 
   .pg-gradient-text {

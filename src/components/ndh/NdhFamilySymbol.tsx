@@ -23,7 +23,13 @@ export function NdhFamilySymbol({
       style={{ width: size, height: size }}
       aria-hidden="true"
     >
-      <img src={gatewayMark} alt="" width={size} height={size} className="size-full object-contain" />
+      <img
+        src={gatewayMark}
+        alt=""
+        width={size}
+        height={size}
+        className="size-full object-contain"
+      />
       {SectorIcon ? (
         <span className="ndh-family-sector" style={{ width: size * 0.46, height: size * 0.46 }}>
           <SectorIcon strokeWidth={2.4} />

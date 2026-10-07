@@ -1,13 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import {
-  ArrowLeft,
-  BadgeCheck,
-  CalendarClock,
-  Lock,
-  MapPin,
-  Scale,
-  Users,
-} from "lucide-react";
+import { ArrowLeft, BadgeCheck, CalendarClock, Lock, MapPin, Scale, Users } from "lucide-react";
 
 import { AiConcierge } from "@/components/ndh/AiConcierge";
 import { FamilyFooter } from "@/components/ndh/FamilyFooter";
@@ -18,7 +10,12 @@ import { TransparencyFeed, IncidentRegister } from "@/components/agri/Transparen
 import { ClimatePanel } from "@/components/agri/ClimatePanel";
 import { Figure } from "@/components/ndh/ledger-ui";
 import { getPublicCycle, type PublicCycleDetail } from "@/lib/agri.public.functions";
-import { COMMODITIES, CYCLE_STATUS_LABEL, stageName, type CycleStatus } from "@/lib/agri/commodities";
+import {
+  COMMODITIES,
+  CYCLE_STATUS_LABEL,
+  stageName,
+  type CycleStatus,
+} from "@/lib/agri/commodities";
 import { dateLabel, money, moneyCompact, number, percent } from "@/lib/agri/format";
 import { readRules, rulesChip } from "@/lib/agri/rules";
 
@@ -27,7 +24,11 @@ export const Route = createFileRoute("/cycles/$cycleId")({
     const cycle = (loaderData as { detail: PublicCycleDetail | null } | undefined)?.detail?.cycle;
     return {
       meta: [
-        { title: cycle ? `${cycle.code} · ${cycle.name} | NDH AgriCapital` : "Farm cycle | NDH AgriCapital" },
+        {
+          title: cycle
+            ? `${cycle.code} · ${cycle.name} | NDH AgriCapital`
+            : "Farm cycle | NDH AgriCapital",
+        },
         {
           name: "description",
           content: cycle
@@ -130,13 +131,15 @@ function CycleDetail() {
 
             <div className="w-full max-w-sm rounded-2xl border border-navy-line bg-white/[0.04] p-5">
               <p className="pg-kicker pg-kicker--onDark">Funding progress</p>
-              <p className="fig mt-1.5 text-[1.6rem] font-bold">{percent(detail.fundedPercent, 1)}</p>
+              <p className="fig mt-1.5 text-[1.6rem] font-bold">
+                {percent(detail.fundedPercent, 1)}
+              </p>
               <div className="pg-meter mt-3 bg-white/15">
                 <span style={{ width: `${Math.min(100, detail.fundedPercent)}%` }} />
               </div>
               <p className="mt-2 text-[0.76rem] text-slate-300">
-                <span className="fig font-semibold text-white">{money(detail.raised)}</span> raised of{" "}
-                <span className="fig">{money(cycle.target_capital)}</span>
+                <span className="fig font-semibold text-white">{money(detail.raised)}</span> raised
+                of <span className="fig">{money(cycle.target_capital)}</span>
               </p>
               <p className="mt-3 inline-flex items-center gap-1.5 text-[0.72rem] text-slate-400">
                 <BadgeCheck size={13} className="text-mint" aria-hidden="true" />
@@ -199,7 +202,9 @@ function CycleDetail() {
                   The waterfall has run
                 </p>
               </div>
-              <span className={`pg-chip ${detail.settlement.principalAtRisk ? "pg-chip--rose" : "pg-chip--mint"}`}>
+              <span
+                className={`pg-chip ${detail.settlement.principalAtRisk ? "pg-chip--rose" : "pg-chip--mint"}`}
+              >
                 {detail.settlement.principalAtRisk
                   ? "Principal returned in part"
                   : "Principal returned in full"}
@@ -279,11 +284,17 @@ function CycleDetail() {
                 <dl className="mt-3 grid grid-cols-2 gap-3">
                   <Figure
                     label="Total weight"
-                    value={detail.harvest.totalWeightKg === null ? "—" : `${number(detail.harvest.totalWeightKg, 1)} kg`}
+                    value={
+                      detail.harvest.totalWeightKg === null
+                        ? "—"
+                        : `${number(detail.harvest.totalWeightKg, 1)} kg`
+                    }
                   />
                   <Figure
                     label="Pieces"
-                    value={detail.harvest.totalCount === null ? "—" : number(detail.harvest.totalCount)}
+                    value={
+                      detail.harvest.totalCount === null ? "—" : number(detail.harvest.totalCount)
+                    }
                   />
                   <Figure label="Weighed on" value={dateLabel(detail.harvest.harvestDate)} />
                   <Figure

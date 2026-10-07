@@ -23,7 +23,11 @@ const DEFAULT_LINKS: FamilyMenuLink[] = [
  * the AgriCapital sprout badge, the NAJEEB / AGRICAPITAL lockup, section nav
  * and the family dropdown.
  */
-export function PrecisionHeader({ activePath, session, links = DEFAULT_LINKS }: PrecisionHeaderProps) {
+export function PrecisionHeader({
+  activePath,
+  session,
+  links = DEFAULT_LINKS,
+}: PrecisionHeaderProps) {
   return (
     <header className="pg-header">
       <div className="pg-header-inner">
