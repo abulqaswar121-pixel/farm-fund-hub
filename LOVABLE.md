@@ -104,6 +104,21 @@ than merely warned about — but please do not try:
 9. **No sample, demo, or seeded data — ever.** See below.
 10. **Paystack secrets stay server-side.** `PAYSTACK_SECRET_KEY` must never be
     read in client code or exposed through `VITE_`-prefixed variables.
+11. **The public surface stays thin.** The pages a signed-out visitor sees —
+    `/`, `/cycles`, `/cycles/$cycleId`, `/signin` — may advertise a cycle, never
+    publish its business: no projected revenue or liabilities, no expense rows,
+    no settlement amounts, no scale ticket or trader name, no member's capital,
+    share or the number of investors. Public reads go through
+    `src/lib/agri.public.functions.ts` with its explicit column whitelist. Run
+    `node scripts/check-public-surface.mjs` before committing; it fails on any
+    private table, column or member figure in a public file, on the portal-only
+    projection component being imported publicly, and on database access
+    appearing in the public example module.
+12. **Public pages speak plainly.** The ledger's vocabulary (waterfall, equity,
+    pro-rata, funding open) belongs in the portals, the settlement engine and the
+    code. Public copy uses the words a first-time visitor owns — _Collecting
+    money_, _bills, then members, then profit_ — with the ledger's own term, if
+    shown at all, in small mono type underneath.
 
 ## 4b. Installs: read this before touching dependencies
 
@@ -149,9 +164,19 @@ seed script is git-ignored on purpose.
 
 ## 6. Knowledge to keep
 
-- Brand: navy `#0A1A30`, porcelain `#F8FAFC`, signal cyan `#22D3EE`, master
-  gradient `#22D3EE → #68BAF7 → #A9A1EB`, emerald for gains, violet-magenta
+- Brand: navy `#0A1A30`, porcelain `#F8FAFC`, white cards with hairline
+  `#D9E1EF` borders and the soft shadow `0 4px 16px rgba(16,27,64,0.07)`,
+  signal cyan `#22D3EE` for live technology states, emerald `#10B981` for
+  funding/active cycles and verified margin, amber `#F59E0B` for a closing
+  cycle, master gradient `#22D3EE → #68BAF7 → #A9A1EB`, and violet-magenta
   `#8A2BE2 → #FF007F` for identity moments only.
+- Navigation isolation is a rule, not a preference: the header carries
+  AgriCapital actions only (Marketplace, How It Works, Transparency Register,
+  Rules, Member Sign In). Sibling NDH businesses and the parent directory live
+  in `FamilyFooter` and nowhere else — do not reintroduce an ecosystem switcher
+  into the header, and do not move footer links into the nav.
+- The live farm ticker may carry ledger lines and _published operating
+  standards_; it must never carry a member balance, a payout or a return figure.
 - Type: Space Grotesk headings, DM Sans body, Roboto Mono for every figure —
   self-hosted in `public/fonts` so first paint never waits on a third party.
 - Design tokens and the semantic `.pg-*` classes live in `src/styles.css`.

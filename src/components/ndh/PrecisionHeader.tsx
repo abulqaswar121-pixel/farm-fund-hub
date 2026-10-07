@@ -1,45 +1,43 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowUpRight, LogIn, Sprout } from "lucide-react";
+import { ArrowUpRight, LogIn } from "lucide-react";
 
-import { NdhFamilySymbol } from "./NdhFamilySymbol";
-import { FamilyMenu, type FamilyMenuLink } from "./FamilyMenu";
+import { BrandLockup } from "./BrandLockup";
+import { SiteMenu, type HeaderLink } from "./SiteMenu";
 
 export type PrecisionHeaderProps = {
   /** Marks the current top-level section in the nav. */
   activePath?: string;
   /** Signed-in members get the portal call to action instead of sign-in. */
   session?: { name: string } | null;
-  links?: FamilyMenuLink[];
+  links?: HeaderLink[];
 };
 
-const DEFAULT_LINKS: FamilyMenuLink[] = [
+/**
+ * The AgriCapital navigation, in full.
+ *
+ * The header is deliberately 100% about this platform: the marketplace, how
+ * the cycles work, the transparency register, the locked rules and the member
+ * sign-in. Sibling NDH businesses and the parent directory are advertised in
+ * the footer (`FamilyFooter`) — never here.
+ */
+const DEFAULT_LINKS: HeaderLink[] = [
   { label: "Marketplace", href: "/cycles" },
   { label: "How it works", href: "/#how-it-works" },
-  { label: "Transparency", href: "/#transparency" },
+  { label: "Transparency register", href: "/#transparency" },
+  { label: "Rules", href: "/#rules" },
 ];
 
-/**
- * The "Precision Gateway" header every NDH surface shares: master mark with
- * the AgriCapital sprout badge, the NAJEEB / AGRICAPITAL lockup, section nav
- * and the family dropdown.
- */
 export function PrecisionHeader({
   activePath,
-  session,
+  session = null,
   links = DEFAULT_LINKS,
 }: PrecisionHeaderProps) {
   return (
     <header className="pg-header">
       <div className="pg-header-inner">
-        <Link to="/" className="pg-brand" aria-label="NDH AgriCapital home">
-          <NdhFamilySymbol SectorIcon={Sprout} size={38} />
-          <span className="pg-brand-lockup">
-            <strong>NAJEEB</strong>
-            <small>AgriCapital</small>
-          </span>
-        </Link>
+        <BrandLockup size="md" />
 
-        <nav className="hidden items-center gap-6 md:flex" aria-label="Sections">
+        <nav className="hidden items-center gap-6 lg:flex" aria-label="NDH AgriCapital sections">
           {links.map((link) =>
             link.href.startsWith("/") && !link.href.includes("#") ? (
               <Link
@@ -59,16 +57,22 @@ export function PrecisionHeader({
         </nav>
 
         <div className="flex items-center gap-2">
-          <FamilyMenu links={links} />
+          <SiteMenu links={links} session={session} />
           {session ? (
-            <Link to="/portal" className="pg-btn pg-btn--signal h-9 px-4 text-[0.78rem]">
+            <Link
+              to="/portal"
+              className="pg-btn pg-btn--signal hidden h-9 px-4 text-[0.78rem] sm:inline-flex"
+            >
               My portal
               <ArrowUpRight size={14} aria-hidden="true" />
             </Link>
           ) : (
-            <Link to="/signin" className="pg-btn pg-btn--signal h-9 px-4 text-[0.78rem]">
+            <Link
+              to="/signin"
+              className="pg-btn pg-btn--signal hidden h-9 px-4 text-[0.78rem] sm:inline-flex"
+            >
               <LogIn size={14} aria-hidden="true" />
-              Sign in
+              Member Sign In
             </Link>
           )}
         </div>

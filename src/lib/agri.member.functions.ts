@@ -526,6 +526,7 @@ export const getCycleTelemetry = createServerFn({ method: "GET" })
     // The target the operator is steering toward, per stock family.
     const targetByCommodity: Record<string, number | null> = {
       catfish: 1000,
+      tilapia: 600,
       broiler: 2000,
       layer: null,
       grain: null,

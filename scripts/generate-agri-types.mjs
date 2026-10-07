@@ -377,7 +377,7 @@ const ENUMS = {
   app_role: '"admin" | "operator" | "member" | "contributor"',
   payment_method: '"paystack" | "manual"',
   payment_status: '"pending" | "success" | "failed"',
-  commodity_type: '"catfish" | "broiler" | "layer" | "grain" | "greenhouse"',
+  commodity_type: '"catfish" | "tilapia" | "broiler" | "layer" | "grain" | "greenhouse"',
   cycle_status: '"draft" | "open" | "funded" | "active" | "harvested" | "settled" | "cancelled"',
   stage_id:
     '"funding_open" | "stocking" | "operational" | "harvest_weighin" | "sale_settlement" | "waterfall_distribution"',

@@ -24,6 +24,30 @@ export function moneyCompact(value: number | string | null | undefined): string 
   return `₦${nairaCompact.format(amount)}`;
 }
 
+/**
+ * A public-page amount: whole naira, rounded down, no decimals.
+ *
+ * Public pages never need the kobo, and rounding down means a figure can only
+ * ever understate how far a cycle has come — never overstate it. `step` is the
+ * rounding unit (₦1,000 by default, coarser where the caller asks for it).
+ */
+export function moneyPublic(value: number | string | null | undefined, step = 1000): string {
+  const amount = Math.max(0, Number(value ?? 0));
+  const rounded = Math.floor(amount / step) * step;
+  return `₦${rounded.toLocaleString("en-NG", { maximumFractionDigits: 0 })}`;
+}
+
+/**
+ * The public progress figure: exact naira never leaves the server.
+ *
+ * A member's own contribution must not be guessable by watching this number
+ * move, so the platform publishes it rounded to the nearest ₦10,000 (down).
+ */
+export function raisedPublic(value: number | string | null | undefined): number {
+  const amount = Math.max(0, Number(value ?? 0));
+  return Math.floor(amount / 10_000) * 10_000;
+}
+
 export function kg(value: number | string | null | undefined, digits = 1): string {
   return `${Number(value ?? 0).toLocaleString("en-NG", {
     minimumFractionDigits: digits,

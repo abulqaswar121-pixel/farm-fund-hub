@@ -79,6 +79,7 @@ LYR05 = "b0000000-0000-4000-8000-000000000205"
 GRN21 = "b0000000-0000-4000-8000-000000000321"
 GHO07 = "b0000000-0000-4000-8000-000000000407"
 CAT15 = "b0000000-0000-4000-8000-000000000015"
+TIL03 = "b0000000-0000-4000-8000-000000000703"
 
 
 def sql(statement: str, dbname: str = DB, stop: bool = True) -> str:
@@ -110,7 +111,7 @@ insert into public.farm_cycles
 values
   ('{CAT14}', 'CAT-014', 'catfish',
    'Catfish Batch 14 — Tunga Magajiya',
-   'Twelve thousand juvenile Clarias in six lined ponds, fed a milled 42% protein ration through a 24-week grow-out.',
+   'Twelve thousand young catfish in six lined ponds, fed a milled 42% protein ration over 24 weeks until they reach table size.',
    'Tunga Magajiya, Niger State', 9.52380, 6.04890,
    2500000, 25000, 4250000, 300000,
    24, current_date - 70, current_date - 14, current_date - 63, current_date + 105,
@@ -118,7 +119,7 @@ values
 
   ('{CAT13}', 'CAT-013', 'catfish',
    'Catfish Batch 13 — Tunga Magajiya',
-   'The preceding batch: stocked, grown out, weighed in at the pond bank and settled through the full waterfall.',
+   'The batch before this one: stocked, grown out, weighed in at the pond bank, then paid out to members in the order the rules set.',
    'Tunga Magajiya, Niger State', 9.52380, 6.04890,
    1000000, 20000, 1850000, 120000,
    22, current_date - 330, current_date - 250, current_date - 240, current_date - 40,
@@ -126,7 +127,7 @@ values
 
   ('{BRD09}', 'BRD-009', 'broiler',
    'Broiler Cycle 9 — Six Week Batch',
-   'Five thousand Marshal day-old chicks over a six-week cycle. Weighed in and awaiting the buyer''s collection.',
+   'Five thousand Marshal day-old chicks over a six-week cycle. Weighed in, with the collection note from the trader filed against the cycle.',
    'Main farm, Sokoto State', 13.00590, 5.24760,
    1500000, 25000, 2400000, 150000,
    6, current_date - 120, current_date - 90, current_date - 84, current_date - 40,
@@ -134,7 +135,7 @@ values
 
   ('{LYR05}', 'LYR-005', 'layer',
    'Layer Cycle 5 — Point of Lay to Peak',
-   'Two thousand five hundred point-of-lay pullets carried to peak production; birds and spent feed sold to a Sokoto processor.',
+   'Two thousand five hundred young hens carried to peak laying; the eggs and the spent hens were sold to a Sokoto trader.',
    'Main farm, Sokoto State', 13.00590, 5.24760,
    3000000, 50000, 4320000, 240000,
    52, current_date - 420, current_date - 380, current_date - 372, current_date - 30,
@@ -142,7 +143,7 @@ values
 
   ('{GRN21}', 'GRN-021', 'grain',
    'Grain Cycle 21 — Maize & Soya Rotation',
-   'Nine hectares of maize intercropped with soya on the Tunga Magajiya flood plain. Open for co-op subscriptions.',
+   'Nine hectares of maize grown alongside soya on the Tunga Magajiya flood plain. Open for members to join.',
    'Tunga Magajiya, Niger State', 9.52380, 6.04890,
    1800000, 10000, 3020000, 210000,
    20, current_date - 12, current_date + 26, null, current_date + 140,
@@ -150,11 +151,19 @@ values
 
   ('{GHO07}', 'GHO-007', 'greenhouse',
    'Greenhouse Cycle 7 — Tomatoes & Bell Peppers',
-   'Four hundred square metres under net: tomatoes and bell peppers on a staggered transplant for continuous supply.',
+   'Four hundred square metres under net: tomatoes and bell peppers planted in stages so something is ready to pick most weeks.',
    'Main farm, Sokoto State', 13.00590, 5.24760,
    900000, 15000, 1560000, 90000,
    18, current_date - 2, current_date + 38, null, current_date + 120,
    'open', 'funding_open', now() - interval '2 days', '{ADMIN}'),
+
+  ('{TIL03}', 'TIL-003', 'tilapia',
+   'Tilapia Cycle 3 — Tunga Magajiya Tanks',
+   'Fourteen thousand Nile tilapia fingerlings raised in eight lined tanks, then moved into two lake cages at week 10 to grow to plate size.',
+   'Tunga Magajiya, Niger State', 9.52380, 6.04890,
+   1600000, 20000, 2680000, 190000,
+   24, current_date - 6, current_date + 21, null, current_date + 160,
+   'open', 'funding_open', now() - interval '6 days', '{ADMIN}'),
 
   ('{CAT15}', 'CAT-015', 'catfish',
    'Catfish Batch 15 — Tunga Magajiya',
@@ -197,6 +206,8 @@ def investments_sql() -> str:
             investment(GRN21, AISHA, 400000, 7, "TRF-41118"),
             investment(GRN21, ZAINAB, 400000, 4, "TRF-41126"),
             investment(GHO07, ZAINAB, 150000, 1, "TRF-50011"),
+            investment(TIL03, MUSA, 300000, 5, "TRF-60301"),
+            investment(TIL03, BILAAL, 200000, 3, "TRF-60318"),
         ]
     )
 

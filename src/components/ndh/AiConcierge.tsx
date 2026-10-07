@@ -51,7 +51,7 @@ const TOPICS: Topic[] = [
     id: "cycles",
     question: "Which commodities can I back?",
     answer:
-      "Five stock families: catfish aquaculture, broiler poultry, layer poultry, grain and field crops such as maize, soya and rice, and greenhouse horticulture including tomatoes and bell peppers. Each has its own growth telemetry — biomass and FCR for catfish, crate yield for layers, bags harvested for grain.",
+      "Six stock families: catfish and tilapia aquaculture, broiler poultry, layer poultry, grain and field crops such as maize, soya and rice, and greenhouse horticulture including tomatoes and bell peppers. Each has its own growth telemetry — biomass and FCR for catfish and tilapia, crate yield for layers, bags harvested for grain.",
   },
   {
     id: "liquidity",

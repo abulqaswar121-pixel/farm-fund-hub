@@ -6,16 +6,19 @@ import {
   MapPin,
   MessageCircle,
   Phone,
-  Sprout,
 } from "lucide-react";
 
 import { NDH_CONTACT, SUBSIDIARIES } from "@/lib/ndh/ecosystem";
-import { NdhFamilySymbol } from "./NdhFamilySymbol";
+import { BrandLockup } from "./BrandLockup";
 
 /**
  * The shared NDH family footer: ecosystem navigation, legal links, contact
  * details and the status badge strip. Deliberately quiet — the data tables
  * above it are the loudest thing on any AgriCapital page.
+ *
+ * This is also the *only* place on the platform that advertises the rest of
+ * the Najeeb Digital Hub family: sibling businesses and the parent directory
+ * live here and nowhere else, so the header stays entirely about AgriCapital.
  */
 export function FamilyFooter() {
   const year = new Date().getFullYear();
@@ -25,16 +28,10 @@ export function FamilyFooter() {
       <div className="mx-auto max-w-[var(--page)] px-[var(--gutter)] py-12">
         <div className="grid gap-10 lg:grid-cols-[1.4fr_1fr_1fr_1.2fr]">
           <div>
-            <div className="flex items-center gap-2.5">
-              <NdhFamilySymbol SectorIcon={Sprout} size={36} />
-              <span className="pg-brand-lockup">
-                <strong className="text-white">NAJEEB</strong>
-                <small>AgriCapital</small>
-              </span>
-            </div>
+            <BrandLockup size="md" />
             <p className="mt-4 max-w-xs text-sm leading-6 text-slate-400">
-              The multi-commodity agricultural capital ledger of the Najeeb Digital Hub family —
-              every naira, kilogram and equity share accounted for in the open.
+              The farm capital ledger of the Najeeb Digital Hub family — every naira, every kilogram
+              and every member's share accounted for in the open.
             </p>
             <p className="mt-3 text-xs text-slate-500">
               Head office in Sokoto State; farm operations at Tunga Magajiya, Niger State. Built for
@@ -96,10 +93,24 @@ export function FamilyFooter() {
             </ul>
           </nav>
 
-          <nav aria-label="Our businesses">
-            <h2 className="pg-kicker pg-kicker--onDark">NDH businesses</h2>
+          <nav aria-label="Najeeb Digital Hub family">
+            <h2 className="pg-kicker pg-kicker--onDark">NDH family &amp; directory</h2>
+            <p className="mt-3 text-[0.72rem] leading-5 text-slate-500">
+              The rest of the Najeeb Digital Hub lives here — this footer is the only place
+              AgriCapital advertises it.
+            </p>
             <ul className="mt-4 space-y-2.5 text-sm">
-              {SUBSIDIARIES.map((item) =>
+              <li>
+                <a
+                  href={NDH_CONTACT.parent}
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 font-semibold text-signal no-underline hover:text-white"
+                >
+                  ndh.com.ng · parent directory
+                  <ArrowUpRight size={12} aria-hidden="true" />
+                </a>
+              </li>
+              {SUBSIDIARIES.filter((item) => !item.current).map((item) =>
                 item.state === "coming" ? (
                   <li key={item.id} className="text-slate-500">
                     {item.name} <span className="text-[0.65rem]">· soon</span>

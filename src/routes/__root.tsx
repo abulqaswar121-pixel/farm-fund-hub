@@ -15,9 +15,9 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { NdhFamilySymbol } from "../components/ndh/NdhFamilySymbol";
 import { PreviewRibbon } from "../components/ndh/PreviewRibbon";
 
-const SITE_TITLE = "NDH AgriCapital | Multi-Commodity Farm Investment Ledger";
+const SITE_TITLE = "NDH AgriCapital | Farm capital with the books left open";
 const SITE_DESCRIPTION =
-  "Back Nigeria's farm economy with a ledger you can audit. NDH AgriCapital runs catfish, poultry, grain and greenhouse cycles with locked profit splits, a strict settlement waterfall and live verified equity.";
+  "Put money into real Nigerian farm cycles — catfish, tilapia, poultry, grain and greenhouses — and follow what the farm did, what the harvest weighed and who got paid. The rules are fixed before anyone pays in.";
 
 function NotFoundComponent() {
   return (
@@ -94,7 +94,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
     links: [
       { rel: "stylesheet", href: appCss },
-      { rel: "icon", href: "/favicon.png", type: "image/png" },
+      // The Open Gateway master mark wearing the agricultural sprout badge:
+      // the crisp vector first, the PNG as the fallback every browser honours.
+      { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
+      { rel: "icon", href: "/favicon.png", type: "image/png", sizes: "64x64" },
       { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
       // Precision Gateway typography: Space Grotesk display, DM Sans body,
       // Roboto Mono for every figure the platform prints. The faces are served

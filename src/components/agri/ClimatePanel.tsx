@@ -83,7 +83,7 @@ export function ClimatePanel({ logged }: { logged: LoggedWeather[] }) {
 
       {state === "live" && forecast?.current ? (
         <>
-          <div className="grid grid-cols-3 divide-x divide-hairline border-b border-hairline">
+          <div className="grid min-w-0 grid-cols-3 divide-x divide-hairline border-b border-hairline">
             <Metric
               icon={<ThermometerSun size={14} />}
               label="Now"
@@ -178,12 +178,12 @@ export function ClimatePanel({ logged }: { logged: LoggedWeather[] }) {
 
 function Metric({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
-    <div className="px-4 py-3">
-      <p className="pg-kicker flex items-center gap-1.5">
-        <span className="text-signal-deep">{icon}</span>
-        {label}
+    <div className="min-w-0 px-3 py-3 sm:px-4">
+      <p className="pg-kicker flex min-w-0 items-center gap-1.5">
+        <span className="shrink-0 text-signal-deep">{icon}</span>
+        <span className="min-w-0 truncate">{label}</span>
       </p>
-      <p className="fig mt-1 text-[1.05rem] font-semibold text-ink-deep">{value}</p>
+      <p className="fig mt-1 truncate text-[1.05rem] font-semibold text-ink-deep">{value}</p>
     </div>
   );
 }
