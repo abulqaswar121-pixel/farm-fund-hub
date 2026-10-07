@@ -9,10 +9,12 @@
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "build:node": "NITRO_PRESET=node-server vite build"
   },
   "overrides": {
-    "rolldown": "1.2.1"
+    "rolldown": "1.2.1",
+    "h3": "2.0.1-rc.26"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

@@ -30,3 +30,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Python (scripts/preview-ledger)
+__pycache__/
+*.py[cod]
+
+# This project's lockfile is bun.lock. An npm lockfile is a second source of
+# truth for dependency state, so it is never committed.
+package-lock.json
