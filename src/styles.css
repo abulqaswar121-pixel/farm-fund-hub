@@ -4,34 +4,38 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/*
- * Apex Agri-Capital — "well-kept account book" design system.
+/* ============================================================================
+ * NDH AGRICAPITAL — "Precision Gateway" design system
+ * ----------------------------------------------------------------------------
+ * The shared visual language of the Najeeb Digital Hub family, tuned for a
+ * multi-commodity agricultural investment ledger.
  *
- * Every page (old and new) draws from the same ledger tokens:
- *   paper  #FAF7EF   page background
- *   ink    #26323A   body text
- *   leaf   #3F6A4E   credit / positive
- *   rust   #92402F   debit / negative
- *   gold   #B8873D   accent (seals, rules, highlights)
- *   sage   #E9EDDC   ledger-row striping
+ *   navy        #0A1A30   master background, header, portal shell
+ *   porcelain   #F8FAFC   page canvas
+ *   white       #FFFFFF   elevated interactive cards
+ *   cyan        #22D3EE   tech accent, live states, focus rings
+ *   gradient    #22D3EE → #68BAF7 → #A9A1EB   identity moments only
+ *   emerald     #10B981   growth, positive margin, active cycles
+ *   violet/rose #8A2BE2 → #FF007F   highlights, master mark
+ *   amber/coral #F59E0B / #FB7185   operational alerts
  *
- * One bold gesture: the ruled ledger table (`.ledger-table` / `.ruled`).
- * Everything else stays restrained — no gradients, no heavy shadows.
- */
+ * Type: Space Grotesk (display) · DM Sans (body) · Roboto Mono (all figures,
+ * always tabular so money, kilograms and equity percentages align in columns).
+ * ========================================================================== */
 
 @theme inline {
   --font-sans: "DM Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
-  --font-display: Georgia, "Iowan Old Style", "Times New Roman", serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
   --radius-sm: calc(var(--radius) - 3px);
   --radius-md: calc(var(--radius) - 1px);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 3px);
-  --radius-2xl: calc(var(--radius) + 6px);
-  --radius-3xl: calc(var(--radius) + 9px);
-  --radius-4xl: calc(var(--radius) + 12px);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
 
+  /* shadcn bridge */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -66,236 +70,598 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  /* ledger tokens (utilities like bg-paper, text-ink, text-leaf, ...) */
-  --color-paper: var(--paper);
-  --color-paper-deep: var(--paper-deep);
-  --color-ink: var(--ink);
+  /* NDH semantic utilities: bg-navy, text-cyan-signal, border-hairline, ... */
+  --color-navy: var(--navy);
+  --color-navy-deep: var(--navy-deep);
+  --color-navy-soft: var(--navy-soft);
+  --color-navy-line: var(--navy-line);
+  --color-porcelain: var(--porcelain);
+  --color-hairline: var(--hairline);
+  --color-hairline-strong: var(--hairline-strong);
+  --color-signal: var(--signal);
+  --color-signal-deep: var(--signal-deep);
+  --color-iris: var(--iris);
+  --color-mint: var(--mint);
+  --color-mint-deep: var(--mint-deep);
+  --color-mint-soft: var(--mint-soft);
+  --color-violet-ndh: var(--violet-ndh);
+  --color-magenta-ndh: var(--magenta-ndh);
+  --color-amber-alert: var(--amber-alert);
+  --color-coral: var(--coral);
+  --color-ink-deep: var(--ink-deep);
   --color-ink-soft: var(--ink-soft);
-  --color-leaf: var(--leaf);
-  --color-leaf-deep: var(--leaf-deep);
-  --color-rust: var(--rust);
-  --color-gold: var(--gold);
-  --color-sage: var(--sage);
-  --color-sage-deep: var(--sage-deep);
-  --color-rule: var(--rule);
+  --color-ink-mute: var(--ink-mute);
 }
 
 :root {
-  --radius: 0.375rem;
+  --radius: 0.75rem;
 
-  /* ledger palette */
-  --paper: #faf7ef;
-  --paper-deep: #f3eede;
-  --ink: #26323a;
-  --ink-soft: #5b6a63;
-  --leaf: #3f6a4e;
-  --leaf-deep: #33553f;
-  --rust: #92402f;
-  --gold: #b8873d;
-  --sage: #e9eddc;
-  --sage-deep: #dde3cc;
-  --rule: #d9d2bb;
+  /* --- core surface tokens ------------------------------------------- */
+  --navy: #0a1a30;
+  --navy-deep: #061223;
+  --navy-soft: #16294a;
+  --navy-line: #1e3556;
+  --porcelain: #f8fafc;
+  --white: #ffffff;
+  --hairline: #e2e8f0; /* slate-200 */
+  --hairline-strong: #cbd5e1; /* slate-300 */
 
-  /* semantic tokens (map onto ledger palette) */
-  --background: #faf7ef;
-  --foreground: #26323a;
-  --card: #fdfbf4;
-  --card-foreground: #26323a;
-  --popover: #fdfbf4;
-  --popover-foreground: #26323a;
-  --primary: #3f6a4e;
-  --primary-foreground: #faf7ef;
-  --secondary: #e9eddc;
-  --secondary-foreground: #2c3b34;
-  --muted: #f1edde;
-  --muted-foreground: #5b6a63;
-  --accent: #efe6cf;
-  --accent-foreground: #5c4517;
-  --destructive: #92402f;
-  --destructive-foreground: #faf7ef;
-  --border: #d9d2bb;
-  --input: #cfc7ac;
-  --ring: #b8873d;
-  --chart-1: #3f6a4e;
-  --chart-2: #b8873d;
-  --chart-3: #92402f;
-  --chart-4: #7a8b6f;
-  --chart-5: #5b6a63;
+  /* --- ink ------------------------------------------------------------ */
+  --ink-deep: #0f172a;
+  --ink: #0f172a;
+  --ink-soft: #475569;
+  --ink-mute: #64748b;
 
-  /* deep ink-green used for the auth panel and footer ledger cover */
-  --sidebar: #2f463a;
-  --sidebar-foreground: #f3efe2;
-  --sidebar-primary: #b8873d;
-  --sidebar-primary-foreground: #faf7ef;
-  --sidebar-accent: #3a5546;
-  --sidebar-accent-foreground: #f3efe2;
-  --sidebar-border: #47654f;
-  --sidebar-ring: #b8873d;
-}
+  /* --- accents -------------------------------------------------------- */
+  --signal: #22d3ee; /* signal cyan */
+  --signal-deep: #0891b2;
+  --iris: #68baf7; /* gradient midpoint */
+  --lilac: #a9a1eb; /* gradient end */
+  --mint: #10b981; /* agricultural positive */
+  --mint-deep: #059669;
+  --mint-soft: #ecfdf5;
+  --violet-ndh: #8a2be2;
+  --magenta-ndh: #ff007f;
+  --amber-alert: #f59e0b;
+  --coral: #fb7185;
 
-.dark {
-  --background: #20272b;
-  --foreground: #ece7d8;
-  --card: #262e33;
-  --card-foreground: #ece7d8;
-  --popover: #262e33;
-  --popover-foreground: #ece7d8;
-  --primary: #6f9879;
-  --primary-foreground: #20272b;
-  --secondary: #2e3a33;
-  --secondary-foreground: #ece7d8;
-  --muted: #2e352f;
-  --muted-foreground: #aab5a6;
-  --accent: #3a3524;
-  --accent-foreground: #e5cf9c;
-  --destructive: #b25a45;
-  --destructive-foreground: #faf7ef;
-  --border: #3a413b;
-  --input: #4a5249;
-  --ring: #b8873d;
+  /* --- master gradient ------------------------------------------------ */
+  --grad-master: linear-gradient(120deg, #22d3ee 0%, #68baf7 48%, #a9a1eb 100%);
+  --grad-energy: linear-gradient(120deg, #8a2be2 0%, #ff007f 100%);
+  --grad-navy: linear-gradient(165deg, #0a1a30 0%, #061223 100%);
+
+  /* --- elevation ------------------------------------------------------ */
+  --shadow-hairline: 0 1px 2px rgba(10, 26, 48, 0.06);
+  --shadow-soft: 0 4px 16px rgba(10, 26, 48, 0.06);
+  --shadow-lift: 0 14px 34px rgba(10, 26, 48, 0.1);
+  --shadow-deep: 0 28px 64px rgba(10, 26, 48, 0.18);
+  --shadow-glow: 0 8px 26px rgba(34, 211, 238, 0.28);
+
+  /* --- rhythm --------------------------------------------------------- */
+  --gutter: 24px;
+  --page: 1220px;
+
+  /* --- shadcn bridge -------------------------------------------------- */
+  --background: var(--porcelain);
+  --foreground: var(--ink-deep);
+  --card: #ffffff;
+  --card-foreground: var(--ink-deep);
+  --popover: #ffffff;
+  --popover-foreground: var(--ink-deep);
+  --primary: var(--navy);
+  --primary-foreground: #ffffff;
+  --secondary: #f1f5f9;
+  --secondary-foreground: var(--navy);
+  --muted: #f1f5f9;
+  --muted-foreground: var(--ink-mute);
+  --accent: #ecfeff;
+  --accent-foreground: #0e7490;
+  --destructive: #e11d48;
+  --destructive-foreground: #ffffff;
+  --border: var(--hairline);
+  --input: var(--hairline-strong);
+  --ring: var(--signal);
+  --chart-1: #22d3ee;
+  --chart-2: #10b981;
+  --chart-3: #0a1a30;
+  --chart-4: #68baf7;
+  --chart-5: #a9a1eb;
+  --sidebar: var(--navy);
+  --sidebar-foreground: #e2e8f0;
+  --sidebar-primary: var(--signal);
+  --sidebar-primary-foreground: var(--navy);
+  --sidebar-accent: var(--navy-soft);
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: var(--navy-line);
+  --sidebar-ring: var(--signal);
 }
 
 @layer base {
   * {
-    border-color: var(--color-border);
+    border-color: var(--border);
   }
 
   html {
-    background-color: var(--color-paper);
+    background-color: var(--navy);
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
   }
 
   body {
-    background-color: var(--color-background);
-    color: var(--color-foreground);
+    background-color: var(--porcelain);
+    color: var(--ink-deep);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
   }
 
   h1,
   h2,
   h3,
-  h4 {
+  h4,
+  h5 {
     font-family: var(--font-display);
-    font-weight: 600;
+    font-weight: 700;
+    letter-spacing: -0.02em;
   }
 
   ::selection {
-    background: color-mix(in srgb, var(--color-gold) 35%, transparent);
+    background: color-mix(in srgb, var(--signal) 32%, transparent);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--signal);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }
 
 @layer components {
-  /* ---- the one bold gesture: ruled ledger tables ------------------- */
-
-  .ledger-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.8125rem;
-    line-height: 1.45;
-  }
-
-  .ledger-table thead th {
-    text-align: left;
-    font-size: 0.625rem;
-    font-weight: 600;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: #707a6d;
-    padding: 0.55rem 0.75rem;
-    border-bottom: 1.5px solid var(--color-rule);
-    background: transparent;
-    white-space: nowrap;
-  }
-
-  .ledger-table thead th.num,
-  .ledger-table tbody td.num {
-    text-align: right;
-  }
-
-  .ledger-table tbody td {
-    padding: 0.6rem 0.75rem;
-    border-bottom: 1px solid color-mix(in srgb, var(--color-rule) 55%, transparent);
-    vertical-align: middle;
-  }
-
-  /* pale-sage ledger-row striping */
-  .ledger-table tbody tr:nth-child(even) {
-    background: color-mix(in srgb, var(--color-sage) 72%, transparent);
-  }
-
-  .ledger-table tbody tr:hover {
-    background: color-mix(in srgb, var(--color-gold) 9%, transparent);
-  }
-
-  .ledger-table tbody tr:last-child td {
-    border-bottom: 1.5px solid var(--color-rule);
-  }
-
-  .ledger-table .total-row td {
-    font-weight: 600;
-    border-top: 1.5px solid var(--color-rule);
-    border-bottom: 1.5px solid var(--color-rule);
-    background: color-mix(in srgb, var(--color-sage) 55%, transparent);
-  }
-
-  /* ruled account-book paper (hero ledger sheet, section headers) */
-  .ruled {
-    background-image: repeating-linear-gradient(
-      to bottom,
-      color-mix(in srgb, var(--color-gold) 24%, transparent) 0px,
-      color-mix(in srgb, var(--color-gold) 24%, transparent) 1px,
-      transparent 1px,
-      transparent 30px
-    );
-  }
-
-  /* ---- ledger furniture ------------------------------------------- */
-
-  .ledger-panel {
-    background: var(--color-card);
-    border: 1px solid var(--color-rule);
-    border-radius: var(--radius-lg);
-  }
-
-  .ledger-panel--deep {
-    background: var(--color-paper-deep);
-  }
-
-  .ledger-kicker {
-    font-size: 0.625rem;
-    font-weight: 600;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--color-muted-foreground);
-  }
-
-  .ledger-rule-h {
-  }
-
-  /* every money figure: monospace + tabular so columns align */
+  /* ------------------------------------------------------------------ *
+   * 1. Figures — money, kilograms and equity % are ALWAYS monospace and
+   *    tabular so every column in a ledger lines up exactly.
+   * ------------------------------------------------------------------ */
   .fig {
     font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.015em;
     white-space: nowrap;
   }
 
-  .fig--credit {
-    color: var(--color-leaf);
+  .fig--credit,
+  .fig--gain {
+    color: var(--mint-deep);
   }
 
-  .fig--debit {
-    color: var(--color-rust);
+  .fig--debit,
+  .fig--loss {
+    color: #e11d48;
   }
 
-  .fig--gold {
-    color: var(--color-gold);
+  .fig--signal {
+    color: var(--signal-deep);
   }
 
-  /* small print label beside figures */
-  .ledger-caption {
+  .fig--onDark {
+    color: #ffffff;
+  }
+
+  /* ------------------------------------------------------------------ *
+   * 2. The NDH master mark with an optional sector badge.
+   * ------------------------------------------------------------------ */
+  .ndh-family-symbol {
+    position: relative;
+    display: inline-grid;
+    place-items: center;
+    flex: none;
+  }
+
+  .ndh-family-sector {
+    position: absolute;
+    right: -2px;
+    bottom: -2px;
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    background: var(--mint);
+    color: #ffffff;
+    box-shadow: 0 0 0 2px var(--navy);
+  }
+
+  .ndh-family-sector svg {
+    width: 62%;
+    height: 62%;
+  }
+
+  /* ------------------------------------------------------------------ *
+   * 3. Precision header — the gateway bar every NDH surface shares.
+   * ------------------------------------------------------------------ */
+  .pg-header {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    background: color-mix(in srgb, var(--navy) 92%, transparent);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--navy-line);
+    color: #ffffff;
+  }
+
+  .pg-header-inner {
+    max-width: var(--page);
+    margin-inline: auto;
+    padding: 0.7rem var(--gutter);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    justify-content: space-between;
+  }
+
+  .pg-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    min-width: 0;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .pg-brand-lockup {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.05;
+    min-width: 0;
+  }
+
+  .pg-brand-lockup strong {
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+
+  .pg-brand-lockup small {
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--signal) 78%, #ffffff);
+  }
+
+  .pg-nav-link {
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: #cbd5e1;
+    padding: 0.4rem 0.15rem;
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    transition: color 0.16s ease, border-color 0.16s ease;
+  }
+
+  .pg-nav-link:hover {
+    color: #ffffff;
+  }
+
+  .pg-nav-link[aria-current="page"] {
+    color: #ffffff;
+    border-bottom-color: var(--signal);
+  }
+
+  /* gateway menu (the NDH family dropdown) */
+  .pg-menu {
+    position: relative;
+  }
+
+  .pg-menu-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.42rem 0.8rem;
+    border-radius: 999px;
+    border: 1px solid var(--navy-line);
+    background: color-mix(in srgb, #ffffff 6%, transparent);
+    color: #ffffff;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.16s ease, border-color 0.16s ease;
+  }
+
+  .pg-menu-trigger:hover {
+    background: color-mix(in srgb, #ffffff 11%, transparent);
+    border-color: color-mix(in srgb, var(--signal) 50%, var(--navy-line));
+  }
+
+  .pg-menu-panel {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 0.6rem);
+    width: min(92vw, 30rem);
+    background: #ffffff;
+    color: var(--ink-deep);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-deep);
+    overflow: hidden;
+    z-index: 50;
+    animation: pg-rise 0.16s ease-out;
+  }
+
+  @keyframes pg-rise {
+    from {
+      opacity: 0;
+      transform: translateY(-6px);
+    }
+  }
+
+  .pg-menu-head {
+    padding: 0.9rem 1rem 0.75rem;
+    background: var(--navy);
+    color: #ffffff;
+  }
+
+  .pg-menu-head p {
+    font-size: 0.58rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--signal) 75%, #ffffff);
+  }
+
+  .pg-menu-head strong {
+    display: block;
+    margin-top: 0.25rem;
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+  }
+
+  .pg-menu-list {
+    padding: 0.4rem;
+    max-height: min(60vh, 26rem);
+    overflow-y: auto;
+  }
+
+  .pg-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.55rem 0.6rem;
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    color: inherit;
+    transition: background 0.14s ease;
+  }
+
+  .pg-menu-item:hover {
+    background: var(--porcelain);
+  }
+
+  .pg-menu-item[aria-disabled="true"] {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  .pg-menu-icon {
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    flex: none;
+    border-radius: 0.6rem;
+    background: #f1f5f9;
+    color: var(--navy);
+  }
+
+  .pg-menu-icon.tone-emerald {
+    background: var(--mint-soft);
+    color: var(--mint-deep);
+  }
+
+  .pg-menu-icon.tone-cyan {
+    background: #ecfeff;
+    color: var(--signal-deep);
+  }
+
+  .pg-menu-icon.tone-violet {
+    background: #f5f3ff;
+    color: #6d28d9;
+  }
+
+  .pg-menu-icon.tone-amber {
+    background: #fffbeb;
+    color: #b45309;
+  }
+
+  .pg-menu-icon.tone-rose {
+    background: #fff1f2;
+    color: #be123c;
+  }
+
+  .pg-menu-icon.tone-sky {
+    background: #eff6ff;
+    color: #1d4ed8;
+  }
+
+  .pg-menu-copy {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .pg-menu-copy strong {
+    display: block;
+    font-size: 0.83rem;
+    font-weight: 600;
+  }
+
+  .pg-menu-copy small {
+    display: block;
+    font-size: 0.7rem;
+    color: var(--ink-mute);
+    line-height: 1.35;
+  }
+
+  .pg-menu-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+    padding: 0.6rem 0.75rem;
+    border-top: 1px solid var(--hairline);
+    background: var(--porcelain);
+  }
+
+  .pg-menu-foot a {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--signal-deep);
+    text-decoration: none;
+  }
+
+  /* ------------------------------------------------------------------ *
+   * 4. Cards, panels, chips
+   * ------------------------------------------------------------------ */
+  .pg-card {
+    background: #ffffff;
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-hairline);
+  }
+
+  .pg-card--lift {
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  }
+
+  .pg-card--lift:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lift);
+    border-color: var(--hairline-strong);
+  }
+
+  .pg-panel-dark {
+    background: var(--grad-navy);
+    border: 1px solid var(--navy-line);
+    border-radius: var(--radius-2xl);
+    color: #ffffff;
+  }
+
+  .pg-kicker {
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.19em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+  }
+
+  .pg-kicker--onDark {
+    color: color-mix(in srgb, var(--signal) 72%, #ffffff);
+  }
+
+  .pg-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.16rem 0.55rem;
+    border-radius: 999px;
+    border: 1px solid var(--hairline);
+    background: #ffffff;
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    color: var(--ink-soft);
+    white-space: nowrap;
+  }
+
+  .pg-chip--signal {
+    border-color: color-mix(in srgb, var(--signal) 45%, var(--hairline));
+    background: #ecfeff;
+    color: #0e7490;
+  }
+
+  .pg-chip--mint {
+    border-color: color-mix(in srgb, var(--mint) 40%, var(--hairline));
+    background: var(--mint-soft);
+    color: var(--mint-deep);
+  }
+
+  .pg-chip--violet {
+    border-color: #ddd6fe;
+    background: #f5f3ff;
+    color: #6d28d9;
+  }
+
+  .pg-chip--amber {
+    border-color: #fde68a;
+    background: #fffbeb;
+    color: #b45309;
+  }
+
+  .pg-chip--rose {
+    border-color: #fecdd3;
+    background: #fff1f2;
+    color: #be123c;
+  }
+
+  .pg-chip--locked {
+    border-color: color-mix(in srgb, var(--navy) 22%, var(--hairline));
+    background: #f1f5f9;
+    color: var(--navy);
+    font-family: var(--font-mono);
+    letter-spacing: 0;
+  }
+
+  /* ------------------------------------------------------------------ *
+   * 5. Tables — the ledger grid. Tabular figures, hairline rules.
+   * ------------------------------------------------------------------ */
+  .pg-table {
+    width: 100%;
+    border-collapse: collapse;
     font-size: 0.8125rem;
-    color: var(--color-muted-foreground);
+  }
+
+  .pg-table thead th {
+    text-align: left;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    padding: 0.6rem 0.8rem;
+    border-bottom: 1px solid var(--hairline);
+    background: var(--porcelain);
+    white-space: nowrap;
+  }
+
+  .pg-table tbody td {
+    padding: 0.65rem 0.8rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--hairline) 70%, transparent);
+    vertical-align: middle;
+  }
+
+  .pg-table tbody tr:hover {
+    background: color-mix(in srgb, var(--signal) 5%, transparent);
+  }
+
+  .pg-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  .pg-table .num {
+    text-align: right;
+  }
+
+  .pg-table .total-row td {
+    font-weight: 700;
+    background: var(--porcelain);
+    border-top: 1px solid var(--hairline-strong);
   }
 
   .table-scroll {
@@ -303,97 +669,256 @@
     -webkit-overflow-scrolling: touch;
   }
 
-  /* inline paystack / status pill */
-  .ledger-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-    padding: 0.1rem 0.5rem;
+  /* ------------------------------------------------------------------ *
+   * 6. Progress / funding meters
+   * ------------------------------------------------------------------ */
+  .pg-meter {
+    height: 0.5rem;
     border-radius: 999px;
-    border: 1px solid var(--color-rule);
-    font-size: 0.6875rem;
+    background: #e2e8f0;
+    overflow: hidden;
+  }
+
+  .pg-meter > span {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background: var(--grad-master);
+    transition: width 0.5s ease;
+  }
+
+  .pg-meter--mint > span {
+    background: linear-gradient(90deg, var(--mint) 0%, var(--mint-deep) 100%);
+  }
+
+  /* ------------------------------------------------------------------ *
+   * 7. Stage rail — the 6-stage cycle lifecycle
+   * ------------------------------------------------------------------ */
+  .pg-stage-rail {
+    display: flex;
+    gap: 0.35rem;
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+  }
+
+  .pg-stage {
+    flex: 1 1 0;
+    min-width: 7rem;
+    padding: 0.55rem 0.6rem;
+    border-top: 3px solid var(--hairline);
+    background: transparent;
+    text-align: left;
+  }
+
+  .pg-stage span {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    color: var(--ink-mute);
+  }
+
+  .pg-stage strong {
+    display: block;
+    margin-top: 0.15rem;
+    font-size: 0.72rem;
     font-weight: 600;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    background: var(--color-card);
-    color: var(--color-muted-foreground);
-    white-space: nowrap;
+    color: var(--ink-mute);
   }
 
-  .ledger-pill--success {
-    color: var(--color-leaf);
-    border-color: color-mix(in srgb, var(--color-leaf) 45%, var(--color-rule));
-    background: color-mix(in srgb, var(--color-leaf) 8%, var(--color-card));
+  .pg-stage[data-state="done"] {
+    border-top-color: var(--mint);
   }
 
-  .ledger-pill--pending {
-    color: #7a5a1e;
-    border-color: color-mix(in srgb, var(--color-gold) 55%, var(--color-rule));
-    background: color-mix(in srgb, var(--color-gold) 10%, var(--color-card));
+  .pg-stage[data-state="done"] strong {
+    color: var(--ink-deep);
   }
 
-  .ledger-pill--failed {
-    color: var(--color-rust);
-    border-color: color-mix(in srgb, var(--color-rust) 45%, var(--color-rule));
-    background: color-mix(in srgb, var(--color-rust) 7%, var(--color-card));
+  .pg-stage[data-state="active"] {
+    border-top-color: var(--signal);
+    background: #ecfeff;
+    border-radius: 0 var(--radius-sm) 0 0;
   }
 
-  /* gold seal — used sparingly for verified / closed records */
-  .ledger-seal {
+  .pg-stage[data-state="active"] strong {
+    color: #0e7490;
+  }
+
+  /* ------------------------------------------------------------------ *
+   * 8. Portal shell
+   * ------------------------------------------------------------------ */
+  .pg-portal-tabs {
+    display: flex;
+    gap: 0.2rem;
+    overflow-x: auto;
+  }
+
+  .pg-portal-tab {
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
-    padding: 0.2rem 0.65rem;
-    border: 1.5px solid var(--color-gold);
+    padding: 0.5rem 0.85rem;
     border-radius: 999px;
-    color: #7a5a1e;
-    font-size: 0.625rem;
-    font-weight: 700;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-  }
-
-  .ledger-link {
-    color: var(--color-leaf);
+    font-size: 0.8rem;
     font-weight: 600;
-    text-decoration: underline;
-    text-underline-offset: 3px;
-    text-decoration-color: color-mix(in srgb, var(--color-leaf) 45%, transparent);
+    color: #cbd5e1;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background 0.14s ease, color 0.14s ease;
   }
 
-  .ledger-link:hover {
-    text-decoration-color: var(--color-leaf);
+  .pg-portal-tab:hover {
+    background: color-mix(in srgb, #ffffff 9%, transparent);
+    color: #ffffff;
   }
 
-  .ledger-tabs {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.25rem;
-    border-bottom: 1.5px solid var(--color-rule);
+  .pg-portal-tab[aria-current="page"] {
+    background: var(--grad-master);
+    color: var(--navy-deep);
   }
 
-  .ledger-tab {
-    padding: 0.55rem 0.9rem;
-    font-size: 0.8125rem;
+  /* ------------------------------------------------------------------ *
+   * 9. Buttons
+   * ------------------------------------------------------------------ */
+  .pg-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    height: 2.6rem;
+    padding-inline: 1.1rem;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    font-size: 0.84rem;
     font-weight: 600;
-    letter-spacing: 0.02em;
-    color: var(--color-muted-foreground);
-    border-bottom: 2px solid transparent;
-    margin-bottom: -1.5px;
     cursor: pointer;
+    transition: transform 0.14s ease, box-shadow 0.14s ease, background 0.14s ease;
   }
 
-  .ledger-tab:hover {
-    color: var(--color-foreground);
+  .pg-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
   }
 
-  .ledger-tab[aria-selected="true"] {
-    color: var(--color-leaf);
-    border-bottom-color: var(--color-leaf);
+  .pg-btn--primary {
+    background: var(--navy);
+    color: #ffffff;
   }
 
-  .ledger-input {
-    background: var(--color-card) !important;
-    box-shadow: none !important;
+  .pg-btn--primary:hover:not(:disabled) {
+    background: var(--navy-soft);
+    box-shadow: var(--shadow-soft);
+  }
+
+  .pg-btn--signal {
+    background: var(--grad-master);
+    color: var(--navy-deep);
+  }
+
+  .pg-btn--signal:hover:not(:disabled) {
+    box-shadow: var(--shadow-glow);
+  }
+
+  .pg-btn--mint {
+    background: linear-gradient(120deg, var(--mint) 0%, var(--mint-deep) 100%);
+    color: #ffffff;
+  }
+
+  .pg-btn--ghost {
+    background: #ffffff;
+    border-color: var(--hairline-strong);
+    color: var(--ink-deep);
+  }
+
+  .pg-btn--ghost:hover:not(:disabled) {
+    background: var(--porcelain);
+  }
+
+  .pg-btn--onDark {
+    background: color-mix(in srgb, #ffffff 10%, transparent);
+    border-color: var(--navy-line);
+    color: #ffffff;
+  }
+
+  .pg-btn--onDark:hover:not(:disabled) {
+    background: color-mix(in srgb, #ffffff 17%, transparent);
+  }
+
+  /* ------------------------------------------------------------------ *
+   * 10. Inputs
+   * ------------------------------------------------------------------ */
+  .pg-input {
+    width: 100%;
+    height: 2.75rem;
+    padding-inline: 0.9rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--hairline-strong);
+    background: #ffffff;
+    color: var(--ink-deep);
+    font-size: 0.875rem;
+  }
+
+  .pg-input:focus-visible {
+    border-color: var(--signal);
+    outline: 2px solid color-mix(in srgb, var(--signal) 35%, transparent);
+    outline-offset: 1px;
+  }
+
+  .pg-label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--ink-soft);
+    margin-bottom: 0.35rem;
+  }
+
+  /* ------------------------------------------------------------------ *
+   * 11. Motion — faint node texture for large dark feature areas only.
+   * ------------------------------------------------------------------ */
+  .pg-node-texture {
+    background-image:
+      radial-gradient(circle at 12% 22%, rgba(34, 211, 238, 0.16) 0 1.5px, transparent 1.5px),
+      radial-gradient(circle at 78% 68%, rgba(169, 161, 235, 0.14) 0 1.5px, transparent 1.5px),
+      radial-gradient(circle at 46% 88%, rgba(34, 211, 238, 0.1) 0 1.5px, transparent 1.5px);
+    background-size: 220px 220px, 300px 300px, 260px 260px;
+  }
+
+  .pg-gradient-text {
+    background: var(--grad-master);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .pg-contour {
+    background-image: repeating-linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--signal) 8%, transparent) 0 1px,
+      transparent 1px 34px
+    );
+  }
+
+  @keyframes pg-pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.35;
+    }
+  }
+
+  .pg-live-dot {
+    width: 0.45rem;
+    height: 0.45rem;
+    border-radius: 999px;
+    background: var(--mint);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--mint) 24%, transparent);
+    animation: pg-pulse 2.4s ease-in-out infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pg-live-dot {
+      animation: none;
+    }
   }
 }

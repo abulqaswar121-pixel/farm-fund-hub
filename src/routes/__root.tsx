@@ -8,27 +8,33 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
+import { Sprout } from "lucide-react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { NdhFamilySymbol } from "../components/ndh/NdhFamilySymbol";
+
+const SITE_TITLE = "NDH AgriCapital | Multi-Commodity Farm Investment Ledger";
+const SITE_DESCRIPTION =
+  "Back Nigeria's farm economy with a ledger you can audit. NDH AgriCapital runs catfish, poultry, grain and greenhouse cycles with locked profit splits, a strict settlement waterfall and live verified equity.";
 
 function NotFoundComponent() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-7xl font-bold text-foreground">404</h1>
-        <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          The page you're looking for doesn't exist or has been moved.
-        </p>
-        <div className="mt-6">
-          <Link
-            to="/"
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            Go home
-          </Link>
-        </div>
+    <div className="flex min-h-screen flex-col items-center justify-center bg-porcelain px-6 text-center">
+      <NdhFamilySymbol SectorIcon={Sprout} size={54} />
+      <p className="fig mt-6 text-[3rem] font-bold leading-none text-navy">404</p>
+      <h1 className="mt-3 text-xl text-ink-deep">That page is not on the farm map</h1>
+      <p className="mt-2 max-w-md text-sm leading-6 text-ink-soft">
+        The link may be old, or the cycle it pointed at may have been renamed. The marketplace is
+        always the best place to restart.
+      </p>
+      <div className="mt-6 flex flex-wrap justify-center gap-2">
+        <Link to="/" className="pg-btn pg-btn--primary">
+          Go to the marketplace
+        </Link>
+        <Link to="/cycles" className="pg-btn pg-btn--ghost">
+          Browse open cycles
+        </Link>
       </div>
     </div>
   );
@@ -42,31 +48,26 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   }, [error]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          This page didn't load
-        </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Something went wrong on our end. You can try refreshing or head back home.
-        </p>
-        <div className="mt-6 flex flex-wrap justify-center gap-2">
-          <button
-            onClick={() => {
-              router.invalidate();
-              reset();
-            }}
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            Try again
-          </button>
-          <a
-            href="/"
-            className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
-          >
-            Go home
-          </a>
-        </div>
+    <div className="flex min-h-screen flex-col items-center justify-center bg-porcelain px-6 text-center">
+      <NdhFamilySymbol SectorIcon={Sprout} size={54} />
+      <h1 className="mt-6 text-xl text-ink-deep">This page did not load</h1>
+      <p className="mt-2 max-w-md text-sm leading-6 text-ink-soft">
+        Something failed on our side — no ledger entry was affected. Try again, or head back to the
+        marketplace.
+      </p>
+      <div className="mt-6 flex flex-wrap justify-center gap-2">
+        <button
+          onClick={() => {
+            router.invalidate();
+            reset();
+          }}
+          className="pg-btn pg-btn--primary"
+        >
+          Try again
+        </button>
+        <a href="/" className="pg-btn pg-btn--ghost">
+          Go home
+        </a>
       </div>
     </div>
   );
@@ -77,24 +78,34 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-       { title: "Apex Agri-Capital | Shared Farm Ledger" },
-       { name: "description", content: "A secure shared ledger for Apex Agri-Capital's agriculture investment cooperative." },
-       { name: "author", content: "Apex Agri-Capital" },
-       { property: "og:title", content: "Apex Agri-Capital | Shared Farm Ledger" },
-       { property: "og:description", content: "A secure shared ledger for an agriculture investment cooperative." },
+      { title: SITE_TITLE },
+      { name: "description", content: SITE_DESCRIPTION },
+      { name: "author", content: "Najeeb Digital Hub" },
+      { name: "theme-color", content: "#0A1A30" },
+      { property: "og:title", content: SITE_TITLE },
+      { property: "og:description", content: SITE_DESCRIPTION },
       { property: "og:type", content: "website" },
+      { property: "og:site_name", content: "NDH AgriCapital" },
+      { property: "og:image", content: "/og-agricapital.png" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: SITE_TITLE },
+      { name: "twitter:description", content: SITE_DESCRIPTION },
     ],
     links: [
+      { rel: "stylesheet", href: appCss },
+      { rel: "icon", href: "/favicon.png", type: "image/png" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      // Precision Gateway typography: Space Grotesk display, DM Sans body,
+      // Roboto Mono for every figure the platform prints.
       {
         rel: "stylesheet",
-        href: appCss,
+        href: "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Roboto+Mono:wght@400;500;600&display=swap",
       },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
-       { rel: "preconnect", href: "https://fonts.googleapis.com" },
-       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-       { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" },
+    ],
+    scripts: [
+      { src: "https://js.paystack.co/v1/inline.js", async: true },
     ],
   }),
   shellComponent: RootShell,
@@ -109,7 +120,7 @@ function RootShell({ children }: { children: ReactNode }) {
       <head>
         <HeadContent />
       </head>
-      <body>
+      <body className="bg-porcelain">
         {children}
         <Scripts />
       </body>

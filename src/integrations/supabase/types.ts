@@ -14,245 +14,888 @@ export type Database = {
   }
   public: {
     Tables: {
-      contributions: {
+      cycle_investments: {
         Row: {
-          amount: number
-          category: string
-          created_at: string
-          date: string
           id: string
+          cycle_id: string
           member_id: string
-          note: string | null
-          payment_method: Database["public"]["Enums"]["payment_method"]
-          payment_status: Database["public"]["Enums"]["payment_status"]
+          amount: number
+          date: string
+          method: Database["public"]["Enums"]["investment_method"]
+          status: Database["public"]["Enums"]["investment_status"]
           paystack_reference: string | null
-          recorded_by: string | null
-          updated_at: string
+          bank_reference: string | null
+          receipt_number: string | null
           verified_at: string | null
-        }
-        Insert: {
-          amount: number
-          category: string
-          created_at?: string
-          date?: string
-          id?: string
-          member_id: string
-          note?: string | null
-          payment_method: Database["public"]["Enums"]["payment_method"]
-          payment_status?: Database["public"]["Enums"]["payment_status"]
-          paystack_reference?: string | null
-          recorded_by?: string | null
-          updated_at?: string
-          verified_at?: string | null
-        }
-        Update: {
-          amount?: number
-          category?: string
-          created_at?: string
-          date?: string
-          id?: string
-          member_id?: string
-          note?: string | null
-          payment_method?: Database["public"]["Enums"]["payment_method"]
-          payment_status?: Database["public"]["Enums"]["payment_status"]
-          paystack_reference?: string | null
-          recorded_by?: string | null
-          updated_at?: string
-          verified_at?: string | null
-        }
-        Relationships: []
-      }
-      expenses: {
-        Row: {
-          amount: number
-          category: string
-          created_at: string
-          date: string
-          id: string
+          verified_by: string | null
+          rollover_source_cycle_id: string | null
+          transferred_out: number
+          transfer_id: string | null
           note: string | null
-          recorded_by: string
+          recorded_by: string | null
+          created_at: string
           updated_at: string
         }
         Insert: {
-          amount: number
-          category: string
-          created_at?: string
-          date?: string
           id?: string
+          cycle_id: string
+          member_id: string
+          amount: number
+          date?: string
+          method: Database["public"]["Enums"]["investment_method"]
+          status?: Database["public"]["Enums"]["investment_status"]
+          paystack_reference?: string | null
+          bank_reference?: string | null
+          receipt_number?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
+          rollover_source_cycle_id?: string | null
+          transferred_out?: number
+          transfer_id?: string | null
           note?: string | null
-          recorded_by: string
+          recorded_by?: string | null
+          created_at?: string
           updated_at?: string
         }
         Update: {
-          amount?: number
-          category?: string
-          created_at?: string
-          date?: string
           id?: string
+          cycle_id?: string
+          member_id?: string
+          amount?: number
+          date?: string
+          method?: Database["public"]["Enums"]["investment_method"]
+          status?: Database["public"]["Enums"]["investment_status"]
+          paystack_reference?: string | null
+          bank_reference?: string | null
+          receipt_number?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
+          rollover_source_cycle_id?: string | null
+          transferred_out?: number
+          transfer_id?: string | null
           note?: string | null
+          recorded_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      },
+      farm_cycles: {
+        Row: {
+          id: string
+          code: string
+          commodity: Database["public"]["Enums"]["commodity_type"]
+          name: string
+          summary: string | null
+          farm_site: string
+          farm_latitude: number | null
+          farm_longitude: number | null
+          target_capital: number
+          minimum_ticket: number
+          projected_revenue: number
+          projected_liabilities: number
+          profit_investor_percent: number
+          profit_operator_percent: number
+          reserve_percent: number
+          cycle_weeks: number
+          funding_opens_on: string
+          funding_closes_on: string | null
+          stocking_on: string | null
+          projected_harvest_on: string | null
+          status: Database["public"]["Enums"]["cycle_status"]
+          current_stage: Database["public"]["Enums"]["stage_id"]
+          locked_at: string | null
+          created_by: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          code: string
+          commodity: Database["public"]["Enums"]["commodity_type"]
+          name: string
+          summary?: string | null
+          farm_site?: string
+          farm_latitude?: number | null
+          farm_longitude?: number | null
+          target_capital: number
+          minimum_ticket?: number
+          projected_revenue?: number
+          projected_liabilities?: number
+          profit_investor_percent?: number
+          profit_operator_percent?: number
+          reserve_percent?: number
+          cycle_weeks?: number
+          funding_opens_on?: string
+          funding_closes_on?: string | null
+          stocking_on?: string | null
+          projected_harvest_on?: string | null
+          status?: Database["public"]["Enums"]["cycle_status"]
+          current_stage?: Database["public"]["Enums"]["stage_id"]
+          locked_at?: string | null
+          created_by: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          code?: string
+          commodity?: Database["public"]["Enums"]["commodity_type"]
+          name?: string
+          summary?: string | null
+          farm_site?: string
+          farm_latitude?: number | null
+          farm_longitude?: number | null
+          target_capital?: number
+          minimum_ticket?: number
+          projected_revenue?: number
+          projected_liabilities?: number
+          profit_investor_percent?: number
+          profit_operator_percent?: number
+          reserve_percent?: number
+          cycle_weeks?: number
+          funding_opens_on?: string
+          funding_closes_on?: string | null
+          stocking_on?: string | null
+          projected_harvest_on?: string | null
+          status?: Database["public"]["Enums"]["cycle_status"]
+          current_stage?: Database["public"]["Enums"]["stage_id"]
+          locked_at?: string | null
+          created_by?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      },
+      farm_expenses: {
+        Row: {
+          id: string
+          cycle_id: string
+          amount: number
+          date: string
+          category: string
+          vendor: string | null
+          note: string | null
+          is_payable: boolean
+          settled_on: string | null
+          receipt_url: string | null
+          recorded_by: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          cycle_id: string
+          amount: number
+          date?: string
+          category: string
+          vendor?: string | null
+          note?: string | null
+          is_payable?: boolean
+          settled_on?: string | null
+          receipt_url?: string | null
+          recorded_by: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          cycle_id?: string
+          amount?: number
+          date?: string
+          category?: string
+          vendor?: string | null
+          note?: string | null
+          is_payable?: boolean
+          settled_on?: string | null
+          receipt_url?: string | null
           recorded_by?: string
+          created_at?: string
           updated_at?: string
         }
         Relationships: []
-      }
-      harvest_cycles: {
+      },
+      farm_visits: {
         Row: {
-          created_at: string
-          date: string
           id: string
-          note: string | null
-          revenue: number
+          cycle_id: string | null
+          member_id: string
+          visit_date: string
+          slot: string
+          guests: number
+          status: Database["public"]["Enums"]["visit_status"]
+          member_note: string | null
+          decision_note: string | null
+          decided_by: string | null
+          decided_at: string | null
+          created_at: string
           updated_at: string
         }
         Insert: {
-          created_at?: string
-          date?: string
           id?: string
-          note?: string | null
-          revenue?: number
+          cycle_id?: string | null
+          member_id: string
+          visit_date: string
+          slot?: string
+          guests?: number
+          status?: Database["public"]["Enums"]["visit_status"]
+          member_note?: string | null
+          decision_note?: string | null
+          decided_by?: string | null
+          decided_at?: string | null
+          created_at?: string
           updated_at?: string
         }
         Update: {
-          created_at?: string
-          date?: string
           id?: string
-          note?: string | null
-          revenue?: number
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      harvest_payouts: {
-        Row: {
-          amount: number
-          created_at: string
-          harvest_cycle_id: string
-          id: string
-          member_id: string
-          percent: number
-          updated_at: string
-        }
-        Insert: {
-          amount: number
-          created_at?: string
-          harvest_cycle_id: string
-          id?: string
-          member_id: string
-          percent: number
-          updated_at?: string
-        }
-        Update: {
-          amount?: number
-          created_at?: string
-          harvest_cycle_id?: string
-          id?: string
+          cycle_id?: string | null
           member_id?: string
-          percent?: number
+          visit_date?: string
+          slot?: string
+          guests?: number
+          status?: Database["public"]["Enums"]["visit_status"]
+          member_note?: string | null
+          decision_note?: string | null
+          decided_by?: string | null
+          decided_at?: string | null
+          created_at?: string
           updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "harvest_payouts_harvest_cycle_id_fkey"
-            columns: ["harvest_cycle_id"]
-            isOneToOne: false
-            referencedRelation: "harvest_cycles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
+        Relationships: []
+      },
+      harvest_records: {
+        Row: {
+          id: string
+          cycle_id: string
+          harvest_date: string
+          total_weight_kg: number | null
+          total_count: number | null
+          scale_ticket_ref: string | null
+          buyer: string | null
+          buyer_note: string | null
+          gross_revenue: number
+          revenue_received_on: string | null
+          receipt_url: string | null
+          recorded_by: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          cycle_id: string
+          harvest_date?: string
+          total_weight_kg?: number | null
+          total_count?: number | null
+          scale_ticket_ref?: string | null
+          buyer?: string | null
+          buyer_note?: string | null
+          gross_revenue?: number
+          revenue_received_on?: string | null
+          receipt_url?: string | null
+          recorded_by: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          cycle_id?: string
+          harvest_date?: string
+          total_weight_kg?: number | null
+          total_count?: number | null
+          scale_ticket_ref?: string | null
+          buyer?: string | null
+          buyer_note?: string | null
+          gross_revenue?: number
+          revenue_received_on?: string | null
+          receipt_url?: string | null
+          recorded_by?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      },
+      incidents: {
+        Row: {
+          id: string
+          cycle_id: string | null
+          title: string
+          category: string
+          severity: Database["public"]["Enums"]["incident_severity"]
+          status: Database["public"]["Enums"]["incident_status"]
+          occurred_on: string
+          description: string
+          estimated_impact: number | null
+          insurance_claim_ref: string | null
+          photo_url: string | null
+          resolution_note: string | null
+          resolved_on: string | null
+          logged_by: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          cycle_id?: string | null
+          title: string
+          category: string
+          severity?: Database["public"]["Enums"]["incident_severity"]
+          status?: Database["public"]["Enums"]["incident_status"]
+          occurred_on?: string
+          description: string
+          estimated_impact?: number | null
+          insurance_claim_ref?: string | null
+          photo_url?: string | null
+          resolution_note?: string | null
+          resolved_on?: string | null
+          logged_by: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          cycle_id?: string | null
+          title?: string
+          category?: string
+          severity?: Database["public"]["Enums"]["incident_severity"]
+          status?: Database["public"]["Enums"]["incident_status"]
+          occurred_on?: string
+          description?: string
+          estimated_impact?: number | null
+          insurance_claim_ref?: string | null
+          photo_url?: string | null
+          resolution_note?: string | null
+          resolved_on?: string | null
+          logged_by?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      },
+      operational_logs: {
+        Row: {
+          id: string
+          cycle_id: string
+          log_type: Database["public"]["Enums"]["log_type"]
+          log_date: string
+          feed_kg: number | null
+          feed_bags: number | null
+          mortality_count: number | null
+          mortality_reason: string | null
+          population_count: number | null
+          sample_count: number | null
+          sample_avg_weight_g: number | null
+          biomass_kg: number | null
+          crates_collected: number | null
+          bags_harvested: number | null
+          area_sqm: number | null
+          medication: string | null
+          notes: string | null
+          public_summary: string | null
+          photo_url: string | null
+          recorded_by: string
+          review_status: Database["public"]["Enums"]["review_status"]
+          reviewed_by: string | null
+          reviewed_at: string | null
+          review_note: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          cycle_id: string
+          log_type: Database["public"]["Enums"]["log_type"]
+          log_date?: string
+          feed_kg?: number | null
+          feed_bags?: number | null
+          mortality_count?: number | null
+          mortality_reason?: string | null
+          population_count?: number | null
+          sample_count?: number | null
+          sample_avg_weight_g?: number | null
+          biomass_kg?: number | null
+          crates_collected?: number | null
+          bags_harvested?: number | null
+          area_sqm?: number | null
+          medication?: string | null
+          notes?: string | null
+          public_summary?: string | null
+          photo_url?: string | null
+          recorded_by: string
+          review_status?: Database["public"]["Enums"]["review_status"]
+          reviewed_by?: string | null
+          reviewed_at?: string | null
+          review_note?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          cycle_id?: string
+          log_type?: Database["public"]["Enums"]["log_type"]
+          log_date?: string
+          feed_kg?: number | null
+          feed_bags?: number | null
+          mortality_count?: number | null
+          mortality_reason?: string | null
+          population_count?: number | null
+          sample_count?: number | null
+          sample_avg_weight_g?: number | null
+          biomass_kg?: number | null
+          crates_collected?: number | null
+          bags_harvested?: number | null
+          area_sqm?: number | null
+          medication?: string | null
+          notes?: string | null
+          public_summary?: string | null
+          photo_url?: string | null
+          recorded_by?: string
+          review_status?: Database["public"]["Enums"]["review_status"]
+          reviewed_by?: string | null
+          reviewed_at?: string | null
+          review_note?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      },
       profiles: {
         Row: {
-          created_at: string
+          id: string
           full_name: string | null
-          id: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          full_name?: string | null
-          id: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          full_name?: string | null
-          id?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      stock_logs: {
-        Row: {
-          count: number
           created_at: string
-          date: string
-          id: string
-          note: string | null
-          recorded_by: string
           updated_at: string
         }
         Insert: {
-          count: number
+          id: string
+          full_name?: string | null
           created_at?: string
-          date?: string
-          id?: string
-          note?: string | null
-          recorded_by: string
           updated_at?: string
         }
         Update: {
-          count?: number
-          created_at?: string
-          date?: string
           id?: string
-          note?: string | null
-          recorded_by?: string
+          full_name?: string | null
+          created_at?: string
           updated_at?: string
         }
         Relationships: []
-      }
+      },
+      rollover_instructions: {
+        Row: {
+          id: string
+          member_id: string
+          mode: Database["public"]["Enums"]["rollover_mode"]
+          preferred_cycle_id: string | null
+          note: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          member_id: string
+          mode?: Database["public"]["Enums"]["rollover_mode"]
+          preferred_cycle_id?: string | null
+          note?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          member_id?: string
+          mode?: Database["public"]["Enums"]["rollover_mode"]
+          preferred_cycle_id?: string | null
+          note?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      },
+      share_transfers: {
+        Row: {
+          id: string
+          cycle_id: string
+          seller_id: string
+          buyer_id: string | null
+          capital_amount: number
+          asking_price: number
+          status: Database["public"]["Enums"]["transfer_status"]
+          reason: string | null
+          admin_note: string | null
+          settled_at: string | null
+          settled_by: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          cycle_id: string
+          seller_id: string
+          buyer_id?: string | null
+          capital_amount: number
+          asking_price: number
+          status?: Database["public"]["Enums"]["transfer_status"]
+          reason?: string | null
+          admin_note?: string | null
+          settled_at?: string | null
+          settled_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          cycle_id?: string
+          seller_id?: string
+          buyer_id?: string | null
+          capital_amount?: number
+          asking_price?: number
+          status?: Database["public"]["Enums"]["transfer_status"]
+          reason?: string | null
+          admin_note?: string | null
+          settled_at?: string | null
+          settled_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      },
       user_roles: {
         Row: {
-          created_at: string
           id: string
-          role: Database["public"]["Enums"]["app_role"]
           user_id: string
+          role: Database["public"]["Enums"]["app_role"]
+          created_at: string
         }
         Insert: {
-          created_at?: string
           id?: string
-          role: Database["public"]["Enums"]["app_role"]
           user_id: string
+          role: Database["public"]["Enums"]["app_role"]
+          created_at?: string
         }
         Update: {
-          created_at?: string
           id?: string
-          role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          created_at?: string
         }
         Relationships: []
-      }
+      },
+      waterfall_distributions: {
+        Row: {
+          id: string
+          cycle_id: string
+          status: Database["public"]["Enums"]["distribution_status"]
+          gross_revenue: number
+          capital_raised: number
+          operational_liabilities: number
+          profit_investor_percent: number
+          profit_operator_percent: number
+          reserve_percent: number
+          liabilities_paid: number
+          principal_returned: number
+          reserve_set_aside: number
+          net_profit: number
+          investor_profit_pool: number
+          operator_fee: number
+          total_paid_out: number
+          principal_at_risk: boolean
+          note: string | null
+          run_by: string
+          executed_at: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          cycle_id: string
+          status?: Database["public"]["Enums"]["distribution_status"]
+          gross_revenue?: number
+          capital_raised?: number
+          operational_liabilities?: number
+          profit_investor_percent: number
+          profit_operator_percent: number
+          reserve_percent: number
+          liabilities_paid?: number
+          principal_returned?: number
+          reserve_set_aside?: number
+          net_profit?: number
+          investor_profit_pool?: number
+          operator_fee?: number
+          total_paid_out?: number
+          principal_at_risk?: boolean
+          note?: string | null
+          run_by: string
+          executed_at?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          cycle_id?: string
+          status?: Database["public"]["Enums"]["distribution_status"]
+          gross_revenue?: number
+          capital_raised?: number
+          operational_liabilities?: number
+          profit_investor_percent?: number
+          profit_operator_percent?: number
+          reserve_percent?: number
+          liabilities_paid?: number
+          principal_returned?: number
+          reserve_set_aside?: number
+          net_profit?: number
+          investor_profit_pool?: number
+          operator_fee?: number
+          total_paid_out?: number
+          principal_at_risk?: boolean
+          note?: string | null
+          run_by?: string
+          executed_at?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      },
+      waterfall_lines: {
+        Row: {
+          id: string
+          distribution_id: string
+          cycle_id: string
+          member_id: string
+          capital: number
+          equity_percent: number
+          principal_amount: number
+          profit_amount: number
+          total_amount: number
+          payout_status: Database["public"]["Enums"]["payout_status"]
+          payout_reference: string | null
+          paid_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          distribution_id: string
+          cycle_id: string
+          member_id: string
+          capital?: number
+          equity_percent?: number
+          principal_amount?: number
+          profit_amount?: number
+          total_amount?: number
+          payout_status?: Database["public"]["Enums"]["payout_status"]
+          payout_reference?: string | null
+          paid_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          distribution_id?: string
+          cycle_id?: string
+          member_id?: string
+          capital?: number
+          equity_percent?: number
+          principal_amount?: number
+          profit_amount?: number
+          total_amount?: number
+          payout_status?: Database["public"]["Enums"]["payout_status"]
+          payout_reference?: string | null
+          paid_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      },
+      weather_snapshots: {
+        Row: {
+          id: string
+          cycle_id: string | null
+          captured_on: string
+          rainfall_mm: number | null
+          temp_min_c: number | null
+          temp_max_c: number | null
+          humidity_percent: number | null
+          source: string
+          note: string | null
+          recorded_by: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          cycle_id?: string | null
+          captured_on?: string
+          rainfall_mm?: number | null
+          temp_min_c?: number | null
+          temp_max_c?: number | null
+          humidity_percent?: number | null
+          source?: string
+          note?: string | null
+          recorded_by?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          cycle_id?: string | null
+          captured_on?: string
+          rainfall_mm?: number | null
+          temp_min_c?: number | null
+          temp_max_c?: number | null
+          humidity_percent?: number | null
+          source?: string
+          note?: string | null
+          recorded_by?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      },
     }
     Views: {
-      member_equity: {
+      cycle_funding: {
         Row: {
-          contributed: number | null
-          equity_percent: number | null
-          member_id: string | null
+          cycle_id: string | null
+          code: string | null
+          target_capital: number | null
+          minimum_ticket: number | null
+          raised_capital: number | null
+          investor_count: number | null
+          funded_percent: number | null
         }
         Relationships: []
-      }
+      },
+      cycle_harvest: {
+        Row: {
+          cycle_id: string | null
+          harvest_date: string | null
+          total_weight_kg: number | null
+          total_count: number | null
+          scale_ticket_ref: string | null
+          buyer: string | null
+          buyer_note: string | null
+          gross_revenue: number | null
+          revenue_received_on: string | null
+        }
+        Relationships: []
+      },
+      cycle_returns: {
+        Row: {
+          cycle_id: string | null
+          gross_revenue: number | null
+          capital_raised: number | null
+          operational_liabilities: number | null
+          liabilities_paid: number | null
+          principal_returned: number | null
+          reserve_set_aside: number | null
+          net_profit: number | null
+          investor_profit_pool: number | null
+          operator_fee: number | null
+          profit_investor_percent: number | null
+          profit_operator_percent: number | null
+          reserve_percent: number | null
+          principal_at_risk: boolean | null
+          total_paid_out: number | null
+          executed_at: string | null
+        }
+        Relationships: []
+      },
+      cycle_stock_level: {
+        Row: {
+          cycle_id: string | null
+          code: string | null
+          name: string | null
+          commodity: Database["public"]["Enums"]["commodity_type"] | null
+          log_date: string | null
+          population_count: number | null
+          biomass_kg: number | null
+          sample_avg_weight_g: number | null
+          crates_collected: number | null
+          bags_harvested: number | null
+        }
+        Relationships: []
+      },
+      platform_returns: {
+        Row: {
+          settled_cycles: number | null
+          capital_settled: number | null
+          capital_returned: number | null
+          investor_profit_paid: number | null
+          operator_fee_paid: number | null
+          net_profit_total: number | null
+        }
+        Relationships: []
+      },
+      platform_scale: {
+        Row: {
+          members: number | null
+          cycles_total: number | null
+          cycles_active: number | null
+        }
+        Relationships: []
+      },
+      public_milestones: {
+        Row: {
+          id: string | null
+          cycle_id: string | null
+          cycle_code: string | null
+          cycle_name: string | null
+          commodity: Database["public"]["Enums"]["commodity_type"] | null
+          log_type: Database["public"]["Enums"]["log_type"] | null
+          log_date: string | null
+          summary: string | null
+          created_at: string | null
+        }
+        Relationships: []
+      },
     }
     Functions: {
+      apply_rollover: {
+        Args: { _amount?: number; _destination_cycle_id?: string; _member_id?: string; _mode?: Database["public"]["Enums"]["rollover_mode"]; _source_cycle_id?: string }
+        Returns: Database["public"]["Tables"]["cycle_investments"]["Row"]
+      }
+      cycle_position_book: {
+        Args: { _cycle_id?: string }
+        Returns: { member_id: string; full_name: string; member_capital: number; equity_percent: number }[]
+      }
       ensure_profile: {
-        Args: { _full_name?: string; _user_id: string }
+        Args: { _full_name?: string; _user_id?: string }
         Returns: Database["public"]["Enums"]["app_role"]
+      }
+      has_role: {
+        Args: { _role?: Database["public"]["Enums"]["app_role"]; _user_id?: string }
+        Returns: boolean
+      }
+      my_cycle_position: {
+        Args: { _cycle_id?: string }
+        Returns: { member_capital: number; cycle_capital: number; equity_percent: number; funded_percent: number; investor_count: number }[]
+      }
+      publish_farm_cycle: {
+        Args: { _cycle_id?: string }
+        Returns: Database["public"]["Tables"]["farm_cycles"]["Row"]
+      }
+      run_cycle_waterfall: {
+        Args: { _cycle_id?: string; _gross_revenue?: number; _note?: string }
+        Returns: Database["public"]["Tables"]["waterfall_distributions"]["Row"]
+      }
+      settle_share_transfer: {
+        Args: { _transfer_id?: string }
+        Returns: Database["public"]["Tables"]["share_transfers"]["Row"]
       }
     }
     Enums: {
-      app_role: "admin" | "operator" | "contributor"
+      app_role: "admin" | "operator" | "member" | "contributor"
+      commodity_type: "catfish" | "broiler" | "layer" | "grain" | "greenhouse"
+      cycle_status: "draft" | "open" | "funded" | "active" | "harvested" | "settled" | "cancelled"
+      distribution_status: "draft" | "executed" | "paid"
+      incident_severity: "low" | "moderate" | "serious" | "critical"
+      incident_status: "open" | "mitigating" | "resolved"
+      investment_method: "paystack" | "manual" | "rollover"
+      investment_status: "pending" | "success" | "failed"
+      log_type: "feed" | "growth_sample" | "mortality" | "medication" | "general" | "harvest" | "sale"
       payment_method: "paystack" | "manual"
       payment_status: "pending" | "success" | "failed"
+      payout_status: "pending" | "paid" | "withheld"
+      review_status: "pending" | "approved" | "flagged"
+      rollover_mode: "off" | "principal" | "profit" | "both"
+      stage_id: "funding_open" | "stocking" | "operational" | "harvest_weighin" | "sale_settlement" | "waterfall_distribution"
+      transfer_status: "offered" | "claimed" | "settled" | "withdrawn"
+      visit_status: "requested" | "confirmed" | "declined" | "completed" | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -380,9 +1023,23 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "operator", "contributor"],
+      app_role: ["admin", "operator", "member", "contributor"],
+      commodity_type: ["catfish", "broiler", "layer", "grain", "greenhouse"],
+      cycle_status: ["draft", "open", "funded", "active", "harvested", "settled", "cancelled"],
+      distribution_status: ["draft", "executed", "paid"],
+      incident_severity: ["low", "moderate", "serious", "critical"],
+      incident_status: ["open", "mitigating", "resolved"],
+      investment_method: ["paystack", "manual", "rollover"],
+      investment_status: ["pending", "success", "failed"],
+      log_type: ["feed", "growth_sample", "mortality", "medication", "general", "harvest", "sale"],
       payment_method: ["paystack", "manual"],
       payment_status: ["pending", "success", "failed"],
+      payout_status: ["pending", "paid", "withheld"],
+      review_status: ["pending", "approved", "flagged"],
+      rollover_mode: ["off", "principal", "profit", "both"],
+      stage_id: ["funding_open", "stocking", "operational", "harvest_weighin", "sale_settlement", "waterfall_distribution"],
+      transfer_status: ["offered", "claimed", "settled", "withdrawn"],
+      visit_status: ["requested", "confirmed", "declined", "completed", "cancelled"],
     },
   },
 } as const

@@ -1,28 +1,34 @@
 import { createFileRoute, Link, Navigate, Outlet, useRouterState } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
 import { createContext, useContext, useEffect, useState } from "react";
-import { LogOut } from "lucide-react";
+import { LogOut, Sprout } from "lucide-react";
 
-import { BadgeMark, RolePill } from "@/components/ledger";
-import { getDashboardData } from "@/lib/apex.functions";
+import { FamilyMenu } from "@/components/ndh/FamilyMenu";
+import { NdhFamilySymbol } from "@/components/ndh/NdhFamilySymbol";
+import { AiConcierge } from "@/components/ndh/AiConcierge";
 import { supabase } from "@/integrations/supabase/client";
-import { cn } from "@/lib/utils";
+import { resolveCallerRole, ROLE_LABEL, type AppRole } from "@/lib/agri/roles";
 
 export const Route = createFileRoute("/portal")({
+  head: () => ({
+    meta: [
+      { title: "Member Portal | NDH AgriCapital" },
+      { name: "robots", content: "noindex" },
+    ],
+  }),
   component: PortalLayout,
 });
 
-export type PortalRole = "admin" | "operator" | "contributor";
-
-interface PortalContextValue {
-  role: PortalRole;
-  userName: string;
+type PortalContextValue = {
+  role: AppRole;
+  userId: string;
+  email: string;
   signOut: () => void;
-}
+};
 
 const PortalContext = createContext<PortalContextValue>({
-  role: "contributor",
-  userName: "Member",
+  role: "member",
+  userId: "",
+  email: "",
   signOut: () => {},
 });
 
@@ -31,151 +37,160 @@ export function usePortalContext() {
 }
 
 function PortalLayout() {
-  const [session, setSession] = useState<{ id?: string } | null>(null);
-  const [role, setRole] = useState<PortalRole | null>(null);
-  const [userName, setUserName] = useState("Member");
-  const [failed, setFailed] = useState(false);
-
-  const loadDashboard = useServerFn(getDashboardData);
+  const [state, setState] = useState<
+    { status: "loading" } | { status: "signedout" } | { status: "ready"; role: AppRole; userId: string; email: string }
+  >({ status: "loading" });
 
   useEffect(() => {
-    supabase.auth
-      .getSession()
-      .then(({ data: sessionData }) => setSession(sessionData.session?.user ?? null));
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, nextSession) =>
-      setSession(nextSession?.user ?? null),
-    );
-    return () => listener.subscription.unsubscribe();
+    let cancelled = false;
+
+    async function load(userId: string, email: string) {
+      // The role is read from user_roles via RLS. If the row is missing (a
+      // brand-new account), the member portal will provision it server-side.
+      const role = await resolveCallerRole(supabase, userId);
+      if (cancelled) return;
+      setState({ status: "ready", role: role ?? "member", userId, email });
+    }
+
+    supabase.auth.getSession().then(({ data }) => {
+      const user = data.session?.user;
+      if (!user) {
+        if (!cancelled) setState({ status: "signedout" });
+        return;
+      }
+      void load(user.id, user.email ?? "");
+    });
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      const user = session?.user;
+      if (!user) {
+        if (!cancelled) setState({ status: "signedout" });
+        return;
+      }
+      void load(user.id, user.email ?? "");
+    });
+
+    return () => {
+      cancelled = true;
+      listener.subscription.unsubscribe();
+    };
   }, []);
 
-  useEffect(() => {
-    if (!session) return;
-    loadDashboard()
-      .then((data) => {
-        setRole(data.role as PortalRole);
-        setUserName(data.user.name);
-      })
-      .catch(() => setFailed(true));
-  }, [session]);
+  if (state.status === "signedout") return <Navigate to="/signin" />;
 
-  // No session (or one that no longer exists) → public home.
-  if (!session) return <Navigate to="/home" />;
-
-  if (failed) {
+  if (state.status === "loading") {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-paper px-6 text-center">
-        <div className="max-w-md">
-          <BadgeMark className="mx-auto size-12" />
-          <h1 className="mt-4 text-2xl text-ink">We could not load your ledger.</h1>
-          <p className="mt-2 text-sm text-ink-soft">
-            Refresh the page to try again, or sign out and back in.
-          </p>
-          <button onClick={() => supabase.auth.signOut()} className="ledger-link mt-6 text-sm">
-            Sign out
-          </button>
+      <main className="grid min-h-screen place-items-center bg-navy">
+        <div className="flex flex-col items-center gap-3">
+          <NdhFamilySymbol SectorIcon={Sprout} size={48} />
+          <p className="fig text-[0.8rem] text-slate-400">Opening your ledger…</p>
         </div>
       </main>
     );
   }
 
-  if (!role) {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-paper text-ink-soft">
-        <p className="fig text-sm">Opening your ledger…</p>
-      </main>
-    );
-  }
-
-  const signOut = () => supabase.auth.signOut();
+  const signOut = () => {
+    void supabase.auth.signOut();
+  };
 
   return (
-    <PortalContext.Provider value={{ role, userName, signOut }}>
-      <div className="flex min-h-screen flex-col bg-paper text-ink">
-        <PortalHeader role={role} userName={userName} signOut={signOut} />
-        <div className="mx-auto w-full max-w-7xl flex-1 px-5 py-8 md:px-8 md:py-10">
+    <PortalContext.Provider
+      value={{ role: state.role, userId: state.userId, email: state.email, signOut }}
+    >
+      <div className="flex min-h-screen flex-col bg-porcelain" id="top">
+        <PortalHeader role={state.role} email={state.email} signOut={signOut} />
+        <main className="mx-auto w-full max-w-[var(--page)] flex-1 px-[var(--gutter)] py-7">
           <Outlet />
-        </div>
+        </main>
         <PortalFooter />
       </div>
+      <AiConcierge />
     </PortalContext.Provider>
   );
 }
 
 function PortalHeader({
   role,
-  userName,
+  email,
   signOut,
 }: {
-  role: PortalRole;
-  userName: string;
+  role: AppRole;
+  email: string;
   signOut: () => void;
 }) {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
 
   const tabs = [
-    { to: "/portal", label: "Overview", visible: true },
-    { to: "/portal/admin", label: "Admin portal", visible: role === "admin" },
-    {
-      to: "/portal/operator",
-      label: "Operator portal",
-      visible: role === "admin" || role === "operator",
-    },
-    {
-      to: "/portal/member",
-      label: "Member portal",
-      visible: role === "admin" || role === "contributor",
-    },
+    { to: "/portal/investor", label: "Investor", visible: true },
+    { to: "/portal/operator", label: "Farm operator", visible: role === "admin" || role === "operator" },
+    { to: "/portal/admin", label: "Admin & treasury", visible: role === "admin" },
   ].filter((tab) => tab.visible);
 
   return (
-    <header className="sticky top-0 z-20 border-b border-rule bg-paper/95 backdrop-blur">
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4 md:px-8">
-        <Link to="/portal" className="flex items-center gap-3">
-          <BadgeMark className="size-9" />
-          <div className="leading-tight">
-            <p className="font-display text-[15px] font-bold tracking-tight">Apex Agri-Capital</p>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">
-              Cooperative ledger
-            </p>
-          </div>
+    <header className="pg-header">
+      <div className="pg-header-inner">
+        <Link to="/portal" className="pg-brand" aria-label="NDH AgriCapital portal">
+          <NdhFamilySymbol SectorIcon={Sprout} size={36} />
+          <span className="pg-brand-lockup">
+            <strong>NAJEEB</strong>
+            <small>AgriCapital portal</small>
+          </span>
         </Link>
-        <div className="flex items-center gap-3">
-          <span className="hidden text-xs text-ink-soft sm:inline">Good day, {userName}</span>
-          <RolePill role={role} />
-          <button
-            aria-label="Sign out"
-            onClick={signOut}
-            className="inline-flex size-8 items-center justify-center rounded-md border border-rule bg-card text-ink-soft transition-colors hover:border-rust/50 hover:text-rust"
-          >
-            <LogOut className="size-3.5" />
-          </button>
-        </div>
-      </div>
-      <nav className="mx-auto max-w-7xl px-5 md:px-8">
-        <div className="ledger-tabs" role="tablist" aria-label="Portal sections">
+
+        <nav className="pg-portal-tabs" aria-label="Portal sections">
           {tabs.map((tab) => (
             <Link
               key={tab.to}
               to={tab.to}
-              role="tab"
-              aria-selected={pathname === tab.to}
-              className={cn("ledger-tab", pathname === tab.to && "aria-selected:true")}
+              className="pg-portal-tab"
+              aria-current={pathname === tab.to ? "page" : undefined}
             >
               {tab.label}
             </Link>
           ))}
+        </nav>
+
+        <div className="flex items-center gap-2">
+          <span className="pg-chip pg-chip--onDark hidden border-navy-line bg-white/10 text-slate-200 sm:inline-flex">
+            {ROLE_LABEL[role]}
+          </span>
+          <FamilyMenu links={[{ label: "Marketplace", href: "/cycles" }]} />
+          <button
+            type="button"
+            onClick={signOut}
+            aria-label={`Sign out of ${email || "your account"}`}
+            className="grid size-9 place-items-center rounded-full border border-navy-line text-slate-300 transition-colors hover:border-coral hover:text-white"
+          >
+            <LogOut size={15} aria-hidden="true" />
+          </button>
         </div>
-      </nav>
+      </div>
     </header>
   );
 }
 
 function PortalFooter() {
   return (
-    <footer className="border-t border-rule bg-paper-deep">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 text-[11px] text-ink-soft md:px-8">
-        <span>Apex Agri-Capital · shared farm ledger</span>
-        <span>Figures &amp; equity are computed live from the ledger.</span>
+    <footer className="border-t border-hairline bg-white">
+      <div className="mx-auto flex max-w-[var(--page)] flex-col gap-2 px-[var(--gutter)] py-4 text-[0.7rem] text-ink-mute sm:flex-row sm:items-center sm:justify-between">
+        <span>
+          NDH AgriCapital · every figure on this page is computed from the ledger, never stored.
+        </span>
+        <span className="flex flex-wrap items-center gap-4">
+          <Link to="/cycles" className="no-underline hover:text-ink-deep">
+            Marketplace
+          </Link>
+          <Link
+            to="/legal/$doc"
+            params={{ doc: "risk" }}
+            className="no-underline hover:text-ink-deep"
+          >
+            Risk statement
+          </Link>
+          <a href="/legal/terms" className="no-underline hover:text-ink-deep">
+            Terms
+          </a>
+        </span>
       </div>
     </footer>
   );
