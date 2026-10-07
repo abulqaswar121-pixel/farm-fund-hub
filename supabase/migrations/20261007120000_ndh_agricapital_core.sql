@@ -572,10 +572,27 @@ set search_path = public
 as $$
 declare
   held numeric(16, 2);
+  v_actor uuid := auth.uid();
 begin
-  if tg_op = 'UPDATE' and old.capital_amount = new.capital_amount
-     and old.cycle_id = new.cycle_id and old.seller_id = new.seller_id then
-    return new;
+  if tg_op = 'UPDATE' then
+    -- A buyer claiming an offer may set only their own claim. The terms of the
+    -- offer belong to the seller, and only an admin may rewrite them.
+    if v_actor is not null
+       and v_actor <> old.seller_id
+       and not private.has_role(v_actor, 'admin'::public.app_role) then
+      if new.capital_amount <> old.capital_amount
+         or new.cycle_id <> old.cycle_id
+         or new.seller_id <> old.seller_id
+         or new.asking_price <> old.asking_price
+         or new.buyer_id is distinct from v_actor then
+        raise exception 'A buyer may only claim the offer as published';
+      end if;
+    end if;
+
+    if old.capital_amount = new.capital_amount
+       and old.cycle_id = new.cycle_id and old.seller_id = new.seller_id then
+      return new;
+    end if;
   end if;
 
   -- Live capital held by the seller, already net of any earlier transfer, so an

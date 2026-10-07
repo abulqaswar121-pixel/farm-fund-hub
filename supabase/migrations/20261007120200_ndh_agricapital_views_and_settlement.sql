@@ -257,8 +257,10 @@ security definer
 set search_path = public
 as $$
 begin
-  if auth.uid() is not null and not private.is_staff(auth.uid()) then
-    raise exception 'Only co-operative staff can read the full contribution book';
+  -- The full contribution book is investor data. Admins need it to verify and
+  -- settle; an operator running the farm never should.
+  if auth.uid() is not null and not private.is_admin(auth.uid()) then
+    raise exception 'Only the treasury admin can read the full contribution book';
   end if;
 
   return query

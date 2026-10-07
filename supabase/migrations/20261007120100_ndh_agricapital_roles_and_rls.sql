@@ -60,6 +60,27 @@ $$;
 revoke all on function private.is_staff(uuid) from public, anon;
 grant execute on function private.is_staff(uuid) to authenticated, service_role;
 
+/**
+ * Admin only — the separation that matters most.
+ *
+ * A farm operator needs the production side: cycles, logs, expenses, harvests,
+ * incidents and weather. They must never be able to read what any individual
+ * member holds, what the cycle raised member-by-member, or what anyone was
+ * paid. Every policy on a money table therefore checks `private.is_admin`, not
+ * `private.is_staff`.
+ */
+create or replace function private.is_admin(_user_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select private.has_role(_user_id, 'admin'::public.app_role)
+$$;
+revoke all on function private.is_admin(uuid) from public, anon;
+grant execute on function private.is_admin(uuid) to authenticated, service_role;
+
 -- ----------------------------------------------------------------------------
 -- 3. Sign-up assigns the member role
 -- ----------------------------------------------------------------------------
@@ -210,11 +231,12 @@ create policy "Only admins can delete unused drafts"
 
 -- 5.2 cycle_investments -----------------------------------------------------
 
--- A member sees only their own capital. Staff see the whole book.
+-- A member sees only their own capital. Only the admin sees the whole book.
+-- An operator cannot read a single naira figure here.
 create policy "Members read their own investments"
   on public.cycle_investments for select
   to authenticated
-  using (member_id = auth.uid() or private.is_staff(auth.uid()));
+  using (member_id = auth.uid() or private.is_admin(auth.uid()));
 
 -- A member may raise their own contribution, but ONLY into 'pending'. This is
 -- the row that records an intent to pay; it carries no equity until the
@@ -264,10 +286,10 @@ create policy "Admins delete farm logs"
 
 -- 5.4 farm_expenses ---------------------------------------------------------
 
-create policy "Authenticated members can read expenses"
+create policy "Staff read the expense book"
   on public.farm_expenses for select
   to authenticated
-  using (true);
+  using (private.is_staff(auth.uid()));
 
 create policy "Operators record direct expenses"
   on public.farm_expenses for insert
@@ -345,7 +367,7 @@ create policy "Only admins void a settlement"
 create policy "Members read their own settlement line"
   on public.waterfall_lines for select
   to authenticated
-  using (member_id = auth.uid() or private.is_staff(auth.uid()));
+  using (member_id = auth.uid() or private.is_admin(auth.uid()));
 
 create policy "Only admins write settlement lines"
   on public.waterfall_lines for insert
@@ -382,7 +404,7 @@ create policy "Members browse live offers"
     status = 'offered'::public.transfer_status
     or seller_id = auth.uid()
     or buyer_id = auth.uid()
-    or private.is_staff(auth.uid())
+    or private.is_admin(auth.uid())
   );
 
 create policy "Members offer their own equity at par"
@@ -394,14 +416,27 @@ create policy "Members offer their own equity at par"
     and buyer_id is null
   );
 
--- A member may withdraw their own offer; only an admin may settle one.
+-- Three legitimate edits, and nothing else:
+--   * the seller withdraws their own live offer;
+--   * a different signed-in member claims a live offer, becoming the buyer;
+--   * the admin settles or annotates it.
+-- Settlement itself is still admin-only inside settle_share_transfer().
 create policy "Sellers withdraw, buyers claim"
   on public.share_transfers for update
   to authenticated
-  using (seller_id = auth.uid() or private.is_staff(auth.uid()))
+  using (
+    private.is_admin(auth.uid())
+    or seller_id = auth.uid()
+    or (
+      status = 'offered'::public.transfer_status
+      and buyer_id is null
+      and seller_id <> auth.uid()
+    )
+  )
   with check (
-    private.is_staff(auth.uid())
+    private.is_admin(auth.uid())
     or (seller_id = auth.uid() and status in ('offered'::public.transfer_status, 'withdrawn'::public.transfer_status))
+    or (buyer_id = auth.uid() and status = 'claimed'::public.transfer_status)
   );
 
 create policy "Admins remove a transfer"
@@ -414,7 +449,7 @@ create policy "Admins remove a transfer"
 create policy "Members see their own bookings, staff see all"
   on public.farm_visits for select
   to authenticated
-  using (member_id = auth.uid() or private.is_staff(auth.uid()));
+  using (member_id = auth.uid() or private.is_admin(auth.uid()));
 
 create policy "Members book their own visit"
   on public.farm_visits for insert
@@ -429,9 +464,9 @@ create policy "Members book their own visit"
 create policy "Members cancel, staff decide"
   on public.farm_visits for update
   to authenticated
-  using (member_id = auth.uid() or private.is_staff(auth.uid()))
+  using (member_id = auth.uid() or private.is_admin(auth.uid()))
   with check (
-    private.is_staff(auth.uid())
+    private.is_admin(auth.uid())
     or (
       member_id = auth.uid()
       and status in ('requested'::public.visit_status, 'cancelled'::public.visit_status)
