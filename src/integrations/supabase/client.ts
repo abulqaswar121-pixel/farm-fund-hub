@@ -31,7 +31,19 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
 function createSupabaseClient() {
   // Use import.meta.env for client-side (Vite build-time replacement)
   // Fall back to process.env for SSR (server-side rendering)
-  const SUPABASE_URL = import.meta.env['VITE_SUPABASE_URL'] || process.env['SUPABASE_URL'];
+  const configuredUrl = import.meta.env['VITE_SUPABASE_URL'] || process.env['SUPABASE_URL'];
+  // A relative base means "same origin as the page". That is how a build
+  // pointed at the local preview ledger reaches it: the dev server proxies the
+  // path to the stand-in (see scripts/preview-ledger and vite.config.ts),
+  // because a viewer's browser can never dial the sandbox's own ports.
+  // Supabase itself needs an absolute URL, so resolve it — against the origin
+  // in the browser, against the server's own environment during SSR.
+  const SUPABASE_URL =
+    configuredUrl && configuredUrl.startsWith('/')
+      ? (typeof window !== 'undefined'
+          ? new URL(configuredUrl, window.location.origin).toString()
+          : process.env['SUPABASE_URL'] ?? configuredUrl)
+      : configuredUrl;
   const SUPABASE_PUBLISHABLE_KEY = import.meta.env['VITE_SUPABASE_PUBLISHABLE_KEY'] || process.env['SUPABASE_PUBLISHABLE_KEY'];
 
   if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
