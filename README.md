@@ -136,9 +136,22 @@ original auth/role base; the four `20261007…` files are AgriCapital:
 20261007120200_…_views_and_settlement.sql   # aggregate views + waterfall, rollover, transfer
 ```
 
-Apply them with `supabase db push` (or the Supabase CLI against a branch). The
-public pages read **only** through the `cycle_*` / `platform_*` views; the `anon`
-role has no grant on any ledger table.
+Apply them with `supabase db push`, or paste them into the dashboard SQL editor
+**one file at a time**.
+
+> Order matters and the transaction boundary matters. `…115900…` adds the new
+> `member` value to the `app_role` enum, and PostgreSQL refuses to *use* a new
+> enum value in the transaction that added it. Run that file on its own, then
+> the other three in order. Pasting all four as a single script fails on the
+> enum, not on anything else.
+
+The public pages read **only** through the `cycle_*` / `platform_*` views; the
+`anon` role has no grant on any ledger table.
+
+After applying them, **sign up for the first account.** The very first account
+ever created is provisioned as `admin` so the co-operative can be bootstrapped;
+every account after that is a `member`, and the admin promotes people from
+*Portal → Members & roles*.
 
 Types in `src/integrations/supabase/types.ts` are generated from the schema by
 `node scripts/generate-agri-types.mjs` — if you add a table, view or RPC, add it
