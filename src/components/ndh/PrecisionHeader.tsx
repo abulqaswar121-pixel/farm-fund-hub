@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowUpRight, LogIn } from "lucide-react";
 
+import { LanguageSwitcher } from "@/components/agri/LanguageSwitcher";
 import { BrandLockup } from "./BrandLockup";
 import { SiteMenu, type HeaderLink } from "./SiteMenu";
 
@@ -57,6 +58,9 @@ export function PrecisionHeader({
         </nav>
 
         <div className="flex items-center gap-2">
+          {/* Language sits ahead of the menu on a phone: it is the one control
+              somebody who cannot read the English navigation will look for. */}
+          <LanguageSwitcher />
           <SiteMenu links={links} session={session} />
           {session ? (
             <Link

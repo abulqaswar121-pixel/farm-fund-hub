@@ -156,14 +156,27 @@ def main() -> None:
     favicon = build(64, plate=True)
     favicon.save(ROOT / "public/favicon.png", "PNG", optimize=True)
 
-    touch = build(180, plate=True).convert("RGB")
+    # iOS masks the corners itself, so the touch icon is a full-bleed plate.
+    touch = Image.new("RGB", (180, 180), NAVY)
+    touch.paste(build(180, plate=True), (0, 0), build(180, plate=True))
     touch.save(ROOT / "public/apple-touch-icon.png", "PNG", optimize=True)
+
+    # A real multi-image .ico: the browsers that predate PNG favicons, the
+    # Windows taskbar pinned shortcut and the legacy shortcut all read it.
+    ico_sizes = [(16, 16), (32, 32), (48, 48), (64, 64)]
+    frames = [build(max(w, h), plate=True) for w, h in ico_sizes]
+    frames[-1].save(
+        ROOT / "public/favicon.ico",
+        format="ICO",
+        sizes=ico_sizes,
+        append_images=frames[:-1],
+    )
 
     (ROOT / "public/favicon.svg").write_text(build_svg(), encoding="utf-8")
 
     print(
-        "wrote public/favicon.png (64×64), public/apple-touch-icon.png (180×180) "
-        "and public/favicon.svg"
+        "wrote public/favicon.ico (16/32/48/64), public/favicon.png (64×64), "
+        "public/apple-touch-icon.png (180×180) and public/favicon.svg"
     )
 
 

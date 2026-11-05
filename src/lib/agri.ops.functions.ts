@@ -856,6 +856,114 @@ export const advanceCycleStage = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+/**
+ * Pause or resume a cycle's public listing.
+ *
+ * "Pause" is not a status, because a status is a fact about the farm and a pause
+ * is a fact about the website. Instead the funding window is closed (`status`
+ * becomes `cancelled` only when the co-operative genuinely calls a cycle off),
+ * and the listing drops out of the marketplace while the ledger, the photo feed
+ * and every member's position stay exactly where they are.
+ *
+ * Only a draft or an open cycle can be paused — pausing a cycle whose harvest
+ * money is already moving would hide a running settlement behind a button.
+ */
+export const setCycleListing = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator(
+    z.object({
+      cycleId: z.string().uuid(),
+      listed: z.boolean(),
+      reason: z.string().trim().min(6).max(300).optional(),
+    }),
+  )
+  .handler(async ({ context, data }) => {
+    const { supabase, userId } = context;
+    await assertRole(supabase, userId, ["admin"]);
+
+    const { data: cycle, error: readError } = await supabase
+      .from("farm_cycles")
+      .select("id, code, status, funding_closes_on, locked_at")
+      .eq("id", data.cycleId)
+      .maybeSingle();
+
+    if (readError || !cycle) throw new Error("That cycle could not be read");
+
+    if (cycle.status === "settled" || cycle.status === "harvested") {
+      throw new Error("A cycle past harvest cannot be unlisted — its payouts are already public");
+    }
+
+    const { error } = await supabase
+      .from("farm_cycles")
+      .update(
+        data.listed
+          ? {
+              // Reopening needs a window, or the marketplace would show a cycle
+              // nobody can join. Two weeks from today is the co-operative's
+              // standard notice period.
+              funding_closes_on:
+                cycle.funding_closes_on ??
+                new Date(Date.now() + 14 * 86_400_000).toISOString().slice(0, 10),
+              status: "open",
+            }
+          : { status: "cancelled" },
+      )
+      .eq("id", data.cycleId);
+
+    if (error) throw new Error("The listing could not be changed");
+
+    // A pause is a decision members are entitled to see, with its reason.
+    const { error: noteError } = await supabase.from("activity_feed").insert({
+      kind: data.listed ? "listing_open" : "listing_paused",
+      cycle_id: data.cycleId,
+      amount: null,
+      category: data.listed ? "listing reopened" : "listing paused",
+      note: data.reason ?? null,
+      actor_id: userId,
+    });
+    if (noteError) throw new Error("The listing changed, but its activity line failed to save");
+
+    return { ok: true, listed: data.listed };
+  });
+
+/**
+ * Attach a receipt to a filed expense or harvest sale.
+ *
+ * The rule is that a figure is only as good as the paper behind it. A receipt is
+ * held in the same private bucket as the farm proof photos, so only staff can
+ * read it back — a supplier invoice is not public information.
+ */
+export const attachExpenseReceipt = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator(
+    z.object({
+      expenseId: z.string().uuid().optional(),
+      harvestId: z.string().uuid().optional(),
+      receiptPath: z.string().trim().min(3).max(400),
+    }),
+  )
+  .handler(async ({ context, data }) => {
+    const { supabase, userId } = context;
+    await assertRole(supabase, userId, ["operator", "admin"]);
+
+    if (!data.expenseId && !data.harvestId) {
+      throw new Error("Say which record the receipt belongs to");
+    }
+
+    const { error } = data.expenseId
+      ? await supabase
+          .from("farm_expenses")
+          .update({ receipt_url: data.receiptPath })
+          .eq("id", data.expenseId)
+      : await supabase
+          .from("harvest_records")
+          .update({ receipt_url: data.receiptPath })
+          .eq("id", data.harvestId!);
+
+    if (error) throw new Error("The receipt could not be attached");
+    return { ok: true };
+  });
+
 /* --- verification ---------------------------------------------------------- */
 
 /**
@@ -986,6 +1094,256 @@ export const recordHarvestSale = createServerFn({ method: "POST" })
 
     if (error) throw new Error("Unable to record that sale");
     return { ok: true };
+  });
+
+/* --- the four-step settlement wizard -------------------------------------- */
+
+/**
+ * Everything step 1 and step 2 of the wizard display, in one read.
+ *
+ * The figures come from `cycle_settlement_readiness`, a view whose own inputs
+ * are the same rows the settlement will read — so the debts shown here are the
+ * debts Level 1 will pay, and the capital shown here is the capital Level 2
+ * will return. Nothing is estimated in the browser.
+ */
+export type SettlementReadiness = {
+  cycleId: string;
+  code: string;
+  status: string;
+  currentStage: string;
+  investorSharePercent: number;
+  operatorSharePercent: number;
+  reservePercent: number;
+  projectedHarvestOn: string | null;
+  weighedKg: number;
+  bankedRevenue: number;
+  openLiabilities: number;
+  verifiedCapital: number;
+  contributingMembers: number;
+  alreadySettled: boolean;
+  weighIns: {
+    id: string;
+    harvestDate: string;
+    totalWeightKg: number | null;
+    scaleTicketRef: string | null;
+    buyer: string | null;
+  }[];
+};
+
+export const getSettlementReadiness = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .validator(z.object({ cycleId: z.string().uuid() }))
+  .handler(async ({ context, data }): Promise<SettlementReadiness> => {
+    await assertRole(context.supabase, context.userId, ["admin"]);
+
+    const { data: row, error } = await context.supabase
+      .from("cycle_settlement_readiness")
+      .select("*")
+      .eq("cycle_id", data.cycleId)
+      .maybeSingle();
+
+    if (error || !row) throw new Error("Unable to read that cycle's settlement figures");
+
+    const { data: harvests } = await context.supabase
+      .from("harvest_records")
+      .select("id, harvest_date, total_weight_kg, scale_ticket_ref, buyer")
+      .eq("cycle_id", data.cycleId)
+      .order("harvest_date", { ascending: true });
+
+    return {
+      cycleId: data.cycleId,
+      code: row.code ?? "",
+      status: row.status ?? "draft",
+      currentStage: row.current_stage ?? "funding_open",
+      investorSharePercent: Number(row.profit_investor_percent ?? 70),
+      operatorSharePercent: Number(row.profit_operator_percent ?? 30),
+      reservePercent: Number(row.reserve_percent ?? 5),
+      projectedHarvestOn: row.projected_harvest_on,
+      weighedKg: Number(row.weighed_kg ?? 0),
+      bankedRevenue: Number(row.banked_revenue ?? 0),
+      openLiabilities: Number(row.open_liabilities ?? 0),
+      verifiedCapital: Number(row.verified_capital ?? 0),
+      contributingMembers: Number(row.contributing_members ?? 0),
+      alreadySettled: Boolean(row.already_settled),
+      weighIns: (harvests ?? []).map((record) => ({
+        id: record.id,
+        harvestDate: record.harvest_date,
+        totalWeightKg: record.total_weight_kg === null ? null : Number(record.total_weight_kg),
+        scaleTicketRef: record.scale_ticket_ref,
+        buyer: record.buyer,
+      })),
+    };
+  });
+
+export type SettlementPreviewLine = {
+  memberId: string;
+  memberName: string;
+  capital: number;
+  equityPercent: number;
+  principal: number;
+  profit: number;
+  total: number;
+};
+
+export type SettlementPreview = {
+  grossRevenue: number;
+  capitalRaised: number;
+  operationalLiabilities: number;
+  liabilitiesPaid: number;
+  principalReturned: number;
+  principalAtRisk: boolean;
+  reservePercent: number;
+  reserveSetAside: number;
+  reserveTopUpApplied: number;
+  reserveTopUpRequested: number;
+  netProfit: number;
+  investorProfitPool: number;
+  operatorFee: number;
+  investorSharePercent: number;
+  operatorSharePercent: number;
+  totalPaidOut: number;
+  lines: SettlementPreviewLine[];
+};
+
+/**
+ * Steps 2 and 3, computed by the database.
+ *
+ * This calls `run_cycle_waterfall_planned` in test mode: the function runs every
+ * statement it would run for real — reads the liabilities, the verified capital,
+ * apportions principal and profit per member — and then returns without writing.
+ * The table an admin approves in step 3 is therefore produced by the settlement
+ * itself, not by a second implementation that might round differently.
+ */
+export const previewSettlement = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator(
+    z.object({
+      cycleId: z.string().uuid(),
+      grossRevenue: z.number().nonnegative(),
+      reserveTopUp: z.number().nonnegative().optional(),
+      note: z.string().trim().max(600).optional(),
+    }),
+  )
+  .handler(async ({ context, data }): Promise<SettlementPreview> => {
+    await assertRole(context.supabase, context.userId, ["admin"]);
+
+    const requestedTopUp = data.reserveTopUp ?? 0;
+
+    const { data: dry, error } = await context.supabase.rpc("run_cycle_waterfall_planned", {
+      _cycle_id: data.cycleId,
+      _gross_revenue: data.grossRevenue,
+      _reserve_top_up: requestedTopUp,
+      _test: true,
+      _note: data.note ?? "",
+    });
+
+    if (error || !dry) {
+      throw new Error(
+        error?.message.includes("already been settled")
+          ? "This cycle has already been settled — nothing can be previewed against it"
+          : "The settlement could not be previewed",
+      );
+    }
+
+    // Per-member lines come from the same live equity the member sees. These are
+    // a projection for approval; the executed run freezes its own copies.
+    const { data: book } = await context.supabase.rpc("cycle_position_book", {
+      _cycle_id: data.cycleId,
+    });
+
+    const capitalRaised = Number(dry.capital_raised ?? 0);
+    const principal = Number(dry.principal_returned ?? 0);
+    const pool = Number(dry.investor_profit_pool ?? 0);
+
+    const lines: SettlementPreviewLine[] = (book ?? []).map((row) => {
+      const capital = Number(row.member_capital ?? 0);
+      const share = capitalRaised > 0 ? capital / capitalRaised : 0;
+      const principalShare = Math.round(share * principal * 100) / 100;
+      const profitShare = Math.round(share * pool * 100) / 100;
+      return {
+        memberId: row.member_id,
+        memberName: row.full_name,
+        capital,
+        equityPercent: Number(row.equity_percent ?? 0),
+        principal: principalShare,
+        profit: profitShare,
+        total: Math.round((principalShare + profitShare) * 100) / 100,
+      };
+    });
+
+    const baseReserve =
+      Math.round(((data.grossRevenue * Number(dry.reserve_percent ?? 0)) / 100) * 100) / 100;
+    const appliedTopUp = Math.max(
+      0,
+      Math.round((Number(dry.reserve_set_aside ?? 0) - baseReserve) * 100) / 100,
+    );
+
+    return {
+      grossRevenue: Number(dry.gross_revenue ?? 0),
+      capitalRaised,
+      operationalLiabilities: Number(dry.operational_liabilities ?? 0),
+      liabilitiesPaid: Number(dry.liabilities_paid ?? 0),
+      principalReturned: principal,
+      principalAtRisk: Boolean(dry.principal_at_risk),
+      reservePercent: Number(dry.reserve_percent ?? 0),
+      reserveSetAside: Number(dry.reserve_set_aside ?? 0),
+      reserveTopUpApplied: appliedTopUp,
+      reserveTopUpRequested: requestedTopUp,
+      netProfit: Number(dry.net_profit ?? 0),
+      investorProfitPool: pool,
+      operatorFee: Number(dry.operator_fee ?? 0),
+      investorSharePercent: Number(dry.profit_investor_percent ?? 70),
+      operatorSharePercent: Number(dry.profit_operator_percent ?? 30),
+      totalPaidOut: Number(dry.total_paid_out ?? 0),
+      lines: lines.sort((a, b) => b.total - a.total),
+    };
+  });
+
+/**
+ * Step 4 — the irreversible one.
+ *
+ * Uses the same planned function without test mode, so the numbers written are
+ * the numbers previewed. A reserve top-up is stored as its own row with the
+ * admin's reason, which members can read.
+ */
+export const executeSettlement = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator(
+    z.object({
+      cycleId: z.string().uuid(),
+      grossRevenue: z.number().nonnegative(),
+      reserveTopUp: z.number().nonnegative().optional(),
+      note: z.string().trim().min(10).max(600),
+    }),
+  )
+  .handler(async ({ context, data }) => {
+    await assertRole(context.supabase, context.userId, ["admin"]);
+
+    const { data: distribution, error } = await context.supabase.rpc(
+      "run_cycle_waterfall_planned",
+      {
+        _cycle_id: data.cycleId,
+        _gross_revenue: data.grossRevenue,
+        _reserve_top_up: data.reserveTopUp ?? 0,
+        _test: false,
+        _note: data.note,
+      },
+    );
+
+    if (error) {
+      throw new Error(
+        error.message.includes("already been settled")
+          ? "This cycle has already been settled — void the existing run before settling again"
+          : "The settlement could not be executed",
+      );
+    }
+
+    return {
+      ok: true,
+      distributionId: distribution?.id ?? null,
+      netProfit: Number(distribution?.net_profit ?? 0),
+      totalPaidOut: Number(distribution?.total_paid_out ?? 0),
+    };
   });
 
 /**

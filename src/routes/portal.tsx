@@ -1,12 +1,25 @@
 import { createFileRoute, Link, Navigate, Outlet, useRouterState } from "@tanstack/react-router";
 import { createContext, useContext, useEffect, useState } from "react";
-import { LogOut, Sprout } from "lucide-react";
+import {
+  Activity,
+  Banknote,
+  Bell,
+  Gauge,
+  Leaf,
+  Loader2,
+  LogOut,
+  Settings,
+  ShieldCheck,
+  Sprout,
+  Wallet,
+} from "lucide-react";
 
 import { BrandLockup } from "@/components/ndh/BrandLockup";
 import { NdhFamilySymbol } from "@/components/ndh/NdhFamilySymbol";
 import { AiConcierge } from "@/components/ndh/AiConcierge";
 import { supabase } from "@/integrations/supabase/client";
 import { resolveCallerRole, ROLE_LABEL, type AppRole } from "@/lib/agri/roles";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/portal")({
   head: () => ({
@@ -32,6 +45,56 @@ const PortalContext = createContext<PortalContextValue>({
 export function usePortalContext() {
   return useContext(PortalContext);
 }
+
+/**
+ * A portal destination.
+ *
+ * `roles` is which account levels may open it. `mobile` decides whether it earns
+ * one of the four bottom-bar slots on a phone — the brief asks for Dashboard,
+ * My Stocks, Farm Feed and Profile, and everything else lives in the desktop
+ * sidebar and in the "More" sheet on a narrow screen.
+ */
+type NavItem = {
+  to: string;
+  label: string;
+  icon: typeof Gauge;
+  roles: AppRole[];
+  mobile?: boolean;
+};
+
+const NAV: NavItem[] = [
+  {
+    to: "/portal/investor",
+    label: "Dashboard",
+    icon: Gauge,
+    roles: ["member", "operator", "admin"],
+    mobile: true,
+  },
+  {
+    to: "/portal/investor",
+    label: "My Stocks",
+    icon: Wallet,
+    roles: ["member", "operator", "admin"],
+    mobile: true,
+  },
+  {
+    to: "/portal/feed",
+    label: "Farm Feed",
+    icon: Activity,
+    roles: ["member", "operator", "admin"],
+    mobile: true,
+  },
+  {
+    to: "/portal/profile",
+    label: "Profile",
+    icon: Settings,
+    roles: ["member", "operator", "admin"],
+    mobile: true,
+  },
+  { to: "/portal/operator", label: "Farm log", icon: Leaf, roles: ["operator", "admin"] },
+  { to: "/portal/treasury", label: "Treasury desk", icon: Banknote, roles: ["admin"] },
+  { to: "/portal/admin", label: "Admin & treasury", icon: ShieldCheck, roles: ["admin"] },
+];
 
 function PortalLayout() {
   const [state, setState] = useState<
@@ -96,19 +159,28 @@ function PortalLayout() {
     <PortalContext.Provider
       value={{ role: state.role, userId: state.userId, email: state.email, signOut }}
     >
-      <div className="flex min-h-screen flex-col bg-porcelain" id="top">
-        <PortalHeader role={state.role} email={state.email} signOut={signOut} />
-        <main className="mx-auto w-full max-w-[var(--page)] flex-1 px-[var(--gutter)] py-7">
-          <Outlet />
-        </main>
-        <PortalFooter />
+      <div className="min-h-screen bg-porcelain" id="top">
+        <PortalSidebar role={state.role} email={state.email} signOut={signOut} />
+        <div className="lg:pl-[17rem]">
+          <PortalTopBar role={state.role} signOut={signOut} />
+          {/* pb-24 keeps the last row of a table clear of the phone's bottom bar. */}
+          <main className="mx-auto w-full max-w-[var(--page)] px-[var(--gutter)] py-6 pb-28 lg:pb-10">
+            <Outlet />
+          </main>
+          <PortalFooter />
+        </div>
+        <PortalBottomNav role={state.role} />
       </div>
       <AiConcierge />
     </PortalContext.Provider>
   );
 }
 
-function PortalHeader({
+/* -------------------------------------------------------------------------- *\
+ * Desktop: a fixed left sidebar with an active-page indicator
+\* -------------------------------------------------------------------------- */
+
+function PortalSidebar({
   role,
   email,
   signOut,
@@ -118,49 +190,108 @@ function PortalHeader({
   signOut: () => void;
 }) {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
-
-  const tabs = [
-    { to: "/portal/investor", label: "Investor", visible: true },
-    {
-      to: "/portal/operator",
-      label: "Farm operator",
-      visible: role === "admin" || role === "operator",
-    },
-    { to: "/portal/admin", label: "Admin & treasury", visible: role === "admin" },
-  ].filter((tab) => tab.visible);
+  const items = NAV.filter((item) => item.roles.includes(role)).filter(
+    // "Dashboard" and "My Stocks" both point at the investor page; on the
+    // sidebar the second would read as a duplicate, so it is dropped here and
+    // kept only for the phone bar where the labels are the four the brief asks
+    // for.
+    (item, index, all) => all.findIndex((other) => other.to === item.to) === index,
+  );
 
   return (
-    <header className="pg-header">
-      <div className="pg-header-inner">
-        <BrandLockup size="sm" />
+    <aside className="fixed inset-y-0 left-0 z-30 hidden w-[17rem] flex-col border-r border-navy-line bg-navy lg:flex">
+      <div className="border-b border-navy-line px-5 py-4">
+        <BrandLockup size="md" />
+      </div>
 
-        <nav className="pg-portal-tabs" aria-label="Portal sections">
-          {tabs.map((tab) => (
+      <nav className="flex-1 overflow-y-auto px-3 py-4" aria-label="Portal sections">
+        <p className="pg-kicker pg-kicker--onDark px-2">Your portal</p>
+        <ul className="mt-2.5 list-none space-y-1 p-0">
+          {items.map((item) => {
+            const Icon = item.icon;
+            const active = pathname === item.to || pathname.startsWith(`${item.to}/`);
+            return (
+              <li key={`${item.to}-${item.label}`}>
+                <Link
+                  to={item.to}
+                  aria-current={active ? "page" : undefined}
+                  className={cn(
+                    "flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-[0.82rem] font-medium no-underline transition-colors",
+                    active
+                      ? "bg-white/10 text-white shadow-[inset_3px_0_0_0_var(--signal)]"
+                      : "text-slate-400 hover:bg-white/5 hover:text-white",
+                  )}
+                >
+                  <Icon
+                    size={16}
+                    aria-hidden="true"
+                    className={active ? "text-signal" : "text-slate-500"}
+                  />
+                  {item.label}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+
+        <p className="pg-kicker pg-kicker--onDark mt-6 px-2">Public pages</p>
+        <ul className="mt-2.5 list-none space-y-1 p-0">
+          <li>
             <Link
-              key={tab.to}
-              to={tab.to}
-              className="pg-portal-tab"
-              aria-current={pathname === tab.to ? "page" : undefined}
+              to="/cycles"
+              className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-[0.8rem] text-slate-400 no-underline transition-colors hover:bg-white/5 hover:text-white"
             >
-              {tab.label}
+              <Sprout size={15} aria-hidden="true" className="text-slate-500" />
+              Marketplace
             </Link>
-          ))}
-        </nav>
+          </li>
+          <li>
+            <Link
+              to="/verify"
+              className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-[0.8rem] text-slate-400 no-underline transition-colors hover:bg-white/5 hover:text-white"
+            >
+              <ShieldCheck size={15} aria-hidden="true" className="text-slate-500" />
+              Verify a document
+            </Link>
+          </li>
+        </ul>
+      </nav>
 
-        <div className="flex items-center gap-2">
-          <span className="pg-chip pg-chip--onDark hidden border-navy-line bg-white/10 text-slate-200 sm:inline-flex">
-            {ROLE_LABEL[role]}
-          </span>
-          <Link
-            to="/cycles"
-            className="pg-chip pg-chip--onDark hidden no-underline hover:text-white sm:inline-flex"
-          >
-            Marketplace
-          </Link>
+      <div className="border-t border-navy-line p-3">
+        <div className="rounded-xl bg-white/[0.06] p-3">
+          <span className="pg-chip pg-chip--mint mb-2">{ROLE_LABEL[role]}</span>
+          <p className="truncate text-[0.72rem] text-slate-300">{email}</p>
           <button
             type="button"
             onClick={signOut}
-            aria-label={`Sign out of ${email || "your account"}`}
+            className="mt-2.5 inline-flex items-center gap-1.5 text-[0.74rem] font-semibold text-slate-400 transition-colors hover:text-white"
+          >
+            <LogOut size={13} aria-hidden="true" />
+            Sign out
+          </button>
+        </div>
+      </div>
+    </aside>
+  );
+}
+
+/* -------------------------------------------------------------------------- *\
+ * Phone: a compact top bar, and the fixed bottom navigation
+\* -------------------------------------------------------------------------- */
+
+function PortalTopBar({ role, signOut }: { role: AppRole; signOut: () => void }) {
+  return (
+    <header className="pg-header lg:hidden">
+      <div className="pg-header-inner">
+        <BrandLockup size="sm" />
+        <div className="flex items-center gap-2">
+          <span className="pg-chip pg-chip--onDark border-navy-line bg-white/10 text-slate-200">
+            {ROLE_LABEL[role]}
+          </span>
+          <button
+            type="button"
+            onClick={signOut}
+            aria-label="Sign out"
             className="grid size-9 place-items-center rounded-full border border-navy-line text-slate-300 transition-colors hover:border-coral hover:text-white"
           >
             <LogOut size={15} aria-hidden="true" />
@@ -168,6 +299,63 @@ function PortalHeader({
         </div>
       </div>
     </header>
+  );
+}
+
+function PortalBottomNav({ role }: { role: AppRole }) {
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+
+  // The four the brief asks for, plus the staff door for whoever needs one. On
+  // a 360px screen that is five at most, which still fits at 72px a slot.
+  const items: { to: string; label: string; icon: typeof Gauge }[] = [
+    { to: "/portal/investor", label: "Dashboard", icon: Gauge },
+    { to: "/portal/investor", label: "My Stocks", icon: Wallet },
+    { to: "/portal/feed", label: "Farm Feed", icon: Activity },
+  ];
+  if (role === "operator" || role === "admin") {
+    items.push({ to: "/portal/operator", label: "Farm log", icon: Leaf });
+  } else {
+    items.push({ to: "/portal/feed", label: "Alerts", icon: Bell });
+  }
+  items.push({ to: "/portal/profile", label: "Profile", icon: Settings });
+
+  return (
+    <nav
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-hairline bg-white/95 backdrop-blur-md lg:hidden"
+      aria-label="Portal navigation"
+      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+    >
+      <ul className="m-0 grid list-none grid-flow-col auto-cols-fr p-0">
+        {items.map((item) => {
+          const Icon = item.icon;
+          const active =
+            pathname === item.to ||
+            (item.to !== "/portal/investor" && pathname.startsWith(`${item.to}/`));
+          return (
+            <li key={`${item.to}-${item.label}`} className="min-w-0">
+              <Link
+                to={item.to}
+                aria-current={active ? "page" : undefined}
+                className={cn(
+                  "flex min-h-[3.6rem] flex-col items-center justify-center gap-1 px-1 py-2 text-[0.6rem] font-semibold no-underline transition-colors",
+                  active ? "text-navy" : "text-ink-mute",
+                )}
+              >
+                <span
+                  className={cn(
+                    "grid size-8 place-items-center rounded-lg transition-colors",
+                    active ? "bg-navy text-signal" : "text-ink-mute",
+                  )}
+                >
+                  <Icon size={17} aria-hidden="true" />
+                </span>
+                <span className="max-w-full truncate">{item.label}</span>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </nav>
   );
 }
 
@@ -182,6 +370,9 @@ function PortalFooter() {
           <Link to="/cycles" className="no-underline hover:text-ink-deep">
             Marketplace
           </Link>
+          <Link to="/verify" className="no-underline hover:text-ink-deep">
+            Verify a document
+          </Link>
           <Link
             to="/legal/$doc"
             params={{ doc: "risk" }}
@@ -195,5 +386,42 @@ function PortalFooter() {
         </span>
       </div>
     </footer>
+  );
+}
+
+/** A page-level heading used by every portal screen. */
+export function PortalHeading({
+  kicker,
+  title,
+  blurb,
+  action,
+}: {
+  kicker: string;
+  title: string;
+  blurb?: string;
+  action?: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-col gap-3 border-b border-hairline pb-5 md:flex-row md:items-end md:justify-between">
+      <div className="min-w-0">
+        <p className="pg-kicker">{kicker}</p>
+        <h1 className="mt-1.5 text-[1.45rem] leading-tight text-ink-deep md:text-[1.75rem]">
+          {title}
+        </h1>
+        {blurb ? (
+          <p className="mt-1.5 max-w-2xl text-[0.83rem] leading-6 text-ink-soft">{blurb}</p>
+        ) : null}
+      </div>
+      {action ? <div className="flex flex-wrap items-center gap-2">{action}</div> : null}
+    </div>
+  );
+}
+
+export function PortalLoading({ label }: { label: string }) {
+  return (
+    <div className="flex items-center gap-2 py-16 text-ink-mute">
+      <Loader2 size={16} className="animate-spin" aria-hidden="true" />
+      <span className="fig text-[0.8rem]">{label}</span>
+    </div>
   );
 }

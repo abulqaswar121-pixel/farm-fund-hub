@@ -22,6 +22,8 @@ import {
 } from "lucide-react";
 
 import { Card, EmptyState, Figure, Notice, StatusChip } from "@/components/ndh/ledger-ui";
+import { MediaProofCapture } from "@/components/agri/MediaProofCapture";
+import { WhatsAppShare } from "@/components/agri/WhatsAppShare";
 import { COMMODITIES } from "@/lib/agri/commodities";
 import { dateLabel, dateTimeLabel, money, number } from "@/lib/agri/format";
 import {
@@ -109,6 +111,24 @@ const ACTIONS: {
     tone: "tone-cyan",
   },
 ];
+
+/**
+ * Which ledger log type each quick action files under.
+ *
+ * The WhatsApp generator reads this so an entry's message is built from the
+ * same row the ledger stored — the operator never types a summary twice.
+ */
+const LOG_TYPE_FOR: Record<QuickAction, string> = {
+  feed: "feed",
+  growth: "growth_sample",
+  mortality: "mortality",
+  medication: "medication",
+  crates: "general",
+  expense: "expense",
+  harvest: "harvest",
+  incident: "incident",
+  weather: "weather",
+};
 
 function OperatorPortal() {
   const load = useServerFn(getOperatorWorkspace);
@@ -305,6 +325,7 @@ function OperatorPortal() {
           key={active}
           action={active}
           cycleId={cycleId}
+          cycleCode={activeCycle?.code ?? ""}
           feedUnit={commodity?.feedUnit ?? "kg"}
           growthUnit={commodity?.growthUnit ?? "g"}
           onDone={(tone, text) => {
@@ -492,12 +513,14 @@ function OperatorPortal() {
 function QuickLogForm({
   action,
   cycleId,
+  cycleCode,
   feedUnit,
   growthUnit,
   onDone,
 }: {
   action: QuickAction;
   cycleId: string;
+  cycleCode: string;
   feedUnit: string;
   growthUnit: string;
   onDone: (tone: "success" | "error" | "info", text: string) => void;
@@ -510,6 +533,9 @@ function QuickLogForm({
 
   const [busy, setBusy] = useState(false);
   const [form, setForm] = useState<Record<string, string>>({});
+  // What was just filed, so the worker can attach a photo and push the update
+  // to the WhatsApp group without leaving the form.
+  const [filed, setFiled] = useState<{ logType: string; label: string } | null>(null);
   const value = (key: string) => form[key] ?? "";
   const set = (key: string, next: string) => setForm((prev) => ({ ...prev, [key]: next }));
   const num = (key: string) => (value(key) ? Number(value(key)) : undefined);
@@ -629,11 +655,21 @@ function QuickLogForm({
       }
 
       setForm({});
+      // Expense and incident entries have no WhatsApp farm update — the first
+      // would put a supplier's price in a group, the second is published on the
+      // incident register instead.
+      setFiled(
+        action === "expense" || action === "incident"
+          ? null
+          : { logType: LOG_TYPE_FOR[action] ?? "general", label: description?.label ?? "Farm" },
+      );
       onDone(
         "success",
         action === "incident"
           ? "Incident published to the register. Members can see it immediately."
-          : "Entry filed. It is pending admin review before it appears publicly.",
+          : action === "expense"
+            ? "Expense filed against the cycle. It is queued for treasury approval and already on the activity feed."
+            : "Entry filed. It is pending admin review before it appears publicly.",
       );
     } catch (error) {
       onDone("error", error instanceof Error ? error.message : "That entry could not be saved");
@@ -1046,6 +1082,19 @@ function QuickLogForm({
         {busy ? <Loader2 size={16} className="animate-spin" /> : null}
         Save {description?.label.toLowerCase()} entry
       </button>
+
+      {/* Attach proof, then send the update -------------------------- */}
+      {filed ? (
+        <div className="mt-5 space-y-3 rounded-xl border border-mint/30 bg-mint-soft/60 p-3.5">
+          <p className="text-[0.78rem] font-semibold text-mint-deep">
+            Saved. Add the proof while you are still standing there.
+          </p>
+
+          <MediaProofCapture cycleId={cycleId} logId={null} />
+
+          <WhatsAppShare cycleId={cycleId} cycleCode={cycleCode} logType={filed.logType} />
+        </div>
+      ) : null}
 
       <p className="mt-3 text-[0.68rem] leading-5 text-ink-mute">
         Entries are filed against {`the selected cycle`} and are reviewed by an admin before they

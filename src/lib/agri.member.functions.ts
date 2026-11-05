@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { MIN_CONTRIBUTION } from "@/lib/agri/contribution";
 import { readRules, rulesChip, type CycleRules } from "@/lib/agri/rules";
 import { resolveCallerRole, type AppRole } from "@/lib/agri/roles";
 import type { Database } from "@/integrations/supabase/types";
@@ -68,6 +69,8 @@ export type MemberPosition = {
 
 export type MemberPayout = {
   id: string;
+  /** Needed to issue the printable settlement statement for this line. */
+  cycleId: string;
   cycleCode: string;
   cycleName: string;
   capital: number;
@@ -267,6 +270,7 @@ export const getMemberWorkspace = createServerFn({ method: "GET" })
       const cycle = cycleMap.get(line.cycle_id);
       return {
         id: line.id,
+        cycleId: line.cycle_id,
         cycleCode: cycle?.code ?? "—",
         cycleName: cycle?.name ?? "Settled cycle",
         capital: Number(line.capital),
@@ -582,6 +586,14 @@ export const startContribution = createServerFn({ method: "POST" })
 
     if (!cycle) throw new Error("That farm cycle could not be found");
     if (cycle.status !== "open") throw new Error("This cycle is no longer accepting capital");
+
+    // Two floors, both enforced here and not only in the form: the
+    // co-operative's own ₦5,000 minimum, and whatever this cycle asks for.
+    if (data.amount < MIN_CONTRIBUTION) {
+      throw new Error(
+        `The smallest amount the co-operative accepts is ${nairaFloor(MIN_CONTRIBUTION)}.`,
+      );
+    }
     if (data.amount < Number(cycle.minimum_ticket)) {
       throw new Error(
         `The minimum entry ticket for ${cycle.code} is ${new Intl.NumberFormat("en-NG", {
@@ -684,6 +696,11 @@ export const confirmContribution = createServerFn({ method: "POST" })
 
     if (error) throw new Error("The payment cleared but the ledger could not be updated");
 
+    // If the member runs an Agri-Save plan, the oldest unpaid month at or before
+    // this payment is now paid. Best-effort: a failure here must never undo a
+    // payment that has already been verified.
+    await supabaseAdmin.rpc("settle_monthly_plan", { _investment_id: investment.id });
+
     return { ok: true, reference: data.reference };
   });
 
@@ -720,6 +737,14 @@ export const requestBankTransfer = createServerFn({ method: "POST" })
 
     if (!cycle) throw new Error("That farm cycle could not be found");
     if (cycle.status !== "open") throw new Error("This cycle is no longer accepting capital");
+
+    // Two floors, both enforced here and not only in the form: the
+    // co-operative's own ₦5,000 minimum, and whatever this cycle asks for.
+    if (data.amount < MIN_CONTRIBUTION) {
+      throw new Error(
+        `The smallest amount the co-operative accepts is ${nairaFloor(MIN_CONTRIBUTION)}.`,
+      );
+    }
     if (data.amount < Number(cycle.minimum_ticket)) {
       throw new Error("That is below the minimum entry ticket for this cycle");
     }
@@ -873,3 +898,12 @@ export const cancelFarmVisit = createServerFn({ method: "POST" })
     if (error) throw new Error("Unable to cancel that visit");
     return { ok: true };
   });
+
+/** "₦5,000" — used in error messages the member reads. */
+function nairaFloor(value: number): string {
+  return new Intl.NumberFormat("en-NG", {
+    style: "currency",
+    currency: "NGN",
+    maximumFractionDigits: 0,
+  }).format(value);
+}

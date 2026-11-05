@@ -12,14 +12,18 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PortalRouteImport } from './routes/portal'
 import { Route as SigninRouteImport } from './routes/signin'
+import { Route as VerifyRouteImport } from './routes/verify'
 import { Route as ApiHealthRouteImport } from './routes/api.health'
 import { Route as CyclesIndexRouteImport } from './routes/cycles.index'
 import { Route as CyclesCycleIdRouteImport } from './routes/cycles.$cycleId'
 import { Route as LegalDocRouteImport } from './routes/legal.$doc'
 import { Route as PortalIndexRouteImport } from './routes/portal.index'
 import { Route as PortalAdminRouteImport } from './routes/portal.admin'
+import { Route as PortalFeedRouteImport } from './routes/portal.feed'
 import { Route as PortalInvestorRouteImport } from './routes/portal.investor'
 import { Route as PortalOperatorRouteImport } from './routes/portal.operator'
+import { Route as PortalProfileRouteImport } from './routes/portal.profile'
+import { Route as PortalTreasuryRouteImport } from './routes/portal.treasury'
 import { Route as ApiPublicPaystackWebhookRouteImport } from './routes/api.public.paystack-webhook'
 
 const IndexRoute = IndexRouteImport.update({
@@ -35,6 +39,11 @@ const PortalRoute = PortalRouteImport.update({
 const SigninRoute = SigninRouteImport.update({
   id: '/signin',
   path: '/signin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VerifyRoute = VerifyRouteImport.update({
+  id: '/verify',
+  path: '/verify',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiHealthRoute = ApiHealthRouteImport.update({
@@ -67,6 +76,11 @@ const PortalAdminRoute = PortalAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => PortalRoute,
 } as any)
+const PortalFeedRoute = PortalFeedRouteImport.update({
+  id: '/feed',
+  path: '/feed',
+  getParentRoute: () => PortalRoute,
+} as any)
 const PortalInvestorRoute = PortalInvestorRouteImport.update({
   id: '/investor',
   path: '/investor',
@@ -75,6 +89,16 @@ const PortalInvestorRoute = PortalInvestorRouteImport.update({
 const PortalOperatorRoute = PortalOperatorRouteImport.update({
   id: '/operator',
   path: '/operator',
+  getParentRoute: () => PortalRoute,
+} as any)
+const PortalProfileRoute = PortalProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => PortalRoute,
+} as any)
+const PortalTreasuryRoute = PortalTreasuryRouteImport.update({
+  id: '/treasury',
+  path: '/treasury',
   getParentRoute: () => PortalRoute,
 } as any)
 const ApiPublicPaystackWebhookRoute =
@@ -88,12 +112,16 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/portal': typeof PortalRouteWithChildren
   '/signin': typeof SigninRoute
+  '/verify': typeof VerifyRoute
   '/api/health': typeof ApiHealthRoute
   '/cycles/$cycleId': typeof CyclesCycleIdRoute
   '/legal/$doc': typeof LegalDocRoute
   '/portal/admin': typeof PortalAdminRoute
+  '/portal/feed': typeof PortalFeedRoute
   '/portal/investor': typeof PortalInvestorRoute
   '/portal/operator': typeof PortalOperatorRoute
+  '/portal/profile': typeof PortalProfileRoute
+  '/portal/treasury': typeof PortalTreasuryRoute
   '/cycles/': typeof CyclesIndexRoute
   '/portal/': typeof PortalIndexRoute
   '/api/public/paystack-webhook': typeof ApiPublicPaystackWebhookRoute
@@ -101,12 +129,16 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/signin': typeof SigninRoute
+  '/verify': typeof VerifyRoute
   '/api/health': typeof ApiHealthRoute
   '/cycles/$cycleId': typeof CyclesCycleIdRoute
   '/legal/$doc': typeof LegalDocRoute
   '/portal/admin': typeof PortalAdminRoute
+  '/portal/feed': typeof PortalFeedRoute
   '/portal/investor': typeof PortalInvestorRoute
   '/portal/operator': typeof PortalOperatorRoute
+  '/portal/profile': typeof PortalProfileRoute
+  '/portal/treasury': typeof PortalTreasuryRoute
   '/cycles': typeof CyclesIndexRoute
   '/portal': typeof PortalIndexRoute
   '/api/public/paystack-webhook': typeof ApiPublicPaystackWebhookRoute
@@ -116,12 +148,16 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/portal': typeof PortalRouteWithChildren
   '/signin': typeof SigninRoute
+  '/verify': typeof VerifyRoute
   '/api/health': typeof ApiHealthRoute
   '/cycles/$cycleId': typeof CyclesCycleIdRoute
   '/legal/$doc': typeof LegalDocRoute
   '/portal/admin': typeof PortalAdminRoute
+  '/portal/feed': typeof PortalFeedRoute
   '/portal/investor': typeof PortalInvestorRoute
   '/portal/operator': typeof PortalOperatorRoute
+  '/portal/profile': typeof PortalProfileRoute
+  '/portal/treasury': typeof PortalTreasuryRoute
   '/cycles/': typeof CyclesIndexRoute
   '/portal/': typeof PortalIndexRoute
   '/api/public/paystack-webhook': typeof ApiPublicPaystackWebhookRoute
@@ -132,12 +168,16 @@ export interface FileRouteTypes {
     | '/'
     | '/portal'
     | '/signin'
+    | '/verify'
     | '/api/health'
     | '/cycles/$cycleId'
     | '/legal/$doc'
     | '/portal/admin'
+    | '/portal/feed'
     | '/portal/investor'
     | '/portal/operator'
+    | '/portal/profile'
+    | '/portal/treasury'
     | '/cycles/'
     | '/portal/'
     | '/api/public/paystack-webhook'
@@ -145,12 +185,16 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/signin'
+    | '/verify'
     | '/api/health'
     | '/cycles/$cycleId'
     | '/legal/$doc'
     | '/portal/admin'
+    | '/portal/feed'
     | '/portal/investor'
     | '/portal/operator'
+    | '/portal/profile'
+    | '/portal/treasury'
     | '/cycles'
     | '/portal'
     | '/api/public/paystack-webhook'
@@ -159,12 +203,16 @@ export interface FileRouteTypes {
     | '/'
     | '/portal'
     | '/signin'
+    | '/verify'
     | '/api/health'
     | '/cycles/$cycleId'
     | '/legal/$doc'
     | '/portal/admin'
+    | '/portal/feed'
     | '/portal/investor'
     | '/portal/operator'
+    | '/portal/profile'
+    | '/portal/treasury'
     | '/cycles/'
     | '/portal/'
     | '/api/public/paystack-webhook'
@@ -174,6 +222,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   PortalRoute: typeof PortalRouteWithChildren
   SigninRoute: typeof SigninRoute
+  VerifyRoute: typeof VerifyRoute
   ApiHealthRoute: typeof ApiHealthRoute
   CyclesCycleIdRoute: typeof CyclesCycleIdRoute
   LegalDocRoute: typeof LegalDocRoute
@@ -202,6 +251,13 @@ declare module '@tanstack/react-router' {
       path: '/signin'
       fullPath: '/signin'
       preLoaderRoute: typeof SigninRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/verify': {
+      id: '/verify'
+      path: '/verify'
+      fullPath: '/verify'
+      preLoaderRoute: typeof VerifyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/health': {
@@ -246,6 +302,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PortalAdminRouteImport
       parentRoute: typeof PortalRoute
     }
+    '/portal/feed': {
+      id: '/portal/feed'
+      path: '/feed'
+      fullPath: '/portal/feed'
+      preLoaderRoute: typeof PortalFeedRouteImport
+      parentRoute: typeof PortalRoute
+    }
     '/portal/investor': {
       id: '/portal/investor'
       path: '/investor'
@@ -260,6 +323,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PortalOperatorRouteImport
       parentRoute: typeof PortalRoute
     }
+    '/portal/profile': {
+      id: '/portal/profile'
+      path: '/profile'
+      fullPath: '/portal/profile'
+      preLoaderRoute: typeof PortalProfileRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/portal/treasury': {
+      id: '/portal/treasury'
+      path: '/treasury'
+      fullPath: '/portal/treasury'
+      preLoaderRoute: typeof PortalTreasuryRouteImport
+      parentRoute: typeof PortalRoute
+    }
     '/api/public/paystack-webhook': {
       id: '/api/public/paystack-webhook'
       path: '/api/public/paystack-webhook'
@@ -272,15 +349,21 @@ declare module '@tanstack/react-router' {
 
 interface PortalRouteChildren {
   PortalAdminRoute: typeof PortalAdminRoute
+  PortalFeedRoute: typeof PortalFeedRoute
   PortalInvestorRoute: typeof PortalInvestorRoute
   PortalOperatorRoute: typeof PortalOperatorRoute
+  PortalProfileRoute: typeof PortalProfileRoute
+  PortalTreasuryRoute: typeof PortalTreasuryRoute
   PortalIndexRoute: typeof PortalIndexRoute
 }
 
 const PortalRouteChildren: PortalRouteChildren = {
   PortalAdminRoute: PortalAdminRoute,
+  PortalFeedRoute: PortalFeedRoute,
   PortalInvestorRoute: PortalInvestorRoute,
   PortalOperatorRoute: PortalOperatorRoute,
+  PortalProfileRoute: PortalProfileRoute,
+  PortalTreasuryRoute: PortalTreasuryRoute,
   PortalIndexRoute: PortalIndexRoute,
 }
 
@@ -291,6 +374,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   PortalRoute: PortalRouteWithChildren,
   SigninRoute: SigninRoute,
+  VerifyRoute: VerifyRoute,
   ApiHealthRoute: ApiHealthRoute,
   CyclesCycleIdRoute: CyclesCycleIdRoute,
   LegalDocRoute: LegalDocRoute,

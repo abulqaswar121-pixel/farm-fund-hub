@@ -10,14 +10,20 @@ import {
   Coins,
   FileText,
   Gauge,
+  Landmark,
   Loader2,
   Lock,
+  Printer,
+  Receipt,
   RefreshCw,
   Repeat,
   Sprout,
+  TrendingDown,
   Wallet,
 } from "lucide-react";
 
+import { A4Document, type DocumentKind } from "@/components/agri/A4Document";
+import { AlertBanner } from "@/components/agri/AlertBanner";
 import { GrowthChart } from "@/components/agri/GrowthChart";
 import { StageRail } from "@/components/agri/StageRail";
 import { WaterfallLadder } from "@/components/agri/WaterfallLadder";
@@ -40,6 +46,12 @@ import {
   type CycleTelemetry,
   type MemberWorkspace,
 } from "@/lib/agri.member.functions";
+import {
+  getMemberCommunity,
+  issueDocument,
+  type DocumentPayload,
+} from "@/lib/agri.community.functions";
+import { MIN_CONTRIBUTION, QUICK_AMOUNTS, nairaWhole, parseAmount } from "@/lib/agri/contribution";
 import { openPaystackCheckout } from "@/lib/paystack-client";
 import { cn } from "@/lib/utils";
 
@@ -61,6 +73,18 @@ const TABS: { id: Tab; label: string; icon: typeof Gauge }[] = [
 function InvestorPortal() {
   const loadWorkspace = useServerFn(getMemberWorkspace);
   const loadTelemetry = useServerFn(getCycleTelemetry);
+  const loadCommunity = useServerFn(getMemberCommunity);
+  const issue = useServerFn(issueDocument);
+
+  const [community, setCommunity] = useState<Awaited<ReturnType<typeof getMemberCommunity>> | null>(
+    null,
+  );
+  const [document_, setDocument] = useState<{
+    kind: DocumentKind;
+    code: string;
+    payload: DocumentPayload;
+  } | null>(null);
+  const [documentBusy, setDocumentBusy] = useState(false);
 
   const [workspace, setWorkspace] = useState<MemberWorkspace | null>(null);
   const [failed, setFailed] = useState(false);
@@ -80,6 +104,47 @@ function InvestorPortal() {
     } catch {
       setFailed(true);
     }
+    // The treasury figures, alerts and documents are a second read: if the
+    // community layer is not deployed yet the ledger view still works.
+    try {
+      setCommunity(await loadCommunity());
+    } catch {
+      setCommunity(null);
+    }
+  }
+
+  /** Issue (or re-open) one of the three A4 documents for a ledger row. */
+  async function openDocument(
+    kind: DocumentKind,
+    args: { investmentId?: string; cycleId?: string },
+  ) {
+    setDocumentBusy(true);
+    try {
+      const issued = await issue({ data: { kind, ...args } });
+      const stored = community?.documents.find((doc) => doc.code === issued.code);
+      // Prefer the payload the ledger just returned; fall back to the stored
+      // document if the code already existed from an earlier print.
+      const payload =
+        stored?.payload ??
+        community?.documents.find((doc) => doc.id === issued.documentId)?.payload ??
+        null;
+      if (!payload) {
+        await refresh();
+        const fresh = await loadCommunity();
+        setCommunity(fresh);
+        const found = fresh.documents.find((doc) => doc.code === issued.code);
+        if (!found) throw new Error("That document could not be prepared");
+        setDocument({ kind, code: issued.code, payload: found.payload });
+      } else {
+        setDocument({ kind, code: issued.code, payload });
+      }
+    } catch (error) {
+      setFlash({
+        tone: "error",
+        text: error instanceof Error ? error.message : "That document could not be prepared",
+      });
+    }
+    setDocumentBusy(false);
   }
 
   useEffect(() => {
@@ -142,6 +207,19 @@ function InvestorPortal() {
   const activePosition = workspace.positions.find((row) => row.cycleId === activeCycleId) ?? null;
   const commodity = COMMODITIES.find((item) => item.id === activePosition?.commodity);
 
+  // A document is a page, not a panel: it takes the screen so the print dialog
+  // has nothing else in it and what prints is exactly what is on the sheet.
+  if (document_) {
+    return (
+      <A4Document
+        kind={document_.kind}
+        payload={document_.payload}
+        code={document_.code}
+        onClose={() => setDocument(null)}
+      />
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header ---------------------------------------------------------- */}
@@ -176,6 +254,51 @@ function InvestorPortal() {
             dismiss
           </button>
         </Notice>
+      ) : null}
+
+      {/* The expense alert the brief promises: pushed the moment it is logged. */}
+      {community && community.alerts.length > 0 ? (
+        <AlertBanner alerts={community.alerts} onDismissed={() => void refresh()} />
+      ) : null}
+
+      {/* Treasury — the three figures, counted from the movement book. */}
+      {community ? (
+        <div className="min-w-0">
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+            <p className="pg-kicker">Co-operative treasury, live</p>
+            <Link
+              to="/portal/feed"
+              className="text-[0.72rem] font-semibold text-signal-deep no-underline"
+            >
+              Open the farm feed →
+            </Link>
+          </div>
+          <dl className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-3">
+            <Card className="p-4">
+              <Figure
+                label="Total capital funded"
+                value={money(community.treasury.totalCapitalFunded)}
+                caption="Verified contributions, every cycle"
+              />
+            </Card>
+            <Card className="p-4">
+              <Figure
+                label="Total expenses incurred"
+                value={money(community.treasury.totalExpensesIncurred)}
+                caption="Paid out to suppliers"
+                tone={community.treasury.totalExpensesIncurred > 0 ? "debit" : "plain"}
+              />
+            </Card>
+            <Card className="p-4">
+              <Figure
+                label="Operating cash on hand"
+                value={money(community.treasury.operatingCashOnHand)}
+                caption="In, less what has gone out"
+                tone="credit"
+              />
+            </Card>
+          </dl>
+        </div>
       ) : null}
 
       {/* KPIs ------------------------------------------------------------ */}
@@ -433,6 +556,8 @@ function InvestorPortal() {
                       cycleId={cycle.cycleId}
                       code={cycle.code}
                       minimumTicket={cycle.minimumTicket}
+                      raised={cycle.raised}
+                      targetCapital={cycle.targetCapital}
                       onDone={async (message, tone) => {
                         setFlash({ tone, text: message });
                         await refresh();
@@ -594,6 +719,7 @@ function InvestorPortal() {
                       <th>Status</th>
                       <th>Reference</th>
                       <th>Receipt</th>
+                      <th className="no-print">Print</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -635,6 +761,42 @@ function InvestorPortal() {
                         </td>
                         <td className="font-mono text-[0.66rem] text-ink-mute">
                           {investment.receiptNumber ?? "—"}
+                        </td>
+                        <td className="no-print">
+                          {investment.status === "success" ? (
+                            <div className="flex flex-nowrap items-center gap-1">
+                              <button
+                                type="button"
+                                disabled={documentBusy}
+                                onClick={() =>
+                                  void openDocument("payment_receipt", {
+                                    investmentId: investment.id,
+                                  })
+                                }
+                                className="inline-flex items-center gap-1 rounded-md border border-hairline px-2 py-1 text-[0.64rem] font-semibold text-ink-soft transition-colors hover:border-hairline-strong hover:text-ink-deep disabled:opacity-50"
+                                title="Print this payment receipt"
+                              >
+                                <Receipt size={11} aria-hidden="true" />
+                                Receipt
+                              </button>
+                              <button
+                                type="button"
+                                disabled={documentBusy}
+                                onClick={() =>
+                                  void openDocument("investment_certificate", {
+                                    investmentId: investment.id,
+                                  })
+                                }
+                                className="inline-flex items-center gap-1 rounded-md border border-hairline px-2 py-1 text-[0.64rem] font-semibold text-ink-soft transition-colors hover:border-hairline-strong hover:text-ink-deep disabled:opacity-50"
+                                title="Print this investment certificate"
+                              >
+                                <Printer size={11} aria-hidden="true" />
+                                Certificate
+                              </button>
+                            </div>
+                          ) : (
+                            <span className="text-[0.64rem] text-ink-mute">After verification</span>
+                          )}
                         </td>
                       </tr>
                     ))}
@@ -709,6 +871,20 @@ function InvestorPortal() {
                             </span>
                           ) : null}
                         </td>
+                        <td className="no-print">
+                          <button
+                            type="button"
+                            disabled={documentBusy}
+                            onClick={() =>
+                              void openDocument("harvest_statement", { cycleId: payout.cycleId })
+                            }
+                            className="inline-flex items-center gap-1 rounded-md border border-hairline px-2 py-1 text-[0.64rem] font-semibold text-ink-soft transition-colors hover:border-hairline-strong hover:text-ink-deep disabled:opacity-50"
+                            title="Print this harvest settlement statement"
+                          >
+                            <Printer size={11} aria-hidden="true" />
+                            Print A4
+                          </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -764,26 +940,44 @@ function ContributeForm({
   cycleId,
   code,
   minimumTicket,
+  raised,
+  targetCapital,
   onDone,
 }: {
   cycleId: string;
   code: string;
   minimumTicket: number;
+  /** Verified capital already in this cycle, so the equity preview is live. */
+  raised: number;
+  targetCapital: number;
   onDone: (message: string, tone: "success" | "error" | "info") => Promise<void>;
 }) {
   const start = useServerFn(startContribution);
   const confirm = useServerFn(confirmContribution);
   const bank = useServerFn(requestBankTransfer);
 
-  const [amount, setAmount] = useState(String(minimumTicket));
+  const [raw, setRaw] = useState(String(Math.max(MIN_CONTRIBUTION, minimumTicket)));
   const [busy, setBusy] = useState(false);
   const [mode, setMode] = useState<"card" | "transfer">("card");
   const [bankReference, setBankReference] = useState("");
+  const [frequency, setFrequency] = useState<"once" | "monthly">("once");
+
+  // The floor is the brief's ₦5,000 and the cycle's own minimum ticket,
+  // whichever is larger — a cycle may ask for more, never for less.
+  const floor = Math.max(MIN_CONTRIBUTION, minimumTicket);
+  const parsed = parseAmount(raw);
+  const amount = parsed.ok ? parsed.amount : 0;
+  const belowFloor = parsed.ok && amount < floor;
+
+  // Live equity preview: this amount over the cycle's total once it lands.
+  // It is a preview only — the number that counts is computed by the database
+  // from verified rows after the payment is confirmed.
+  const equityAfter = amount > 0 ? (amount / Math.max(raised + amount, 1)) * 100 : 0;
 
   async function payWithCard() {
     setBusy(true);
     try {
-      const session = await start({ data: { cycleId, amount: Number(amount) } });
+      const session = await start({ data: { cycleId, amount } });
       await openPaystackCheckout({
         publicKey: session.publicKey,
         email: session.email,
@@ -815,7 +1009,7 @@ function ContributeForm({
     setBusy(true);
     try {
       await bank({
-        data: { cycleId, amount: Number(amount), bankReference: bankReference.trim() },
+        data: { cycleId, amount, bankReference: bankReference.trim() },
       });
       await onDone(
         "Transfer submitted for verification. No equity is credited until a treasury admin confirms the money landed.",
@@ -833,31 +1027,99 @@ function ContributeForm({
 
   return (
     <div className="mt-3 border-t border-hairline pt-3">
-      <div className="flex gap-1">
-        {(["card", "transfer"] as const).map((option) => (
+      {/* Once or monthly ------------------------------------------------- */}
+      <div className="flex flex-wrap items-center gap-1">
+        {(
+          [
+            { id: "once", label: "One-time deposit" },
+            { id: "monthly", label: "Monthly Agri-Save" },
+          ] as const
+        ).map((option) => (
           <button
-            key={option}
+            key={option.id}
             type="button"
-            onClick={() => setMode(option)}
+            onClick={() => setFrequency(option.id)}
+            aria-pressed={frequency === option.id}
             className={cn(
-              "rounded-full px-2.5 py-1 text-[0.68rem] font-semibold",
-              mode === option ? "bg-navy text-white" : "bg-porcelain text-ink-soft",
+              "rounded-full px-2.5 py-1 text-[0.68rem] font-semibold transition-colors",
+              frequency === option.id ? "bg-navy text-white" : "bg-porcelain text-ink-soft",
             )}
           >
-            {option === "card" ? "Pay with card" : "Bank transfer"}
+            {option.label}
+          </button>
+        ))}
+        <span className="ml-auto flex gap-1">
+          {(["card", "transfer"] as const).map((option) => (
+            <button
+              key={option}
+              type="button"
+              onClick={() => setMode(option)}
+              className={cn(
+                "rounded-full px-2.5 py-1 text-[0.68rem] font-semibold transition-colors",
+                mode === option ? "bg-navy text-white" : "bg-porcelain text-ink-soft",
+              )}
+            >
+              {option === "card" ? "Card" : "Transfer"}
+            </button>
+          ))}
+        </span>
+      </div>
+
+      {frequency === "monthly" ? (
+        <p className="mt-2 rounded-lg border border-signal/30 bg-cyan-50 px-2.5 py-2 text-[0.68rem] leading-5 text-cyan-900">
+          A monthly plan schedules this amount every month from ₦
+          {MIN_CONTRIBUTION.toLocaleString("en-NG")}. This deposit is the first month. Manage the
+          schedule in{" "}
+          <Link to="/portal/profile" className="font-semibold underline underline-offset-2">
+            Profile → Monthly Agri-Save
+          </Link>
+          .
+        </p>
+      ) : null}
+
+      {/* Amount with quick chips ---------------------------------------- */}
+      <label className="mt-2.5 block">
+        <span className="pg-label">Amount (₦)</span>
+        <input
+          className="pg-input mt-1 h-11 text-[0.95rem]"
+          inputMode="decimal"
+          value={raw}
+          aria-invalid={!parsed.ok || belowFloor}
+          onChange={(event) => setRaw(event.target.value.replace(/[^0-9.]/g, ""))}
+        />
+      </label>
+
+      <div className="mt-1.5 flex flex-wrap gap-1.5">
+        {QUICK_AMOUNTS.map((value) => (
+          <button
+            key={value}
+            type="button"
+            onClick={() => setRaw(String(value))}
+            aria-pressed={amount === value}
+            className={cn(
+              "rounded-full border px-2.5 py-1 text-[0.68rem] font-semibold transition-colors",
+              amount === value
+                ? "border-navy bg-navy text-white"
+                : "border-hairline bg-white text-ink-soft hover:border-hairline-strong",
+            )}
+          >
+            {nairaWhole(value)}
           </button>
         ))}
       </div>
 
-      <label className="mt-2.5 block">
-        <span className="pg-label">Amount (₦)</span>
-        <input
-          className="pg-input h-10"
-          inputMode="decimal"
-          value={amount}
-          onChange={(event) => setAmount(event.target.value.replace(/[^0-9.]/g, ""))}
-        />
-      </label>
+      {!parsed.ok ? (
+        <p className="mt-1.5 text-[0.68rem] font-medium text-amber-700">{parsed.message}</p>
+      ) : belowFloor ? (
+        <p className="mt-1.5 text-[0.68rem] font-medium text-amber-700">
+          The smallest amount for {code} is {nairaWhole(floor)}.
+        </p>
+      ) : (
+        <p className="fig mt-1.5 text-[0.68rem] text-ink-mute">
+          {money(amount)} · live equity after this deposit ≈ {percent(equityAfter, 4)} of{" "}
+          {money(targetCapital)} target
+        </p>
+      )}
 
       {mode === "transfer" ? (
         <label className="mt-2.5 block">
@@ -873,16 +1135,23 @@ function ContributeForm({
 
       <button
         type="button"
-        disabled={busy || Number(amount) < minimumTicket}
+        disabled={
+          busy ||
+          !parsed.ok ||
+          belowFloor ||
+          (mode === "transfer" && bankReference.trim().length < 4)
+        }
         onClick={() => (mode === "card" ? void payWithCard() : void submitTransfer())}
         className="pg-btn pg-btn--primary mt-3 h-10 w-full text-[0.78rem]"
       >
         {busy ? <Loader2 size={14} className="animate-spin" /> : null}
-        {mode === "card" ? "Contribute with Paystack" : "Submit for verification"}
+        {mode === "card"
+          ? `Contribute ${nairaWhole(Number.isFinite(amount) ? amount : 0)} with Paystack`
+          : "Submit for verification"}
       </button>
       <p className="mt-2 text-[0.64rem] leading-4 text-ink-mute">
-        {code} · minimum {money(minimumTicket)}. Card payments are confirmed server-side by the
-        Paystack webhook — never by this page.
+        {code} · minimum {money(floor)}. Card payments are confirmed server-side by the Paystack
+        webhook — never by this page.
       </p>
     </div>
   );

@@ -8,7 +8,15 @@ import { FamilyFooter } from "@/components/ndh/FamilyFooter";
 import { Notice } from "@/components/ndh/ledger-ui";
 import { supabase } from "@/integrations/supabase/client";
 
-const searchSchema = z.object({ cycle: z.string().uuid().optional() });
+const searchSchema = z.object({
+  cycle: z.string().optional(),
+  /**
+   * Set by the "Start investing from ₦5,000" button on the public homepage, so
+   * a visitor arrives on the sign-up form rather than having to find it. It is
+   * a hint about which tab to open; it can never skip the payment rules.
+   */
+  intent: z.enum(["invest"]).optional(),
+});
 
 export const Route = createFileRoute("/signin")({
   validateSearch: searchSchema,
@@ -28,9 +36,11 @@ export const Route = createFileRoute("/signin")({
 
 function SignInPage() {
   const navigate = useNavigate();
-  const { cycle } = Route.useSearch();
+  const { cycle, intent } = Route.useSearch();
 
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  // Arriving from "Start investing" opens the create-account form, because that
+  // is what the button promised. It changes nothing about what an account may do.
+  const [mode, setMode] = useState<"signin" | "signup">(intent === "invest" ? "signup" : "signin");
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
