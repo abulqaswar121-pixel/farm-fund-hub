@@ -27,7 +27,7 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/portal/feed")({
   head: () => ({
     meta: [
-      { title: "Farm Feed & Live Ledger | NDH AgriCapital" },
+      { title: "Farm Feed & Live Ledger | NDH FarmFund" },
       { name: "robots", content: "noindex" },
     ],
   }),

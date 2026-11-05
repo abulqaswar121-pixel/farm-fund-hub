@@ -84,7 +84,7 @@ export function A4Document({
           <div className="flex items-center gap-3">
             <img src="/favicon.svg" alt="" className="doc-mark" width={44} height={44} />
             <div className="min-w-0">
-              <p className="doc-org">NDH AgriCapital</p>
+              <p className="doc-org">NDH FarmFund</p>
               <p className="doc-org-sub">
                 Najeeb Digital Hub · Co-operative farm investment ledger
               </p>
@@ -122,7 +122,7 @@ export function A4Document({
             </p>
             <p className="doc-foot-fine">
               Najeeb Digital Hub · Marmaron Nufawa Western Bye Pass, Sokoto, Nigeria ·
-              support@ndh.com.ng · 09029932794. AgriCapital is a co-operative agricultural
+              support@ndh.com.ng · 09029932794. NDH FarmFund is a co-operative agricultural
               investment programme, not a bank. Farm outcomes can fall short; capital is at risk.
             </p>
           </div>

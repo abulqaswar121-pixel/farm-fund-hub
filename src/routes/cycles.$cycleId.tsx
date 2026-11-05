@@ -30,14 +30,14 @@ export const Route = createFileRoute("/cycles/$cycleId")({
       meta: [
         {
           title: cycle
-            ? `${cycle.code} · ${cycle.name} | NDH AgriCapital`
-            : "Farm cycle | NDH AgriCapital",
+            ? `${cycle.code} · ${cycle.name} | NDH FarmFund`
+            : "Farm cycle | NDH FarmFund",
         },
         {
           name: "description",
           content: cycle
             ? `${cycle.name} — what the cycle needs, how much has been raised so far, how long it runs and what the farm has published so far.`
-            : "A published NDH AgriCapital farm cycle.",
+            : "A published NDH FarmFund farm cycle.",
         },
       ],
     };

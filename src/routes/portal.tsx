@@ -23,7 +23,7 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/portal")({
   head: () => ({
-    meta: [{ title: "Member Portal | NDH AgriCapital" }, { name: "robots", content: "noindex" }],
+    meta: [{ title: "Member Portal | NDH FarmFund" }, { name: "robots", content: "noindex" }],
   }),
   component: PortalLayout,
 });
@@ -364,7 +364,7 @@ function PortalFooter() {
     <footer className="border-t border-hairline bg-white">
       <div className="mx-auto flex max-w-[var(--page)] flex-col gap-2 px-[var(--gutter)] py-4 text-[0.7rem] text-ink-mute sm:flex-row sm:items-center sm:justify-between">
         <span>
-          NDH AgriCapital · every figure on this page is computed from the ledger, never stored.
+          NDH FarmFund · every figure on this page is computed from the ledger, never stored.
         </span>
         <span className="flex flex-wrap items-center gap-4">
           <Link to="/cycles" className="no-underline hover:text-ink-deep">

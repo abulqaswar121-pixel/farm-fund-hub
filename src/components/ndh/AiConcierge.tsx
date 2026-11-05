@@ -45,7 +45,7 @@ const TOPICS: Topic[] = [
     id: "risk",
     question: "Could I lose money?",
     answer:
-      "Yes. Agriculture carries biological, weather and market risk — disease, flooding, feed price spikes or buyer price drops can reduce or eliminate profit, and the principal return at Level 2 depends on the harvest realising enough revenue. Every cycle carries a weather and insurance record, and AgriCapital publishes incidents openly, but no return is guaranteed.",
+      "Yes. Agriculture carries biological, weather and market risk — disease, flooding, feed price spikes or buyer price drops can reduce or eliminate profit, and the principal return at Level 2 depends on the harvest realising enough revenue. Every cycle carries a weather and insurance record, and FarmFund publishes incidents openly, but no return is guaranteed.",
   },
   {
     id: "cycles",
@@ -83,7 +83,7 @@ function replyFor(input: string): { answer: string; followUps: Topic[] } {
   if (!scored[0] || scored[0].score === 0) {
     return {
       answer:
-        "I can only answer from AgriCapital's published rules — cycle mechanics, the waterfall, equity, risk and visits. I do not give personalised financial advice or quote a projected return. For anything else, our support team replies on support@ndh.com.ng.",
+        "I can only answer from FarmFund's published rules — cycle mechanics, the waterfall, equity, risk and visits. I do not give personalised financial advice or quote a projected return. For anything else, our support team replies on support@ndh.com.ng.",
       followUps: TOPICS.slice(0, 3),
     };
   }
@@ -103,7 +103,7 @@ export function AiConcierge() {
     {
       id: 0,
       role: "bot",
-      text: "Good day. I am the AgriCapital concierge. I answer from the platform's locked rules only — no projections, no promises. What would you like to check?",
+      text: "Good day. I am the FarmFund concierge. I answer from the platform's locked rules only — no projections, no promises. What would you like to check?",
       followUps: TOPICS.slice(0, 3),
     },
   ]);
@@ -135,7 +135,7 @@ export function AiConcierge() {
         type="button"
         onClick={() => setOpen((value) => !value)}
         aria-expanded={open}
-        aria-label={open ? "Close the AgriCapital concierge" : "Ask the AgriCapital concierge"}
+        aria-label={open ? "Close the FarmFund concierge" : "Ask the FarmFund concierge"}
         className="fixed bottom-5 right-5 z-50 grid size-14 place-items-center overflow-hidden rounded-full border border-navy-line bg-navy shadow-[var(--shadow-deep)] transition-transform hover:scale-105"
       >
         {open ? (
@@ -158,7 +158,7 @@ export function AiConcierge() {
         <div
           className="fixed bottom-24 right-5 z-50 flex max-h-[min(78vh,34rem)] w-[min(92vw,23rem)] flex-col overflow-hidden rounded-2xl border border-hairline bg-white shadow-[var(--shadow-deep)]"
           role="dialog"
-          aria-label="AgriCapital concierge"
+          aria-label="FarmFund Concierge"
         >
           <div className="flex items-center gap-3 bg-navy px-4 py-3 text-white">
             <img
@@ -169,7 +169,7 @@ export function AiConcierge() {
               height={36}
             />
             <div className="min-w-0">
-              <p className="font-display text-sm font-bold">AgriCapital Concierge</p>
+              <p className="font-display text-sm font-bold">FarmFund Concierge</p>
               <p className="flex items-center gap-1.5 text-[0.68rem] text-slate-400">
                 <span className="pg-live-dot" /> Answers from locked cycle rules
               </p>

@@ -77,6 +77,12 @@ export type PublicCycle = {
   /** The smallest amount a member may put in. A published term, not internals. */
   minimumTicket: number;
   cycleWeeks: number;
+  /** Stock on the farm today, from the latest approved log. Not financial. */
+  fishCount: number | null;
+  /** Latest approved sample weight, in grams. */
+  avgWeightG: number | null;
+  /** Total recorded feed in approved logs, in kilograms. */
+  feedKg: number | null;
   fundingOpensOn: string | null;
   fundingClosesOn: string | null;
   projectedHarvestOn: string | null;
@@ -154,8 +160,29 @@ type CyclePublicRow = Pick<
   (typeof PUBLIC_CYCLE_COLUMNS)[number]
 >;
 
+/**
+ * Farm telemetry the public may see, keyed by cycle. All non-financial: how
+ * many fish are alive, how heavy they are, how much feed went in.
+ */
+type PublicStock = {
+  population: number | null;
+  avgWeightG: number | null;
+  feedKg: number | null;
+};
+
+/** The three non-financial columns of cycle_stock_level the public may read. */
+type StockRow = {
+  cycle_id: string | null;
+  population_count: number | null;
+  sample_avg_weight_g: number | null;
+};
+
 /** Map one whitelisted row into the public shape, rounding as it goes. */
-function toPublicCycle(row: CyclePublicRow, exactRaised: number): PublicCycle {
+function toPublicCycle(
+  row: CyclePublicRow,
+  exactRaised: number,
+  stock: PublicStock = { population: null, avgWeightG: null, feedKg: null },
+): PublicCycle {
   const target = Number(row.target_capital ?? 0);
   const raisedRounded = floorToPublicStep(exactRaised);
   const fundedPercent = target > 0 ? Math.min(100, Math.floor((raisedRounded / target) * 100)) : 0;
@@ -174,6 +201,9 @@ function toPublicCycle(row: CyclePublicRow, exactRaised: number): PublicCycle {
     fundedPercent,
     minimumTicket: Number(row.minimum_ticket ?? 0),
     cycleWeeks: row.cycle_weeks,
+    fishCount: stock.population,
+    avgWeightG: stock.avgWeightG,
+    feedKg: stock.feedKg,
     fundingOpensOn: row.funding_opens_on,
     fundingClosesOn: row.funding_closes_on,
     projectedHarvestOn: row.projected_harvest_on,
@@ -238,10 +268,11 @@ export const listPublicCycles = createServerFn({ method: "GET" }).handler(
     let cycles: CyclePublicRow[] = [];
     let funding: { cycle_id: string | null; raised_capital: number | null }[] = [];
     let updates: { cycle_id: string | null }[] = [];
+    let stockRows: StockRow[] = [];
     let reachable = true;
 
     try {
-      const [cycleResult, fundingResult, updateResult] = await Promise.all([
+      const [cycleResult, fundingResult, updateResult, stockResult] = await Promise.all([
         supabase
           .from("farm_cycles")
           .select(PUBLIC_CYCLE_SELECT)
@@ -253,10 +284,17 @@ export const listPublicCycles = createServerFn({ method: "GET" }).handler(
         // granted to the anonymous role at all.
         supabase.from("cycle_funding").select("cycle_id, raised_capital"),
         supabase.from("public_milestones").select("cycle_id"),
+        // Stock levels are non-financial and already published by the view:
+        // how many fish are alive, how heavy the last sample was. It is the
+        // one thing a visitor actually wants before putting money in.
+        supabase
+          .from("cycle_stock_level")
+          .select("cycle_id, population_count, sample_avg_weight_g"),
       ]);
       cycles = (cycleResult.data ?? []) as unknown as CyclePublicRow[];
       funding = fundingResult.data ?? [];
       updates = updateResult.data ?? [];
+      stockRows = (stockResult.data ?? []) as unknown as StockRow[];
     } catch (error) {
       console.warn("[agricapital] the farm marketplace could not reach the ledger:", error);
       reachable = false;
@@ -271,9 +309,38 @@ export const listPublicCycles = createServerFn({ method: "GET" }).handler(
       updatesByCycle.set(key, (updatesByCycle.get(key) ?? 0) + 1);
     }
 
+    let feedRows: { cycle_id: string | null; feed_kg: number | null }[] = [];
+    try {
+      // Approved feed entries only. RLS on operational_logs is staff-only, so
+      // this read is served by the public stock view's siblings where possible
+      // and silently skipped where not — the homepage then simply omits the
+      // feed line rather than inventing one.
+      const { data } = await supabase.from("public_feed_totals").select("cycle_id, feed_kg");
+      feedRows = data ?? [];
+    } catch {
+      feedRows = [];
+    }
+    const feedByCycle = new Map<string, number>(
+      (feedRows ?? []).map((row) => [row.cycle_id ?? "", Number(row.feed_kg ?? 0)]),
+    );
+    const stockByCycle = new Map<string, PublicStock>(
+      (stockRows ?? []).map((row) => [
+        row.cycle_id ?? "",
+        {
+          population: row.population_count === null ? null : Number(row.population_count),
+          avgWeightG: row.sample_avg_weight_g === null ? null : Number(row.sample_avg_weight_g),
+          feedKg: feedByCycle.get(row.cycle_id ?? "") ?? null,
+        },
+      ]),
+    );
+
     return {
       cycles: (cycles ?? []).map((row) => ({
-        ...toPublicCycle(row, raisedByCycle.get(row.id) ?? 0),
+        ...toPublicCycle(
+          row,
+          raisedByCycle.get(row.id) ?? 0,
+          stockByCycle.get(row.id) ?? { population: null, avgWeightG: null, feedKg: null },
+        ),
         publicUpdateCount: updatesByCycle.get(row.id) ?? 0,
       })),
       ledgerReachable: reachable,

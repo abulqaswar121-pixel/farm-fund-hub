@@ -5,7 +5,7 @@ import { ChevronDown, Menu, X } from "lucide-react";
 export type HeaderLink = { label: string; href: string };
 
 /**
- * The compact AgriCapital menu — the whole navigation on small screens.
+ * The compact FarmFund menu — the whole navigation on small screens.
  *
  * It carries this property's pages and nothing else: no sibling business
  * links, no parent-directory links, no ecosystem switcher. Those live in the
@@ -48,7 +48,7 @@ export function SiteMenu({
         className="pg-menu-trigger"
         aria-expanded={open}
         aria-controls={panelId}
-        aria-label={open ? "Close the AgriCapital menu" : "Open the AgriCapital menu"}
+        aria-label={open ? "Close the FarmFund menu" : "Open the FarmFund menu"}
         onClick={() => setOpen((value) => !value)}
       >
         {open ? <X size={14} aria-hidden="true" /> : <Menu size={14} aria-hidden="true" />}
@@ -61,9 +61,9 @@ export function SiteMenu({
       </button>
 
       {open ? (
-        <div className="pg-menu-panel" id={panelId} role="group" aria-label="AgriCapital pages">
+        <div className="pg-menu-panel" id={panelId} role="group" aria-label="FarmFund pages">
           <div className="pg-menu-head">
-            <p>NDH AgriCapital</p>
+            <p>NDH FarmFund</p>
             <strong>Platform pages</strong>
           </div>
           <ul className="pg-menu-list m-0 list-none p-1">

@@ -13,6 +13,7 @@ import {
   Landmark,
   Loader2,
   Lock,
+  Play,
   Printer,
   Receipt,
   RefreshCw,
@@ -20,6 +21,7 @@ import {
   Sprout,
   TrendingDown,
   Wallet,
+  Waves,
 } from "lucide-react";
 
 import { A4Document, type DocumentKind } from "@/components/agri/A4Document";
@@ -59,15 +61,27 @@ export const Route = createFileRoute("/portal/investor")({
   component: InvestorPortal,
 });
 
-type Tab = "portfolio" | "telemetry" | "statement" | "liquidity" | "visits" | "settings";
+/**
+ * Four tabs, in the order a member actually needs them.
+ *
+ * The previous version had six — Portfolio, Live telemetry, Statement &
+ * payouts, Share transfer, Farm visits and Reinvestment — and opened on a
+ * screen with two four-figure rows, a treasury strip, six KPI cards and a
+ * stage rail before the member's own money appeared. A co-operative member
+ * checking their phone on a bus wants three things: what have I put in, what is
+ * it doing, and what did the farm do this week.
+ *
+ * So: My stake, Cycle tracker, Pond updates, Documents. Farm visits and
+ * reinvestment are still there — they are buttons inside My stake, where they
+ * are relevant, rather than tabs competing for attention.
+ */
+type Tab = "stake" | "tracker" | "updates" | "documents";
 
 const TABS: { id: Tab; label: string; icon: typeof Gauge }[] = [
-  { id: "portfolio", label: "Portfolio", icon: Gauge },
-  { id: "telemetry", label: "Live telemetry", icon: Sprout },
-  { id: "statement", label: "Statement & payouts", icon: FileText },
-  { id: "liquidity", label: "Share transfer", icon: Coins },
-  { id: "visits", label: "Farm visits", icon: CalendarCheck },
-  { id: "settings", label: "Reinvestment", icon: Repeat },
+  { id: "stake", label: "My stake", icon: Gauge },
+  { id: "tracker", label: "Cycle tracker", icon: Sprout },
+  { id: "updates", label: "Pond updates", icon: Waves },
+  { id: "documents", label: "Documents", icon: FileText },
 ];
 
 function InvestorPortal() {
@@ -88,7 +102,13 @@ function InvestorPortal() {
 
   const [workspace, setWorkspace] = useState<MemberWorkspace | null>(null);
   const [failed, setFailed] = useState(false);
-  const [tab, setTab] = useState<Tab>("portfolio");
+  const [tab, setTab] = useState<Tab>("stake");
+  /**
+   * The three tools that used to be tabs of their own. They are one tap away,
+   * inside My stake, and close back to it — because none of them is why anybody
+   * opens the portal on a Tuesday.
+   */
+  const [tool, setTool] = useState<null | "transfer" | "visits" | "rollover">(null);
   const [activeCycleId, setActiveCycleId] = useState<string | null>(null);
   const [telemetry, setTelemetry] = useState<CycleTelemetry | null>(null);
   const [busy, setBusy] = useState(false);
@@ -205,6 +225,10 @@ function InvestorPortal() {
   }
 
   const activePosition = workspace.positions.find((row) => row.cycleId === activeCycleId) ?? null;
+  // The most recent payment that actually cleared. Documents are issued against
+  // a verified row, because a certificate for unverified money would be a lie
+  // with a stamp on it.
+  const latestVerified = workspace.investments.find((row) => row.status === "success") ?? null;
   const commodity = COMMODITIES.find((item) => item.id === activePosition?.commodity);
 
   // A document is a page, not a panel: it takes the screen so the print dialog
@@ -261,81 +285,20 @@ function InvestorPortal() {
         <AlertBanner alerts={community.alerts} onDismissed={() => void refresh()} />
       ) : null}
 
-      {/* Treasury — the three figures, counted from the movement book. */}
-      {community ? (
-        <div className="min-w-0">
-          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-            <p className="pg-kicker">Co-operative treasury, live</p>
-            <Link
-              to="/portal/feed"
-              className="text-[0.72rem] font-semibold text-signal-deep no-underline"
-            >
-              Open the farm feed →
-            </Link>
-          </div>
-          <dl className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-3">
-            <Card className="p-4">
-              <Figure
-                label="Total capital funded"
-                value={money(community.treasury.totalCapitalFunded)}
-                caption="Verified contributions, every cycle"
-              />
-            </Card>
-            <Card className="p-4">
-              <Figure
-                label="Total expenses incurred"
-                value={money(community.treasury.totalExpensesIncurred)}
-                caption="Paid out to suppliers"
-                tone={community.treasury.totalExpensesIncurred > 0 ? "debit" : "plain"}
-              />
-            </Card>
-            <Card className="p-4">
-              <Figure
-                label="Operating cash on hand"
-                value={money(community.treasury.operatingCashOnHand)}
-                caption="In, less what has gone out"
-                tone="credit"
-              />
-            </Card>
-          </dl>
-        </div>
-      ) : null}
-
-      {/* KPIs ------------------------------------------------------------ */}
-      <dl className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <Card className="p-4">
-          <Figure
-            label="Total contributed"
-            value={money(workspace.totals.invested)}
-            caption="Verified capital, all time"
-          />
-        </Card>
-        <Card className="p-4">
-          <Figure
-            label="Capital working"
-            value={money(workspace.totals.activeCapital)}
-            caption="In cycles yet to settle"
-          />
-        </Card>
-        <Card className="p-4">
-          <Figure
-            label="Returned to you"
-            value={money(workspace.totals.returned)}
-            caption={
-              workspace.totals.returned > 0 ? "Principal + profit paid" : "No settlement yet"
-            }
-            tone={workspace.totals.returned > 0 ? "credit" : "plain"}
-          />
-        </Card>
-        <Card className="p-4">
-          <Figure
-            label="Profit earned"
-            value={money(workspace.totals.profit)}
-            caption="Your 70% share, after the waterfall"
-            tone={workspace.totals.profit > 0 ? "credit" : "plain"}
-          />
-        </Card>
-      </dl>
+      {/* My stake — one card, three figures, and the tools as buttons. */}
+      <StakeCard
+        workspace={workspace}
+        community={community}
+        activePosition={activePosition}
+        onTool={(next) => {
+          setTab("stake");
+          setTool(next);
+        }}
+        onDocuments={() => {
+          setTab("documents");
+          setTool(null);
+        }}
+      />
 
       {/* Tabs ------------------------------------------------------------ */}
       <div className="pg-portal-tabs border-b border-hairline pb-2">
@@ -345,7 +308,10 @@ function InvestorPortal() {
             <button
               key={item.id}
               type="button"
-              onClick={() => setTab(item.id)}
+              onClick={() => {
+                setTab(item.id);
+                setTool(null);
+              }}
               className={cn(
                 "pg-portal-tab",
                 tab === item.id && "!bg-navy !text-white",
@@ -361,8 +327,9 @@ function InvestorPortal() {
       </div>
 
       {/* Portfolio ------------------------------------------------------- */}
-      {tab === "portfolio" ? (
+      {tab === "stake" && tool === null ? (
         <div className="space-y-6">
+          <CycleTracker position={activePosition} />
           {workspace.positions.length > 0 ? (
             <>
               <div className="flex flex-wrap items-center gap-2">
@@ -571,38 +538,38 @@ function InvestorPortal() {
         </div>
       ) : null}
 
-      {/* Telemetry ------------------------------------------------------- */}
-      {tab === "telemetry" ? (
+      {/* Pond updates ---------------------------------------------------- */}
+      {tab === "updates" ? (
         <div className="space-y-5">
           {!activeCycleId ? (
             <Card>
-              <EmptyState title="No cycle selected">
-                Contribute to a cycle and its live pond telemetry — growth samples, feed consumption
-                and mortality — appears here.
+              <EmptyState icon={<Waves size={18} />} title="No cycle selected">
+                Contribute to a cycle and its pond updates — feed, weights, water and photos —
+                appear here as the farm files them.
               </EmptyState>
             </Card>
           ) : (
             <>
               <Card className="p-5">
                 <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <p className="pg-kicker">Live stock telemetry</p>
-                    <h2 className="mt-1 font-display text-[1.15rem] font-semibold text-ink-deep">
-                      {telemetry?.cycleName ?? "Loading…"}
+                  <div className="min-w-0">
+                    <p className="pg-kicker">Pond updates</p>
+                    <h2 className="mt-1 font-display text-[1.1rem] font-semibold text-ink-deep">
+                      {telemetry?.cycleName ?? activePosition?.name ?? "Loading…"}
                     </h2>
-                    <p className="mt-1 text-[0.75rem] text-ink-mute">
-                      {commodity?.growthUnit} · target {commodity?.targetYieldLabel}
+                    <p className="mt-0.5 text-[0.72rem] text-ink-mute">
+                      Newest first · every entry is checked by a second person before it appears
                     </p>
                   </div>
-                  <span className="pg-chip pg-chip--signal">
+                  <span className="pg-chip pg-chip--signal shrink-0">
                     <span className="pg-live-dot" />
                     Operator-logged
                   </span>
                 </div>
 
-                <dl className="mt-4 grid grid-cols-2 gap-4 border-b border-hairline pb-4 lg:grid-cols-5">
+                <dl className="mt-4 grid grid-cols-2 gap-4 border-t border-hairline pt-4 lg:grid-cols-4">
                   <Figure
-                    label="Latest sample"
+                    label="Latest weight"
                     value={
                       telemetry?.totals.latestWeightG === null ||
                       telemetry?.totals.latestWeightG === undefined
@@ -612,83 +579,63 @@ function InvestorPortal() {
                     caption={`${telemetry?.totals.samples ?? 0} samples taken`}
                   />
                   <Figure
-                    label="Feed consumed"
+                    label="Feed logged"
                     value={`${number(telemetry?.totals.feedKg ?? 0, 1)} kg`}
-                    caption="Across all approved logs"
+                    caption="Across approved entries"
                   />
                   <Figure
-                    label="Mortality"
+                    label="Losses"
                     value={number(telemetry?.totals.mortality ?? 0)}
-                    caption="Counted, with reasons logged"
+                    caption="Counted, with reasons"
                   />
                   <Figure
-                    label="Survival"
+                    label="In the pond"
                     value={
-                      telemetry?.totals.survivalPercent
-                        ? percent(telemetry.totals.survivalPercent, 1)
-                        : "—"
+                      telemetry?.totals.latestPopulation === null ||
+                      telemetry?.totals.latestPopulation === undefined
+                        ? "—"
+                        : number(telemetry.totals.latestPopulation)
                     }
-                    caption="First to latest head count"
-                  />
-                  <Figure
-                    label="Feed conversion"
-                    value={telemetry?.totals.fcr ? number(telemetry.totals.fcr, 2) : "—"}
-                    caption="kg feed per kg biomass gained"
+                    caption={
+                      telemetry?.totals.survivalPercent
+                        ? `${percent(telemetry.totals.survivalPercent, 1)} survival`
+                        : "From the latest count"
+                    }
                   />
                 </dl>
-
-                <div className="mt-5">
-                  <GrowthChart
-                    points={telemetry?.points ?? []}
-                    targetWeightG={telemetry?.targetWeightG ?? null}
-                    {...(commodity?.growthUnit ? { unit: commodity.growthUnit } : {})}
-                  />
-                </div>
               </Card>
 
               {telemetry && telemetry.points.length > 0 ? (
-                <Card className="overflow-hidden">
-                  <p className="pg-kicker border-b border-hairline px-4 py-3">
-                    Field log — most recent last
+                <ol className="m-0 list-none space-y-3 p-0">
+                  {[...telemetry.points].reverse().map((point) => (
+                    <PondUpdate
+                      key={`${point.logDate}-${point.logType}-${point.notes ?? ""}`}
+                      point={point}
+                    />
+                  ))}
+                </ol>
+              ) : (
+                <Card>
+                  <EmptyState icon={<Waves size={18} />} title="No pond entries yet">
+                    The farm files its first entry on stocking day. It will appear here the moment
+                    it is checked.
+                  </EmptyState>
+                </Card>
+              )}
+
+              {telemetry && telemetry.points.length > 1 ? (
+                <Card className="p-5">
+                  <p className="pg-kicker">Growth curve</p>
+                  <p className="mt-1 text-[0.72rem] text-ink-mute">
+                    Only the sample weights the operator actually recorded — nothing smoothed or
+                    filled in.
                   </p>
-                  <div className="table-scroll">
-                    <table className="pg-table">
-                      <thead>
-                        <tr>
-                          <th>Date</th>
-                          <th>Type</th>
-                          <th className="num">Feed kg</th>
-                          <th className="num">Sample g</th>
-                          <th className="num">Mortality</th>
-                          <th>Note</th>
-                          <th>Review</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {telemetry.points.slice(-14).map((point) => (
-                          <tr key={`${point.logDate}-${point.logType}-${point.notes ?? ""}`}>
-                            <td className="fig whitespace-nowrap">{dateLabel(point.logDate)}</td>
-                            <td className="capitalize">{point.logType.replace(/_/g, " ")}</td>
-                            <td className="num fig">
-                              {point.feedKg === null ? "—" : number(point.feedKg, 1)}
-                            </td>
-                            <td className="num fig">
-                              {point.sampleAvgWeightG === null
-                                ? "—"
-                                : number(point.sampleAvgWeightG, 0)}
-                            </td>
-                            <td className="num fig">{point.mortalityCount ?? "—"}</td>
-                            <td className="max-w-xs text-ink-mute">{point.notes ?? "—"}</td>
-                            <td>
-                              <StatusChip
-                                status={point.reviewStatus === "approved" ? "success" : "pending"}
-                                label={point.reviewStatus}
-                              />
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                  <div className="mt-4">
+                    <GrowthChart
+                      points={telemetry.points}
+                      targetWeightG={telemetry.targetWeightG}
+                      {...(commodity?.growthUnit ? { unit: commodity.growthUnit } : {})}
+                    />
                   </div>
                 </Card>
               ) : null}
@@ -698,13 +645,71 @@ function InvestorPortal() {
       ) : null}
 
       {/* Statement ------------------------------------------------------- */}
-      {tab === "statement" ? (
+      {tab === "documents" ? (
         <div className="space-y-5">
+          <Card className="p-5">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="pg-kicker">Your paperwork</p>
+                <h2 className="mt-1 font-display text-[1.1rem] font-semibold text-ink-deep">
+                  Two documents, one page each
+                </h2>
+                <p className="mt-1 max-w-xl text-[0.78rem] leading-6 text-ink-soft">
+                  Both are printed on a single A4 sheet with the co-operative&apos;s header, your
+                  name, the cycle and a verification code a bank or a family member can check on{" "}
+                  <span className="font-mono text-[0.72rem]">/verify</span>.
+                </p>
+              </div>
+              {documentBusy ? (
+                <span className="inline-flex items-center gap-1.5 text-[0.7rem] text-ink-mute">
+                  <Loader2 size={13} className="animate-spin" aria-hidden="true" />
+                  Preparing…
+                </span>
+              ) : null}
+            </div>
+
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <DocumentButton
+                icon={<Printer size={16} />}
+                title="Investment certificate"
+                body="Proof of your verified stake in a cycle: your name, investor ID, the amount, the date, the Paystack or bank reference and a digital stamp."
+                disabled={documentBusy || !latestVerified}
+                onClick={() =>
+                  latestVerified &&
+                  void openDocument("investment_certificate", {
+                    investmentId: latestVerified.id,
+                  })
+                }
+                note={
+                  latestVerified
+                    ? `Latest: ${latestVerified.cycleCode} · ${money(latestVerified.amount)}`
+                    : "Available once your first contribution is verified."
+                }
+              />
+              <DocumentButton
+                icon={<Receipt size={16} />}
+                title="Payment receipt"
+                body="A receipt for one payment: the date it was received, the reference, the amount and the verification status — the page a member shows when somebody asks whether they really paid."
+                disabled={documentBusy || !latestVerified}
+                onClick={() =>
+                  latestVerified &&
+                  void openDocument("payment_receipt", { investmentId: latestVerified.id })
+                }
+                note={
+                  latestVerified
+                    ? (latestVerified.receiptNumber ?? "Receipt number issued on verification")
+                    : "Available once your first contribution is verified."
+                }
+              />
+            </div>
+          </Card>
+
+          {/* The full book, kept but demoted: a member who needs it scrolls. */}
           <Card className="overflow-hidden">
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-hairline px-4 py-3">
-              <p className="pg-kicker">Itemised contribution ledger</p>
-              <span className="text-[0.7rem] text-ink-mute">
-                Every row is a record of money actually received
+              <p className="pg-kicker">Every payment you have made</p>
+              <span className="text-[0.68rem] text-ink-mute">
+                {workspace.investments.length} row{workspace.investments.length === 1 ? "" : "s"}
               </span>
             </div>
             {workspace.investments.length > 0 ? (
@@ -714,10 +719,8 @@ function InvestorPortal() {
                     <tr>
                       <th>Date</th>
                       <th>Cycle</th>
-                      <th>Method</th>
                       <th className="num">Amount</th>
                       <th>Status</th>
-                      <th>Reference</th>
                       <th>Receipt</th>
                       <th className="no-print">Print</th>
                     </tr>
@@ -731,7 +734,6 @@ function InvestorPortal() {
                             {investment.cycleCode}
                           </span>
                         </td>
-                        <td className="capitalize">{investment.method}</td>
                         <td className="num">
                           <Money
                             value={investment.amount}
@@ -757,9 +759,6 @@ function InvestorPortal() {
                           />
                         </td>
                         <td className="font-mono text-[0.66rem] text-ink-mute">
-                          {investment.reference ?? "—"}
-                        </td>
-                        <td className="font-mono text-[0.66rem] text-ink-mute">
                           {investment.receiptNumber ?? "—"}
                         </td>
                         <td className="no-print">
@@ -774,7 +773,6 @@ function InvestorPortal() {
                                   })
                                 }
                                 className="inline-flex items-center gap-1 rounded-md border border-hairline px-2 py-1 text-[0.64rem] font-semibold text-ink-soft transition-colors hover:border-hairline-strong hover:text-ink-deep disabled:opacity-50"
-                                title="Print this payment receipt"
                               >
                                 <Receipt size={11} aria-hidden="true" />
                                 Receipt
@@ -788,7 +786,6 @@ function InvestorPortal() {
                                   })
                                 }
                                 className="inline-flex items-center gap-1 rounded-md border border-hairline px-2 py-1 text-[0.64rem] font-semibold text-ink-soft transition-colors hover:border-hairline-strong hover:text-ink-deep disabled:opacity-50"
-                                title="Print this investment certificate"
                               >
                                 <Printer size={11} aria-hidden="true" />
                                 Certificate
@@ -811,97 +808,50 @@ function InvestorPortal() {
             )}
           </Card>
 
-          <Card className="overflow-hidden">
-            <div className="border-b border-hairline px-4 py-3">
-              <p className="pg-kicker">Waterfall settlement breakdown</p>
-              <p className="mt-1 text-[0.72rem] text-ink-mute">
-                What each settled cycle actually paid you, and the level it came from.
-              </p>
-            </div>
-            {workspace.payouts.length > 0 ? (
-              <div className="table-scroll">
-                <table className="pg-table">
-                  <thead>
-                    <tr>
-                      <th>Cycle</th>
-                      <th className="num">Capital</th>
-                      <th className="num">Equity at settlement</th>
-                      <th className="num">Level 2 · principal</th>
-                      <th className="num">Level 4 · profit</th>
-                      <th className="num">Total</th>
-                      <th>Payout</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {workspace.payouts.map((payout) => (
-                      <tr key={payout.id}>
-                        <td>
-                          <span className="font-mono text-[0.72rem] font-semibold text-ink-soft">
-                            {payout.cycleCode}
-                          </span>
-                          <span className="ml-2 text-[0.7rem] text-ink-mute">
-                            {payout.cycleName}
-                          </span>
-                        </td>
-                        <td className="num">
-                          <Money value={payout.capital} />
-                        </td>
-                        <td className="num fig">{percent(payout.equityPercent, 4)}</td>
-                        <td className="num">
-                          <Money value={payout.principal} />
-                        </td>
-                        <td className="num">
-                          <Money value={payout.profit} tone="credit" />
-                        </td>
-                        <td className="num font-semibold">
-                          <Money value={payout.total} />
-                        </td>
-                        <td>
-                          <StatusChip
-                            status={payout.payoutStatus === "paid" ? "success" : "pending"}
-                            label={
-                              payout.payoutStatus === "paid"
-                                ? `Paid ${dateLabel(payout.paidAt)}`
-                                : payout.payoutStatus
-                            }
-                          />
-                          {payout.reference ? (
-                            <span className="mt-1 block font-mono text-[0.62rem] text-ink-mute">
-                              {payout.reference}
-                            </span>
-                          ) : null}
-                        </td>
-                        <td className="no-print">
-                          <button
-                            type="button"
-                            disabled={documentBusy}
-                            onClick={() =>
-                              void openDocument("harvest_statement", { cycleId: payout.cycleId })
-                            }
-                            className="inline-flex items-center gap-1 rounded-md border border-hairline px-2 py-1 text-[0.64rem] font-semibold text-ink-soft transition-colors hover:border-hairline-strong hover:text-ink-deep disabled:opacity-50"
-                            title="Print this harvest settlement statement"
-                          >
-                            <Printer size={11} aria-hidden="true" />
-                            Print A4
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+          {workspace.payouts.length > 0 ? (
+            <Card className="overflow-hidden">
+              <div className="border-b border-hairline px-4 py-3">
+                <p className="pg-kicker">Harvest statements</p>
+                <p className="mt-1 text-[0.72rem] text-ink-mute">
+                  One page per settled cycle: what it earned, what it cost, and what came to you.
+                </p>
               </div>
-            ) : (
-              <EmptyState icon={<FileText size={18} />} title="No settlements yet">
-                When a cycle you back reaches harvest and the waterfall runs, its full breakdown —
-                level by level, down to your own line — is published in this table.
-              </EmptyState>
-            )}
-          </Card>
+              <ul className="m-0 list-none divide-y divide-hairline p-0">
+                {workspace.payouts.map((payout) => (
+                  <li
+                    key={payout.id}
+                    className="flex flex-wrap items-center justify-between gap-3 px-4 py-3"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-[0.78rem] font-semibold text-ink-deep">
+                        {payout.cycleCode} · {payout.cycleName}
+                      </p>
+                      <p className="fig mt-0.5 text-[0.7rem] text-ink-mute">
+                        Principal {money(payout.principal)} · profit {money(payout.profit)} · total{" "}
+                        {money(payout.total)}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      disabled={documentBusy}
+                      onClick={() =>
+                        void openDocument("harvest_statement", { cycleId: payout.cycleId })
+                      }
+                      className="pg-btn pg-btn--ghost h-9 text-[0.72rem]"
+                    >
+                      <Printer size={12} aria-hidden="true" />
+                      Print statement
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          ) : null}
         </div>
       ) : null}
 
       {/* Liquidity ------------------------------------------------------- */}
-      {tab === "liquidity" ? (
+      {tab === "stake" && tool === "transfer" ? (
         <LiquidityBoard
           workspace={workspace}
           busy={busy}
@@ -912,7 +862,7 @@ function InvestorPortal() {
       ) : null}
 
       {/* Visits ---------------------------------------------------------- */}
-      {tab === "visits" ? (
+      {tab === "stake" && tool === "visits" ? (
         <VisitsPanel
           workspace={workspace}
           onFlash={(tone, text) => setFlash({ tone, text })}
@@ -921,7 +871,7 @@ function InvestorPortal() {
       ) : null}
 
       {/* Reinvestment ---------------------------------------------------- */}
-      {tab === "settings" ? (
+      {tab === "stake" && tool === "rollover" ? (
         <RolloverPanel
           workspace={workspace}
           onFlash={(tone, text) => setFlash({ tone, text })}
@@ -929,6 +879,397 @@ function InvestorPortal() {
         />
       ) : null}
     </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- *
+ * Document button
+ * -------------------------------------------------------------------------- */
+
+function DocumentButton({
+  icon,
+  title,
+  body,
+  note,
+  disabled,
+  onClick,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  body: string;
+  note: string;
+  disabled: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onClick}
+      className="group flex h-full min-w-0 flex-col rounded-xl border border-hairline bg-white p-4 text-left transition-colors hover:border-signal hover:bg-porcelain/50 disabled:cursor-not-allowed disabled:opacity-55"
+    >
+      <span className="grid size-9 place-items-center rounded-lg bg-[image:var(--grad-master)] text-navy-deep">
+        {icon}
+      </span>
+      <span className="mt-2.5 font-display text-[0.88rem] font-semibold text-ink-deep">
+        {title}
+      </span>
+      <span className="mt-1 text-[0.72rem] leading-5 text-ink-soft">{body}</span>
+      <span className="mt-auto pt-2.5 text-[0.66rem] font-medium text-signal-deep">{note}</span>
+    </button>
+  );
+}
+
+/* -------------------------------------------------------------------------- *
+ * One pond update
+ * -------------------------------------------------------------------------- */
+
+/**
+ * A single dated entry, shaped like a message rather than a database row.
+ *
+ * A feed of rows says "feed / 1.00 / 2026-09-02". A feed of updates says "the
+ * farm gave 1kg of feed on 2 September, and here is the photograph". Same data,
+ * and only one of them makes a member feel they know what is happening to their
+ * money.
+ */
+function PondUpdate({ point }: { point: CycleTelemetry["points"][number] }) {
+  const readings: { label: string; value: string }[] = [];
+  if (point.feedKg !== null)
+    readings.push({ label: "Feed", value: `${number(point.feedKg, 1)} kg` });
+  if (point.sampleAvgWeightG !== null)
+    readings.push({ label: "Avg weight", value: `${number(point.sampleAvgWeightG, 0)} g` });
+  if (point.mortalityCount !== null && point.mortalityCount > 0)
+    readings.push({ label: "Losses", value: number(point.mortalityCount) });
+  if (point.populationCount !== null)
+    readings.push({ label: "Head count", value: number(point.populationCount) });
+  if (point.biomassKg !== null)
+    readings.push({ label: "Biomass", value: `${number(point.biomassKg, 1)} kg` });
+
+  const photos = point.media.filter((item) => item.kind === "photo");
+  const videos = point.media.filter((item) => item.kind === "video");
+
+  return (
+    <li className="pg-card min-w-0 p-4">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <p className="flex items-center gap-2 text-[0.78rem] font-semibold capitalize text-ink-deep">
+          <span className="grid size-6 place-items-center rounded-full bg-porcelain text-signal-deep">
+            <Waves size={12} aria-hidden="true" />
+          </span>
+          {point.logType.replace(/_/g, " ")}
+        </p>
+        <span className="fig text-[0.68rem] text-ink-mute">{dateLabel(point.logDate)}</span>
+      </div>
+
+      {readings.length > 0 ? (
+        <ul className="m-0 mt-2.5 flex list-none flex-wrap gap-x-4 gap-y-1 p-0">
+          {readings.map((reading) => (
+            <li key={reading.label} className="text-[0.72rem] text-ink-soft">
+              <span className="text-ink-mute">{reading.label}</span>{" "}
+              <span className="fig font-semibold text-ink-deep">{reading.value}</span>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+
+      {point.notes ? (
+        <p className="mt-2 text-[0.76rem] leading-6 text-ink-soft">{point.notes}</p>
+      ) : null}
+
+      {photos.length + videos.length > 0 ? (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {photos.map((photo) => (
+            <a
+              key={photo.id}
+              href={photo.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block overflow-hidden rounded-lg border border-hairline"
+              title={photo.caption ?? "Open the full photograph"}
+            >
+              <img
+                src={photo.url}
+                alt={photo.caption ?? `Farm proof photograph from ${dateLabel(point.logDate)}`}
+                loading="lazy"
+                decoding="async"
+                className="size-20 object-cover"
+              />
+            </a>
+          ))}
+          {videos.map((video) => (
+            <a
+              key={video.id}
+              href={video.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-porcelain px-3 py-2 text-[0.7rem] font-semibold text-ink-soft no-underline"
+            >
+              <Play size={12} aria-hidden="true" />
+              Watch clip
+            </a>
+          ))}
+        </div>
+      ) : null}
+
+      {point.reviewStatus !== "approved" ? (
+        <p className="mt-2 text-[0.66rem] text-ink-mute">
+          Awaiting the second-person check — visible to you, not yet published.
+        </p>
+      ) : null}
+    </li>
+  );
+}
+
+/* -------------------------------------------------------------------------- *
+ * Cycle tracker
+ * -------------------------------------------------------------------------- */
+
+/**
+ * Where the batch actually is.
+ *
+ * Days are counted from **stocking**, not from the funding open date, and the
+ * bar is capped at the cycle's planned length rather than filling to 100% on
+ * day one. A cycle that spent twelve weeks collecting money before the
+ * fingerlings went in would otherwise look half finished before it started.
+ *
+ * The remaining days are an estimate and labelled as one: catfish reach table
+ * size between 16 and 20 weeks depending on water temperature and feed, and the
+ * farm publishes the weigh-in when it happens rather than when the plan said.
+ */
+function CycleTracker({ position }: { position: MemberWorkspace["positions"][number] | null }) {
+  if (!position) {
+    return null;
+  }
+
+  const start = position.stockedOn ?? position.projectedHarvestOn;
+  const harvest = position.projectedHarvestOn;
+  const plannedDays = position.cycleWeeks * 7;
+
+  const elapsed =
+    position.stockedOn === null
+      ? 0
+      : Math.max(0, Math.round((Date.now() - new Date(position.stockedOn).getTime()) / 86_400_000));
+  const progress = plannedDays > 0 ? Math.min(100, (elapsed / plannedDays) * 100) : 0;
+  const remaining = harvest
+    ? Math.max(0, Math.round((new Date(harvest).getTime() - Date.now()) / 86_400_000))
+    : null;
+
+  return (
+    <Card className="min-w-0 p-5">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="pg-kicker">Active cycle tracker</p>
+          <h2 className="mt-1 font-display text-[1.1rem] font-semibold text-ink-deep">
+            {position.name}
+          </h2>
+          <p className="mt-0.5 text-[0.72rem] text-ink-mute">
+            {position.code} · {position.farmSite}
+            {position.stockedOn ? ` · stocked ${dateLabel(position.stockedOn)}` : ""}
+          </p>
+        </div>
+        <StatusChip
+          status={position.status === "settled" ? "success" : "info"}
+          label={position.status === "active" ? "Growing in pond" : position.status}
+        />
+      </div>
+
+      <div className="mt-4">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <span className="fig text-[0.74rem] font-semibold text-ink-soft">
+            Day {number(elapsed)} of ~{number(plannedDays)}
+          </span>
+          <span className="fig text-[0.74rem] font-semibold text-ink-deep">
+            {percent(progress, 0)} of the planned grow-out
+          </span>
+        </div>
+        <div className="pg-meter pg-meter--mint mt-2" aria-hidden="true">
+          <span style={{ width: `${Math.max(2, progress)}%` }} />
+        </div>
+        <div className="mt-1.5 flex flex-wrap justify-between gap-2 text-[0.66rem] text-ink-mute">
+          <span>{position.stockedOn ? dateLabel(position.stockedOn) : "Stocking date TBC"}</span>
+          <span>
+            {harvest
+              ? `Target harvest ${dateLabel(harvest)}${remaining !== null ? ` · ${number(remaining)} days` : ""}`
+              : "Harvest date TBC"}
+          </span>
+        </div>
+      </div>
+
+      <div className="mt-5">
+        <StageRail currentStage={position.currentStage} />
+      </div>
+
+      <dl className="mt-5 grid grid-cols-2 gap-4 border-t border-hairline pt-4 lg:grid-cols-4">
+        <Figure
+          label="Your capital here"
+          value={money(position.myCapital)}
+          caption="Verified only"
+        />
+        <Figure
+          label="Your equity"
+          value={percent(position.equityPercent, 2)}
+          caption="Derived live"
+          tone="signal"
+        />
+        <Figure
+          label="Cycle funded"
+          value={percent(position.fundedPercent, 1)}
+          caption={`${money(position.raised)} of ${money(position.targetCapital)}`}
+        />
+        <Figure
+          label="Co-investors"
+          value={number(position.investorCount)}
+          caption="Including you"
+        />
+      </dl>
+
+      <p className="mt-3 text-[0.68rem] leading-5 text-ink-mute">
+        {start
+          ? "Days are counted from the day the stock went into the pond, not from the day funding opened."
+          : "The farm has not published a stocking date for this cycle yet."}{" "}
+        Catfish reach table size between 16 and 20 weeks depending on water temperature and feed;
+        the harvest date is an estimate until the weigh-in is recorded.
+      </p>
+    </Card>
+  );
+}
+
+/* -------------------------------------------------------------------------- *
+ * My stake
+ * -------------------------------------------------------------------------- */
+
+/**
+ * The one card a member opens the portal to see.
+ *
+ * Three figures, in the order they matter:
+ *
+ *   1. what I have actually put in (verified only — pending money is not money),
+ *   2. what slice of the cycle that buys me, derived on every read,
+ *   3. when I should expect it back.
+ *
+ * Everything else — the treasury totals, the co-investor count, the waterfall
+ * they agreed to — is available one tap down on the cycle tracker. Putting it
+ * here would recreate the wall of numbers this screen replaces.
+ */
+function StakeCard({
+  workspace,
+  community,
+  activePosition,
+  onTool,
+  onDocuments,
+}: {
+  workspace: MemberWorkspace;
+  community: Awaited<ReturnType<typeof getMemberCommunity>> | null;
+  activePosition: MemberWorkspace["positions"][number] | null;
+  onTool: (tool: "transfer" | "visits" | "rollover") => void;
+  onDocuments: () => void;
+}) {
+  const harvest = activePosition?.projectedHarvestOn ?? null;
+  const daysToHarvest = harvest
+    ? Math.max(0, Math.round((new Date(harvest).getTime() - Date.now()) / 86_400_000))
+    : null;
+
+  return (
+    <Card className="min-w-0 overflow-hidden">
+      <div className="border-b border-hairline bg-porcelain/60 px-5 py-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="pg-kicker">My stake</p>
+          {community ? (
+            <Link
+              to="/portal/feed"
+              className="text-[0.7rem] font-semibold text-signal-deep no-underline"
+            >
+              Farm feed →
+            </Link>
+          ) : null}
+        </div>
+      </div>
+
+      <dl className="grid min-w-0 gap-5 p-5 sm:grid-cols-3">
+        <div className="min-w-0">
+          <dt className="pg-kicker">Verified capital in</dt>
+          <dd className="mt-1.5">
+            <span className="fig block text-[1.7rem] font-bold leading-none text-ink-deep">
+              {money(workspace.totals.invested)}
+            </span>
+            <span className="mt-1.5 block text-[0.68rem] leading-4 text-ink-mute">
+              Only money the treasury has confirmed reached the farm.
+            </span>
+          </dd>
+        </div>
+
+        <div className="min-w-0 sm:border-l sm:border-hairline sm:pl-5">
+          <dt className="pg-kicker">Your equity share</dt>
+          <dd className="mt-1.5">
+            <span className="fig block text-[1.7rem] font-bold leading-none text-signal-deep">
+              {activePosition ? percent(activePosition.equityPercent, 2) : "—"}
+            </span>
+            <span className="mt-1.5 block text-[0.68rem] leading-4 text-ink-mute">
+              {activePosition
+                ? `Of ${activePosition.code}, worked out from the ledger on every load.`
+                : "Appears the moment your first contribution is verified."}
+            </span>
+          </dd>
+        </div>
+
+        <div className="min-w-0 sm:border-l sm:border-hairline sm:pl-5">
+          <dt className="pg-kicker">Expected payout</dt>
+          <dd className="mt-1.5">
+            <span className="fig block text-[1.7rem] font-bold leading-none text-ink-deep">
+              {harvest ? dateLabel(harvest) : "—"}
+            </span>
+            <span className="mt-1.5 block text-[0.68rem] leading-4 text-ink-mute">
+              {daysToHarvest === null
+                ? "No harvest date has been set for your cycle yet."
+                : daysToHarvest === 0
+                  ? "Harvest window is open. The farm will publish the weigh-in."
+                  : `About ${number(daysToHarvest)} days. Weather and market can move it.`}
+            </span>
+          </dd>
+        </div>
+      </dl>
+
+      <div className="flex flex-wrap items-center gap-2 border-t border-hairline bg-porcelain/40 px-5 py-3">
+        <button
+          type="button"
+          onClick={onDocuments}
+          className="pg-btn pg-btn--ghost h-9 text-[0.74rem]"
+        >
+          <Printer size={13} aria-hidden="true" />
+          Print certificate &amp; receipt
+        </button>
+        <button
+          type="button"
+          onClick={() => onTool("transfer")}
+          className="pg-btn pg-btn--ghost h-9 text-[0.74rem]"
+        >
+          <Coins size={13} aria-hidden="true" />
+          Offer my share
+        </button>
+        <button
+          type="button"
+          onClick={() => onTool("visits")}
+          className="pg-btn pg-btn--ghost h-9 text-[0.74rem]"
+        >
+          <CalendarCheck size={13} aria-hidden="true" />
+          Visit the farm
+        </button>
+        <button
+          type="button"
+          onClick={() => onTool("rollover")}
+          className="pg-btn pg-btn--ghost h-9 text-[0.74rem]"
+        >
+          <Repeat size={13} aria-hidden="true" />
+          Reinvest at harvest
+        </button>
+      </div>
+
+      {workspace.totals.returned > 0 ? (
+        <p className="border-t border-hairline px-5 py-2.5 text-[0.7rem] text-ink-mute">
+          {money(workspace.totals.returned)} has already come back to you, of which{" "}
+          {money(workspace.totals.profit)} was profit.
+        </p>
+      ) : null}
+    </Card>
   );
 }
 

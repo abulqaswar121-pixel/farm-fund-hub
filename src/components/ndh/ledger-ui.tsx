@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 /* ---------------------------------------------------------------------------
- * Shared ledger furniture for every AgriCapital surface.
+ * Shared ledger furniture for every FarmFund surface.
  *
  * Rule of the house: any number a member might reconcile — money, kilograms,
  * crates, equity share — is rendered through <Figure> or <Money> so it is

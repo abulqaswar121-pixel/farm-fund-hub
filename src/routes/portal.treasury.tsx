@@ -27,7 +27,7 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/portal/treasury")({
   head: () => ({
-    meta: [{ title: "Treasury Desk | NDH AgriCapital" }, { name: "robots", content: "noindex" }],
+    meta: [{ title: "Treasury Desk | NDH FarmFund" }, { name: "robots", content: "noindex" }],
   }),
   component: TreasuryDesk,
 });

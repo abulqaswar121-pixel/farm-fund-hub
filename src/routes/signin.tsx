@@ -22,13 +22,13 @@ export const Route = createFileRoute("/signin")({
   validateSearch: searchSchema,
   head: () => ({
     meta: [
-      { title: "Member Sign In | NDH AgriCapital" },
+      { title: "Member Sign In | NDH FarmFund" },
       {
         name: "description",
         content:
-          "Sign in to the NDH AgriCapital member portal to see your verified balance, your live equity share and the state of every cycle you back.",
+          "Sign in to the NDH FarmFund member portal to see your verified balance, your live equity share and the state of every cycle you back.",
       },
-      { property: "og:title", content: "Member Sign In | NDH AgriCapital" },
+      { property: "og:title", content: "Member Sign In | NDH FarmFund" },
     ],
   }),
   component: SignInPage,
@@ -144,7 +144,7 @@ function SignInPage() {
           </div>
 
           <p className="text-[0.68rem] leading-5 text-slate-500">
-            NDH AgriCapital is a co-operative agricultural investment programme, not a bank.
+            NDH FarmFund is a co-operative agricultural investment programme, not a bank.
             Contributions are capital at risk — read the{" "}
             <a href="/legal/risk" className="text-slate-300 no-underline">
               risk statement

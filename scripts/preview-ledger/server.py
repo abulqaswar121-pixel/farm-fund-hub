@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Preview ledger — a local PostgREST + GoTrue subset over a local PostgreSQL
-database, so the NDH AgriCapital app can be previewed offline.
+database, so the NDH FarmFund app can be previewed offline.
 
 This is development tooling. It is never used in production: production talks to
 the real Supabase project, where PostgREST and GoTrue do these jobs properly and

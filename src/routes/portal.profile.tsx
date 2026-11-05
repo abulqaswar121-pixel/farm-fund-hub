@@ -35,10 +35,7 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/portal/profile")({
   head: () => ({
-    meta: [
-      { title: "Profile & Settings | NDH AgriCapital" },
-      { name: "robots", content: "noindex" },
-    ],
+    meta: [{ title: "Profile & Settings | NDH FarmFund" }, { name: "robots", content: "noindex" }],
   }),
   component: ProfilePage,
 });

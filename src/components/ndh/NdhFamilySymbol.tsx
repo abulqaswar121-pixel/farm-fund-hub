@@ -5,7 +5,7 @@ type SectorIcon = ComponentType<SVGProps<SVGSVGElement>>;
 
 /**
  * The NDH master mark — the Open Gateway symbol, optionally carrying the
- * sector badge of the business it represents. AgriCapital renders it with the
+ * sector badge of the business it represents. FarmFund renders it with the
  * Sprout badge everywhere the platform signs its name.
  */
 export function NdhFamilySymbol({

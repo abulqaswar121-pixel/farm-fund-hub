@@ -1,5 +1,5 @@
 /**
- * NDH AgriCapital — locked cycle rules and the settlement waterfall.
+ * NDH FarmFund — locked cycle rules and the settlement waterfall.
  *
  * Everything in this file is a pure function so the same maths can be run in
  * three places without drifting:
