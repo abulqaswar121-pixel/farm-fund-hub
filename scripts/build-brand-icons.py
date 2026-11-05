@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Build the AgriCapital browser icons from the NDH Open Gateway master mark.
+Build the NDH FarmFund browser icons from the NDH Open Gateway master mark.
 
 Run from the repository root, with Pillow available:
 
@@ -135,8 +135,8 @@ def build_svg(size: int = 64) -> str:
     stem_top = round(cy - radius * 0.08, 2)
     stem_h = round(radius * 0.74, 2)
 
-    return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {size} {size}" role="img" aria-label="NDH AgriCapital">
-  <title>NDH AgriCapital — the Open Gateway mark with the agricultural sprout badge</title>
+    return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {size} {size}" role="img" aria-label="NDH FarmFund">
+  <title>NDH FarmFund — the Open Gateway mark with the agricultural sprout badge</title>
   <rect width="{size}" height="{size}" rx="{round(size * 0.215, 2)}" fill="#0A1A30"/>
   <image x="{offset}" y="{offset}" width="{box}" height="{box}" href="data:image/png;base64,{encoded}"/>
   <circle cx="{cx}" cy="{cy}" r="{collar}" fill="#0A1A30"/>

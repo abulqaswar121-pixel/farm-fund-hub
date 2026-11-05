@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PortalRouteImport } from './routes/portal'
+import { Route as RulesRouteImport } from './routes/rules'
 import { Route as SigninRouteImport } from './routes/signin'
 import { Route as VerifyRouteImport } from './routes/verify'
 import { Route as ApiHealthRouteImport } from './routes/api.health'
@@ -34,6 +35,11 @@ const IndexRoute = IndexRouteImport.update({
 const PortalRoute = PortalRouteImport.update({
   id: '/portal',
   path: '/portal',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RulesRoute = RulesRouteImport.update({
+  id: '/rules',
+  path: '/rules',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SigninRoute = SigninRouteImport.update({
@@ -111,6 +117,7 @@ const ApiPublicPaystackWebhookRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/portal': typeof PortalRouteWithChildren
+  '/rules': typeof RulesRoute
   '/signin': typeof SigninRoute
   '/verify': typeof VerifyRoute
   '/api/health': typeof ApiHealthRoute
@@ -128,6 +135,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/rules': typeof RulesRoute
   '/signin': typeof SigninRoute
   '/verify': typeof VerifyRoute
   '/api/health': typeof ApiHealthRoute
@@ -147,6 +155,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/portal': typeof PortalRouteWithChildren
+  '/rules': typeof RulesRoute
   '/signin': typeof SigninRoute
   '/verify': typeof VerifyRoute
   '/api/health': typeof ApiHealthRoute
@@ -167,6 +176,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/portal'
+    | '/rules'
     | '/signin'
     | '/verify'
     | '/api/health'
@@ -184,6 +194,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/rules'
     | '/signin'
     | '/verify'
     | '/api/health'
@@ -202,6 +213,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/portal'
+    | '/rules'
     | '/signin'
     | '/verify'
     | '/api/health'
@@ -221,6 +233,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   PortalRoute: typeof PortalRouteWithChildren
+  RulesRoute: typeof RulesRoute
   SigninRoute: typeof SigninRoute
   VerifyRoute: typeof VerifyRoute
   ApiHealthRoute: typeof ApiHealthRoute
@@ -244,6 +257,13 @@ declare module '@tanstack/react-router' {
       path: '/portal'
       fullPath: '/portal'
       preLoaderRoute: typeof PortalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/rules': {
+      id: '/rules'
+      path: '/rules'
+      fullPath: '/rules'
+      preLoaderRoute: typeof RulesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/signin': {
@@ -373,6 +393,7 @@ const PortalRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   PortalRoute: PortalRouteWithChildren,
+  RulesRoute: RulesRoute,
   SigninRoute: SigninRoute,
   VerifyRoute: VerifyRoute,
   ApiHealthRoute: ApiHealthRoute,

@@ -14,7 +14,7 @@ export type PrecisionHeaderProps = {
 };
 
 /**
- * The AgriCapital navigation, in full.
+ * The FarmFund navigation, in full.
  *
  * The header is deliberately 100% about this platform: the marketplace, how
  * the cycles work, the transparency register, the locked rules and the member
@@ -22,10 +22,10 @@ export type PrecisionHeaderProps = {
  * the footer (`FamilyFooter`) — never here.
  */
 const DEFAULT_LINKS: HeaderLink[] = [
-  { label: "Marketplace", href: "/cycles" },
-  { label: "How it works", href: "/#how-it-works" },
-  { label: "Transparency register", href: "/#transparency" },
-  { label: "Rules", href: "/#rules" },
+  { label: "Farm batches", href: "/cycles" },
+  { label: "How it works", href: "/#catfish" },
+  { label: "Payout rules", href: "/rules" },
+  { label: "Verify a document", href: "/verify" },
 ];
 
 export function PrecisionHeader({
@@ -38,7 +38,7 @@ export function PrecisionHeader({
       <div className="pg-header-inner">
         <BrandLockup size="md" />
 
-        <nav className="hidden items-center gap-6 lg:flex" aria-label="NDH AgriCapital sections">
+        <nav className="hidden items-center gap-6 lg:flex" aria-label="NDH FarmFund sections">
           {links.map((link) =>
             link.href.startsWith("/") && !link.href.includes("#") ? (
               <Link

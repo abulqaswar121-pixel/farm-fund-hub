@@ -52,6 +52,15 @@ type QuickAction =
   | "incident"
   | "weather";
 
+/**
+ * The four things a farm worker does constantly, in the order they happen.
+ *
+ * Everything else on this page is occasional: a harvest happens once, an
+ * incident should almost never happen. Splitting the picker keeps the daily
+ * three-quarters of the job as the first four buttons a thumb reaches.
+ */
+const DAILY_ACTIONS: QuickAction[] = ["feed", "growth", "mortality", "expense"];
+
 const ACTIONS: {
   id: QuickAction;
   label: string;
@@ -59,11 +68,17 @@ const ACTIONS: {
   icon: typeof Flame;
   tone: string;
 }[] = [
-  { id: "feed", label: "Feed", hint: "Bags or kilos given out", icon: Flame, tone: "tone-cyan" },
+  {
+    id: "feed",
+    label: "Daily feed",
+    hint: "Bags used, brand, cost",
+    icon: Flame,
+    tone: "tone-cyan",
+  },
   {
     id: "growth",
-    label: "Sample weight",
-    hint: "10 fish sampled: 450 g avg",
+    label: "Weekly sampling",
+    hint: "Head count and average weight",
     icon: Scale,
     tone: "tone-emerald",
   },
@@ -111,6 +126,21 @@ const ACTIONS: {
     tone: "tone-cyan",
   },
 ];
+
+/**
+ * The five categories the treasury reconciles against.
+ *
+ * Free-text categories were how the paper book drifted: "feed", "Feeds",
+ * "fish feed" and "feeding" all described the same cost and none of them summed
+ * together. A fixed list on the form is the cheapest possible fix.
+ */
+const EXPENSE_CATEGORIES = [
+  "Feed",
+  "Fingerlings",
+  "Equipment/Repairs",
+  "Transport",
+  "Labour",
+] as const;
 
 /**
  * Which ledger log type each quick action files under.
@@ -281,43 +311,56 @@ function OperatorPortal() {
           </p>
         ) : null}
 
-        <div className="mt-5 grid grid-cols-2 gap-2.5 sm:grid-cols-3">
-          {ACTIONS.map((action) => {
-            const Icon = action.icon;
-            const isActive = active === action.id;
-            return (
-              <button
-                key={action.id}
-                type="button"
-                onClick={() => setActive(action.id)}
-                aria-pressed={isActive}
-                className={cn(
-                  "flex min-h-[5.5rem] flex-col items-start gap-2 rounded-2xl border p-3.5 text-left transition-all",
-                  isActive
-                    ? "border-signal bg-cyan-50 shadow-[var(--shadow-soft)]"
-                    : "border-hairline bg-white hover:border-hairline-strong",
-                )}
-              >
-                <span
-                  className={cn(
-                    "grid size-9 place-items-center rounded-xl",
-                    isActive ? "bg-navy text-signal" : "bg-porcelain text-ink-soft",
-                  )}
-                >
-                  <Icon size={17} aria-hidden="true" />
-                </span>
-                <span>
-                  <strong className="block font-display text-[0.85rem] font-semibold text-ink-deep">
-                    {action.label}
-                  </strong>
-                  <span className="mt-0.5 block text-[0.68rem] leading-4 text-ink-mute">
-                    {action.hint}
-                  </span>
-                </span>
-              </button>
-            );
-          })}
-        </div>
+        {[
+          { title: "Every day", ids: DAILY_ACTIONS },
+          {
+            title: "When it happens",
+            ids: ACTIONS.map((item) => item.id).filter((id) => !DAILY_ACTIONS.includes(id)),
+          },
+        ].map((group) => (
+          <div key={group.title} className="mt-5">
+            <p className="pg-kicker">{group.title}</p>
+            <div className="mt-2 grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+              {group.ids.map((id) => {
+                const action = ACTIONS.find((item) => item.id === id);
+                if (!action) return null;
+                const Icon = action.icon;
+                const isActive = active === action.id;
+                return (
+                  <button
+                    key={action.id}
+                    type="button"
+                    onClick={() => setActive(action.id)}
+                    aria-pressed={isActive}
+                    className={cn(
+                      "flex min-h-[5.5rem] min-w-0 flex-col items-start gap-2 rounded-2xl border p-3.5 text-left transition-all",
+                      isActive
+                        ? "border-signal bg-cyan-50 shadow-[var(--shadow-soft)]"
+                        : "border-hairline bg-white hover:border-hairline-strong",
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "grid size-9 place-items-center rounded-xl",
+                        isActive ? "bg-navy text-signal" : "bg-porcelain text-ink-soft",
+                      )}
+                    >
+                      <Icon size={17} aria-hidden="true" />
+                    </span>
+                    <span className="min-w-0">
+                      <strong className="block font-display text-[0.85rem] font-semibold text-ink-deep">
+                        {action.label}
+                      </strong>
+                      <span className="mt-0.5 block text-[0.68rem] leading-4 text-ink-mute">
+                        {action.hint}
+                      </span>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </Card>
 
       {cycleId ? (
@@ -553,7 +596,7 @@ function QuickLogForm({
           data: {
             cycleId,
             amount: Number(value("amount")),
-            category: value("category") || "Operational",
+            category: value("category") || "Feed",
             vendor: value("vendor") || undefined,
             note: value("note") || undefined,
             isPayable: value("isPayable") === "yes",
@@ -576,7 +619,7 @@ function QuickLogForm({
           data: {
             cycleId,
             title: value("title"),
-            category: value("category") || "Operational",
+            category: value("category") || "Feed",
             severity: (value("severity") || "low") as "low" | "moderate" | "serious" | "critical",
             description: value("description"),
             estimatedImpact: num("estimatedImpact"),
@@ -595,16 +638,38 @@ function QuickLogForm({
           },
         });
       } else if (action === "feed") {
+        // The ledger has no brand column, and adding one for a single field
+        // would be worse than keeping it in the note. The brand goes first so it
+        // survives whatever the worker types afterwards.
+        const brand = value("feedBrand").trim();
+        const typed = value("notes").trim();
         await log({
           data: {
             cycleId,
             logType: "feed",
             feedKg: num("feedKg"),
             feedBags: num("feedBags"),
-            notes: value("notes") || undefined,
+            notes: [brand ? `Feed: ${brand}` : "", typed].filter(Boolean).join(" — ") || undefined,
             publicSummary,
           },
         });
+
+        // Money spent today, in the same breath as the feed. Asking twice is how
+        // the paper book ended up with a log and an expense that disagreed.
+        const cost = num("feedCost");
+        if (cost && cost > 0) {
+          await expense({
+            data: {
+              cycleId,
+              amount: cost,
+              category: "Feed",
+              vendor: brand || undefined,
+              note: [brand, typed].filter(Boolean).join(" — ") || "Feed purchased today",
+              isPayable: false,
+              receiptUrl: value("feedReceipt") || undefined,
+            },
+          });
+        }
       } else if (action === "growth") {
         await log({
           data: {
@@ -669,7 +734,9 @@ function QuickLogForm({
           ? "Incident published to the register. Members can see it immediately."
           : action === "expense"
             ? "Expense filed against the cycle. It is queued for treasury approval and already on the activity feed."
-            : "Entry filed. It is pending admin review before it appears publicly.",
+            : action === "feed" && num("feedCost")
+              ? "Feed entry and the expense filed together. Both wait for admin review."
+              : "Entry filed. It is pending admin review before it appears publicly.",
       );
     } catch (error) {
       onDone("error", error instanceof Error ? error.message : "That entry could not be saved");
@@ -711,6 +778,38 @@ function QuickLogForm({
                 value={value("feedBags")}
                 onChange={(event) => set("feedBags", event.target.value.replace(/[^0-9.]/g, ""))}
                 placeholder="e.g. 2"
+              />
+            </Field>
+            <Field
+              label="Feed brand &amp; size"
+              className="sm:col-span-2"
+              hint="Recorded on the entry so the cost per bag can be checked against the invoice later"
+            >
+              <input
+                className="pg-input h-12"
+                value={value("feedBrand")}
+                onChange={(event) => set("feedBrand", event.target.value)}
+                placeholder="e.g. Vital Feed floating pellets, 1kg bag"
+              />
+            </Field>
+            <Field
+              label="Paid for feed today (₦)"
+              hint="Leave blank if today's bags came out of stock. A figure here also files the expense."
+            >
+              <input
+                className="pg-input h-12"
+                inputMode="decimal"
+                value={value("feedCost")}
+                onChange={(event) => set("feedCost", event.target.value.replace(/[^0-9.]/g, ""))}
+                placeholder="e.g. 2400"
+              />
+            </Field>
+            <Field label="Receipt or photo URL" hint="Optional — a picture of the invoice">
+              <input
+                className="pg-input h-12"
+                value={value("feedReceipt")}
+                onChange={(event) => set("feedReceipt", event.target.value)}
+                placeholder="https://…"
               />
             </Field>
           </>
@@ -854,13 +953,32 @@ function QuickLogForm({
                 placeholder="e.g. 145000"
               />
             </Field>
-            <Field label="Category">
-              <input
-                className="pg-input h-12"
-                value={value("category")}
-                onChange={(event) => set("category", event.target.value)}
-                placeholder="e.g. Feed, transport, medication"
-              />
+            <Field
+              label="Category"
+              hint="Matches the categories the treasury reconciles against"
+              className="sm:col-span-2"
+            >
+              <div className="mt-1 flex flex-wrap gap-1.5">
+                {EXPENSE_CATEGORIES.map((category) => {
+                  const selected = (value("category") || "Feed") === category;
+                  return (
+                    <button
+                      key={category}
+                      type="button"
+                      aria-pressed={selected}
+                      onClick={() => set("category", category)}
+                      className={cn(
+                        "rounded-full border px-3 py-1.5 text-[0.72rem] font-semibold transition-colors",
+                        selected
+                          ? "border-navy bg-navy text-white"
+                          : "border-hairline bg-white text-ink-soft hover:border-hairline-strong",
+                      )}
+                    >
+                      {category}
+                    </button>
+                  );
+                })}
+              </div>
             </Field>
             <Field label="Vendor / payee">
               <input

@@ -4,7 +4,7 @@
  * A farm worker finishing a quick log should be able to send the same update to
  * the WhatsApp group in one tap, in the shape the co-operative already uses:
  *
- *     🚜 NDH AgriCapital Farm Update
+ *     🚜 NDH FarmFund Farm Update
  *     📍 Cycle: Catfish Batch A - Week 6
  *     🐟 Avg Weight: 420g | Mortality: 0
  *     📸 View photo proof on your member dashboard: agricapital.ndh.com.ng
@@ -75,7 +75,7 @@ function label(logType: string): string {
  */
 export function buildFarmUpdate(input: FarmUpdateInput): string {
   const emoji = COMMODITY_EMOJI[input.commodity] ?? "🌱";
-  const lines: string[] = ["🚜 *NDH AgriCapital Farm Update*"];
+  const lines: string[] = ["🚜 *NDH FarmFund Farm Update*"];
 
   const cycle =
     `${input.cycleName || COMMODITY_WORD[input.commodity] || "Farm cycle"}` +
@@ -152,5 +152,5 @@ export function whatsappGroupUrl(inviteUrl?: string | null): string {
   return inviteUrl && inviteUrl.startsWith("https://chat.whatsapp.com/")
     ? inviteUrl
     : "https://wa.me/2349029932794?text=" +
-        encodeURIComponent("Please add me to the NDH AgriCapital investors group.");
+        encodeURIComponent("Please add me to the NDH FarmFund investors group.");
 }

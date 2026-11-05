@@ -1,5 +1,5 @@
 /**
- * Commodity catalogue and the six-stage lifecycle every NDH AgriCapital cycle
+ * Commodity catalogue and the six-stage lifecycle every NDH FarmFund cycle
  * moves through, regardless of what is being grown or reared.
  *
  * This module is pure data + pure functions: it is imported by the public

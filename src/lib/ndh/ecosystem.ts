@@ -1,9 +1,9 @@
 /**
  * NDH family directory — the single source of truth for the platform footer.
  *
- * AgriCapital is the surface this module ships inside; the rest are siblings on
+ * FarmFund is the surface this module ships inside; the rest are siblings on
  * ndh.com.ng, and they are advertised in `FamilyFooter` and nowhere else: the
- * platform's own navigation carries AgriCapital actions only. Everything here
+ * platform's own navigation carries FarmFund actions only. Everything here
  * is plain data (no browser APIs) so it is safe to import at module scope
  * during SSR.
  */
@@ -63,8 +63,8 @@ export const SUBSIDIARIES: Subsidiary[] = [
   },
   {
     id: "agricapital",
-    name: "NDH AgriCapital",
-    tagline: "Multi-commodity agricultural investment ledger and co-operative.",
+    name: "NDH FarmFund",
+    tagline: "Community catfish and farm cycles with the books left open.",
     icon: Sprout,
     accent: "emerald",
     state: "live",
@@ -134,7 +134,7 @@ export const NDH_CONTACT = {
   parent: "https://ndh.com.ng",
 } as const;
 
-/** Where the AgriCapital farm operation is physically located (weather anchor). */
+/** Where the FarmFund farm operation is physically located (weather anchor). */
 export const FARM_SITE = {
   label: "Tunga Magajiya outstation, Niger State",
   latitude: 9.6,

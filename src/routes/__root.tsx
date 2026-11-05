@@ -15,9 +15,9 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { NdhFamilySymbol } from "../components/ndh/NdhFamilySymbol";
 import { PreviewRibbon } from "../components/ndh/PreviewRibbon";
 
-const SITE_TITLE = "NDH AgriCapital | Farm capital with the books left open";
+const SITE_TITLE = "NDH FarmFund — Real farm investments with open books";
 const SITE_DESCRIPTION =
-  "Put money into real Nigerian farm cycles — catfish, tilapia, poultry, grain and greenhouses — and follow what the farm did, what the harvest weighed and who got paid. The rules are fixed before anyone pays in.";
+  "NDH FarmFund is the community farming arm of Najeeb Digital Hub. Join an active catfish cycle from ₦5,000, follow the weekly pond logs, and receive your capital plus a 70% share of harvest profit.";
 
 function NotFoundComponent() {
   return (
@@ -26,15 +26,15 @@ function NotFoundComponent() {
       <p className="fig mt-6 text-[3rem] font-bold leading-none text-navy">404</p>
       <h1 className="mt-3 text-xl text-ink-deep">That page is not on the farm map</h1>
       <p className="mt-2 max-w-md text-sm leading-6 text-ink-soft">
-        The link may be old, or the cycle it pointed at may have been renamed. The marketplace is
+        The link may be old, or the cycle it pointed at may have been renamed. The homepage is
         always the best place to restart.
       </p>
       <div className="mt-6 flex flex-wrap justify-center gap-2">
         <Link to="/" className="pg-btn pg-btn--primary">
-          Go to the marketplace
+          Go to the homepage
         </Link>
         <Link to="/cycles" className="pg-btn pg-btn--ghost">
-          Browse open cycles
+          Browse farm cycles
         </Link>
       </div>
     </div>
@@ -54,7 +54,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
       <h1 className="mt-6 text-xl text-ink-deep">This page did not load</h1>
       <p className="mt-2 max-w-md text-sm leading-6 text-ink-soft">
         Something failed on our side — no ledger entry was affected. Try again, or head back to the
-        marketplace.
+        homepage.
       </p>
       <div className="mt-6 flex flex-wrap justify-center gap-2">
         <button
@@ -86,7 +86,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:title", content: SITE_TITLE },
       { property: "og:description", content: SITE_DESCRIPTION },
       { property: "og:type", content: "website" },
-      { property: "og:site_name", content: "NDH AgriCapital" },
+      { property: "og:site_name", content: "NDH FarmFund" },
       { property: "og:image", content: "/og-agricapital.png" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: SITE_TITLE },

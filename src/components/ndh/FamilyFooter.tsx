@@ -14,11 +14,11 @@ import { BrandLockup } from "./BrandLockup";
 /**
  * The shared NDH family footer: ecosystem navigation, legal links, contact
  * details and the status badge strip. Deliberately quiet — the data tables
- * above it are the loudest thing on any AgriCapital page.
+ * above it are the loudest thing on any FarmFund page.
  *
  * This is also the *only* place on the platform that advertises the rest of
  * the Najeeb Digital Hub family: sibling businesses and the parent directory
- * live here and nowhere else, so the header stays entirely about AgriCapital.
+ * live here and nowhere else, so the header stays entirely about NDH FarmFund.
  */
 export function FamilyFooter() {
   const year = new Date().getFullYear();
@@ -71,18 +71,21 @@ export function FamilyFooter() {
                 </a>
               </li>
               <li>
-                <a href="/#calculator" className="text-slate-300 no-underline hover:text-white">
+                <a href="/rules" className="text-slate-300 no-underline hover:text-white">
+                  Payout rules &amp; calculator
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/rules#calculator"
+                  className="text-slate-300 no-underline hover:text-white"
+                >
                   Return calculator
                 </a>
               </li>
               <li>
-                <a href="/#transparency" className="text-slate-300 no-underline hover:text-white">
-                  Transparency feed
-                </a>
-              </li>
-              <li>
-                <a href="/#rules" className="text-slate-300 no-underline hover:text-white">
-                  Locked cycle rules
+                <a href="/verify" className="text-slate-300 no-underline hover:text-white">
+                  Verify a document
                 </a>
               </li>
               <li>
@@ -96,8 +99,8 @@ export function FamilyFooter() {
           <nav aria-label="Najeeb Digital Hub family">
             <h2 className="pg-kicker pg-kicker--onDark">NDH family &amp; directory</h2>
             <p className="mt-3 text-[0.72rem] leading-5 text-slate-500">
-              The rest of the Najeeb Digital Hub lives here — this footer is the only place
-              AgriCapital advertises it.
+              The rest of the Najeeb Digital Hub lives here — this footer is the only place NDH
+              FarmFund advertises it.
             </p>
             <ul className="mt-4 space-y-2.5 text-sm">
               <li>
@@ -178,7 +181,7 @@ export function FamilyFooter() {
 
         <div className="mt-10 flex flex-col gap-3 border-t border-navy-line pt-6 text-xs text-slate-500 md:flex-row md:items-center md:justify-between">
           <span>
-            © {year} {NDH_CONTACT.legalName}. AgriCapital is a co-operative agricultural investment
+            © {year} {NDH_CONTACT.legalName}. NDH FarmFund is a co-operative agricultural investment
             programme, not a bank.
           </span>
           <nav aria-label="Legal" className="flex flex-wrap items-center gap-4">

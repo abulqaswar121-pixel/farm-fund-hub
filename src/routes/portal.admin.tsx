@@ -405,38 +405,29 @@ function AdminPortal() {
       ) : null}
 
       {tab === "members" ? (
-        <div className="space-y-5">
-          <SectionHeader
-            kicker="Members & roles"
-            title="Who can do what"
-            blurb="Roles live in the dedicated user_roles table and are checked by a security-definer function. Promoting someone to admin gives them the settlement engine — treat it accordingly."
-          />
-          <Card className="overflow-hidden">
-            <div className="table-scroll">
-              <table className="pg-table">
-                <thead>
-                  <tr>
-                    <th>Member</th>
-                    <th>Role</th>
-                    <th className="num">Verified capital</th>
-                    <th className="num">Cycles</th>
-                    <th>Joined</th>
-                    <th>Change role</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {console_.members.map((member) => (
-                    <MemberRow key={member.userId} member={member} onDone={done} />
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            {console_.members.length === 0 ? (
-              <EmptyState icon={<BadgeCheck size={18} />} title="No accounts yet">
-                Members appear here as soon as they register.
-              </EmptyState>
-            ) : null}
-          </Card>
+        <div className="space-y-8">
+          <div className="space-y-5">
+            <SectionHeader
+              kicker="Member management"
+              title="Everyone in the co-operative, and what they may do"
+              blurb="Roles live in the dedicated user_roles table and are checked by a security-definer function. Promoting someone to admin gives them the settlement engine — treat it accordingly."
+            />
+            <MemberManager members={console_.members} onDone={done} />
+          </div>
+
+          <div className="space-y-5 border-t border-hairline pt-7">
+            <SectionHeader
+              kicker="Offline deposits"
+              title="Approve money that arrived by bank transfer"
+              blurb="A member raises a pending row when they pay into the co-operative account. Check the teller reference against the statement, then approve — approval is what credits their equity."
+              action={
+                <span className="pg-chip pg-chip--amber">
+                  {console_.pendingInvestments.length} awaiting
+                </span>
+              }
+            />
+            <VerificationQueue console_={console_} onDone={done} />
+          </div>
         </div>
       ) : null}
 
@@ -1791,7 +1782,91 @@ function PayoutRow({
  * Members
  * -------------------------------------------------------------------------- */
 
-function MemberRow({
+function MemberManager({
+  members,
+  onDone,
+}: {
+  members: AdminConsole["members"];
+  onDone: (tone: "success" | "error" | "info", text: string) => void;
+}) {
+  const [query, setQuery] = useState("");
+  const counts = {
+    admin: members.filter((member) => member.role === "admin").length,
+    operator: members.filter((member) => member.role === "operator").length,
+    member: members.filter((member) => member.role === "member").length,
+  };
+  const needle = query.trim().toLowerCase();
+  const visible = needle
+    ? members.filter((member) => member.fullName.toLowerCase().includes(needle))
+    : members;
+
+  if (members.length === 0) {
+    return (
+      <Card>
+        <EmptyState icon={<BadgeCheck size={18} />} title="No accounts yet">
+          Members appear here as soon as they register — or as soon as the imported ledger is
+          applied.
+        </EmptyState>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-3 gap-2.5">
+        {(
+          [
+            { role: "admin", label: "Admins" },
+            { role: "operator", label: "Operators" },
+            { role: "member", label: "Members" },
+          ] as const
+        ).map((entry) => (
+          <Card key={entry.role} className="p-3.5">
+            <p className="pg-kicker">{entry.label}</p>
+            <p className="fig mt-1 font-display text-xl font-semibold text-ink-deep">
+              {counts[entry.role]}
+            </p>
+          </Card>
+        ))}
+      </div>
+
+      {members.length > 5 ? (
+        <label className="block">
+          <span className="sr-only">Find a member</span>
+          <input
+            className="pg-input h-11"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Find a member by name"
+            type="search"
+          />
+        </label>
+      ) : null}
+
+      <ul className="m-0 list-none space-y-2.5 p-0">
+        {visible.map((member) => (
+          <MemberCard key={member.userId} member={member} onDone={onDone} />
+        ))}
+      </ul>
+      {visible.length === 0 ? (
+        <Card>
+          <EmptyState icon={<BadgeCheck size={18} />} title="No member by that name">
+            Check the spelling, or clear the search to see all {members.length} accounts.
+          </EmptyState>
+        </Card>
+      ) : null}
+    </div>
+  );
+}
+
+/**
+ * One member, as a row that stacks instead of scrolling.
+ *
+ * The old version was a six-column table: on a phone that meant scrolling
+ * sideways past the name to find the one control on the page. Everything the
+ * admin needs to act on now fits above the fold of a small screen.
+ */
+function MemberCard({
   member,
   onDone,
 }: {
@@ -1802,39 +1877,45 @@ function MemberRow({
   const [busy, setBusy] = useState(false);
 
   return (
-    <tr>
-      <td className="font-medium text-ink-deep">{member.fullName}</td>
-      <td>
-        <StatusChip
-          status={
-            member.role === "admin" ? "failed" : member.role === "operator" ? "info" : "success"
-          }
-          label={ROLE_LABEL[member.role]}
-        />
-      </td>
-      <td className="num">
-        <Money value={member.verifiedCapital} />
-      </td>
-      <td className="num fig">{member.cycles}</td>
-      <td className="fig text-[0.72rem]">{dateLabel(member.joinedAt)}</td>
-      <td>
+    <li className="pg-card p-4">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="flex flex-wrap items-center gap-2 font-display text-[0.92rem] font-semibold text-ink-deep">
+            {member.fullName}
+            <StatusChip
+              status={
+                member.role === "admin" ? "failed" : member.role === "operator" ? "info" : "success"
+              }
+              label={ROLE_LABEL[member.role]}
+            />
+          </p>
+          <p className="fig mt-1 text-[0.7rem] text-ink-mute">
+            Joined {dateLabel(member.joinedAt)}
+          </p>
+        </div>
+        <div className="text-right">
+          <p className="fig font-display text-[0.95rem] font-semibold text-ink-deep">
+            <Money value={member.verifiedCapital} />
+          </p>
+          <p className="text-[0.66rem] text-ink-mute">
+            verified capital · {member.cycles} cycle{member.cycles === 1 ? "" : "s"}
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-hairline pt-3">
+        <span className="pg-label m-0">Role</span>
         <select
-          className="pg-input h-8 w-40 text-[0.72rem]"
+          className="pg-input h-9 min-w-0 flex-1 text-[0.75rem] sm:max-w-56"
           value={member.role}
           disabled={busy}
+          aria-label={`Role for ${member.fullName}`}
           onChange={async (event) => {
+            const role = event.target.value as "admin" | "operator" | "member";
             setBusy(true);
             try {
-              await setRole({
-                data: {
-                  userId: member.userId,
-                  role: event.target.value as "admin" | "operator" | "member",
-                },
-              });
-              onDone(
-                "success",
-                `${member.fullName} is now ${ROLE_LABEL[event.target.value as "admin"].toLowerCase()}.`,
-              );
+              await setRole({ data: { userId: member.userId, role } });
+              onDone("success", `${member.fullName} is now ${ROLE_LABEL[role].toLowerCase()}.`);
             } catch (error) {
               onDone("error", error instanceof Error ? error.message : "Unable to change role");
             }
@@ -1845,8 +1926,14 @@ function MemberRow({
           <option value="operator">Farm Operator</option>
           <option value="admin">Admin &amp; Treasury</option>
         </select>
-      </td>
-    </tr>
+        {busy ? (
+          <span className="inline-flex items-center gap-1.5 text-[0.68rem] text-ink-mute">
+            <Loader2 size={12} className="animate-spin" aria-hidden="true" />
+            Saving
+          </span>
+        ) : null}
+      </div>
+    </li>
   );
 }
 

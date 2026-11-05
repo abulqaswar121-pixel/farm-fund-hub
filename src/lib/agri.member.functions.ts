@@ -52,6 +52,12 @@ export type MemberPosition = {
   projectedHarvestOn: string | null;
   cycleWeeks: number;
   farmSite: string;
+  /**
+   * The day the fingerlings went in. The investor tracker counts days elapsed
+   * from here, not from the funding open date — a cycle can collect money for
+   * twelve weeks before there is anything in the water to grow.
+   */
+  stockedOn: string | null;
   /** Populated only once the cycle has settled. */
   settlement: {
     principal: number;
@@ -248,6 +254,7 @@ export const getMemberWorkspace = createServerFn({ method: "GET" })
         rulesChip: rulesChip(rules),
         projectedHarvestOn: cycle.projected_harvest_on,
         cycleWeeks: cycle.cycle_weeks,
+        stockedOn: cycle.stocking_on,
         farmSite: cycle.farm_site,
         settlement: line
           ? {
@@ -443,6 +450,8 @@ export type TelemetryPoint = {
   bagsHarvested: number | null;
   notes: string | null;
   reviewStatus: string;
+  /** Photo and video proof attached to this log, oldest first. */
+  media: { id: string; kind: "photo" | "video"; url: string; caption: string | null }[];
 };
 
 export type CycleTelemetry = {
@@ -491,6 +500,43 @@ export const getCycleTelemetry = createServerFn({ method: "GET" })
       .eq("cycle_id", data.cycleId)
       .order("log_date", { ascending: true });
 
+    // Photo and video proof, grouped by the log it belongs to. A separate read
+    // rather than an embedded resource, because log_media is its own RLS
+    // surface: a member may see the media of an *approved* log and nothing else.
+    const logIds = (logs ?? []).map((row) => row.id);
+    const { data: mediaRows } = logIds.length
+      ? await supabase
+          .from("log_media")
+          .select("id, log_id, kind, url, caption")
+          .in("log_id", logIds)
+          .order("created_at", { ascending: true })
+      : {
+          data: [] as {
+            id: string;
+            log_id: string | null;
+            kind: string;
+            url: string;
+            caption: string | null;
+          }[],
+        };
+
+    const mediaByLog = new Map<
+      string,
+      { id: string; kind: "photo" | "video"; url: string; caption: string | null }[]
+    >();
+    for (const row of mediaRows ?? []) {
+      const key = row.log_id ?? "";
+      if (!key) continue;
+      const list = mediaByLog.get(key) ?? [];
+      list.push({
+        id: row.id,
+        kind: row.kind === "video" ? "video" : "photo",
+        url: row.url,
+        caption: row.caption,
+      });
+      mediaByLog.set(key, list);
+    }
+
     const points: TelemetryPoint[] = (logs ?? []).map((row) => ({
       logDate: row.log_date,
       logType: row.log_type,
@@ -503,6 +549,7 @@ export const getCycleTelemetry = createServerFn({ method: "GET" })
       bagsHarvested: row.bags_harvested === null ? null : Number(row.bags_harvested),
       notes: row.notes,
       reviewStatus: row.review_status,
+      media: mediaByLog.get(row.id) ?? [],
     }));
 
     const feedKg = points.reduce((sum, point) => sum + (point.feedKg ?? 0), 0);

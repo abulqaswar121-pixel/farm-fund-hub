@@ -161,7 +161,7 @@ draw.text(
 )
 draw.text(
     (MARK_X + MARK_SIZE + 22, MARK_Y + 44),
-    "NDH AgriCapital",
+    "NDH FarmFund",
     font=display_bold(40),
     fill=PORCELAIN,
 )
@@ -169,7 +169,7 @@ draw.text(
 # ------------------------------------------------------------------ headline --
 # The exact share headline the platform is published under. Three fixed lines,
 # each measured once so the card never depends on a font metric surprise.
-HEADLINE = ["Transparent Community", "Farm Investments &", "Verified Live Stock Ledger"]
+HEADLINE = ["Real farm investments", "with open books."]
 # Shrink until the longest line clears the photo seam with a real margin.
 head_size = 52
 while head_size > 30:
@@ -183,24 +183,28 @@ for line in HEADLINE:
     draw.text((64, y), line, font=head_font, fill=PORCELAIN)
     y += line_height
 
-draw.text(
-    (66, y + 22),
-    "Fund active farm batches, watch daily photo logs, and earn",
-    font=body(25),
-    fill=SLATE,
-)
-draw.text(
-    (66, y + 56),
-    "harvest dividends with verified equity.",
-    font=body(25),
-    fill=SLATE,
-)
+# The naira sign is not in the Latin subset the site ships, so it would print
+# as an empty box here. "5,000 naira" says the same thing in glyphs that exist.
+SUBHEAD = [
+    "Back a communal catfish cycle from 5,000 naira,",
+    "follow the pond week by week, and share 70% of profit.",
+]
+sub_size = 25
+while sub_size > 14:
+    sub_font = body(sub_size)
+    if max(draw.textlength(line, font=sub_font) for line in SUBHEAD) <= PHOTO_LEFT - 66 - 26:
+        break
+    sub_size -= 1
+sub_y = y + 22
+for line in SUBHEAD:
+    draw.text((66, sub_y), line, font=sub_font, fill=SLATE)
+    sub_y += round(sub_size * 1.38)
 
 # What is fixed, stated as policy — the platform publishes no figure it cannot prove.
 #
 # The chips are measured and shrunk to fit rather than hard-coded, so editing the
 # wording can never push a chip off the right edge of the card.
-chips = ["70 / 30 harvest split", "Live photo proof", "Verified equity"]
+chips = ["Cycle 01 · 115 catfish", "70 / 30 split", "Weekly pond logs"]
 MARGIN, GAP = 64, 18
 available = int(W * 0.58) - MARGIN
 

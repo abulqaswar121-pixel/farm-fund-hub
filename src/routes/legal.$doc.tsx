@@ -15,7 +15,7 @@ const DOCS = {
     title: "Privacy notice",
     updated: "7 October 2026",
     intro:
-      "This notice explains what NDH AgriCapital records about you, why, and who can see it. The short version: we hold what the ledger requires, and Row Level Security means other members cannot read your holdings.",
+      "This notice explains what NDH FarmFund records about you, why, and who can see it. The short version: we hold what the ledger requires, and Row Level Security means other members cannot read your holdings.",
   },
   risk: {
     title: "Risk statement",
@@ -33,10 +33,10 @@ export const Route = createFileRoute("/legal/$doc")({
     const doc = DOCS[params.doc as DocId];
     return {
       meta: [
-        { title: doc ? `${doc.title} | NDH AgriCapital` : "Legal | NDH AgriCapital" },
+        { title: doc ? `${doc.title} | NDH FarmFund` : "Legal | NDH FarmFund" },
         {
           name: "description",
-          content: doc ? doc.intro.slice(0, 180) : "Legal information for NDH AgriCapital members.",
+          content: doc ? doc.intro.slice(0, 180) : "Legal information for NDH FarmFund members.",
         },
       ],
     };
@@ -105,13 +105,13 @@ function Terms() {
       <Head {...doc} />
       <Section heading="1. What this platform is">
         <p>
-          NDH AgriCapital is a co-operative agricultural investment programme. Members contribute
+          NDH FarmFund is a co-operative agricultural investment programme. Members contribute
           capital to specific, individually identified production cycles — a pond of catfish, a
           house of broilers, a hectare of grain. Contributions buy an equity share of that
           cycle&apos;s outcome, not a deposit with a fixed interest rate.
         </p>
         <p>
-          NDH AgriCapital is not a bank, a deposit-taking institution or a licensed fund manager. No
+          NDH FarmFund is not a bank, a deposit-taking institution or a licensed fund manager. No
           regulator supervises member contributions as deposits, and no deposit insurance applies.
         </p>
       </Section>
@@ -208,10 +208,10 @@ function Privacy() {
       </Section>
       <Section heading="3. Payments">
         <p>
-          Card payments are processed by Paystack. NDH AgriCapital never receives or stores your
-          card details. Your Paystack reference is stored on the ledger row so a payment can be
-          traced and reconciled. Paystack secret keys are held server-side only and are never
-          included in anything sent to your browser.
+          Card payments are processed by Paystack. NDH FarmFund never receives or stores your card
+          details. Your Paystack reference is stored on the ledger row so a payment can be traced
+          and reconciled. Paystack secret keys are held server-side only and are never included in
+          anything sent to your browser.
         </p>
       </Section>
       <Section heading="4. What is published about the farm">

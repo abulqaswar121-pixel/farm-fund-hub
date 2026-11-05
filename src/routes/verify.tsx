@@ -12,13 +12,13 @@ import { lookupDocument } from "@/lib/agri.community.functions";
 export const Route = createFileRoute("/verify")({
   head: () => ({
     meta: [
-      { title: "Verify a Document | NDH AgriCapital" },
+      { title: "Verify a Document | NDH FarmFund" },
       {
         name: "description",
         content:
-          "Check any NDH AgriCapital investment certificate, payment receipt or harvest settlement statement against the live register using the code printed on it.",
+          "Check any NDH FarmFund investment certificate, payment receipt or harvest settlement statement against the live register using the code printed on it.",
       },
-      { property: "og:title", content: "Verify a Document | NDH AgriCapital" },
+      { property: "og:title", content: "Verify a Document | NDH FarmFund" },
     ],
   }),
   component: VerifyPage,

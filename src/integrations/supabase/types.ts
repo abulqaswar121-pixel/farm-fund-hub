@@ -1229,6 +1229,17 @@ export type Database = {
         };
         Relationships: [];
       };
+      public_feed_totals: {
+        Row: {
+          cycle_id: string | null;
+          code: string | null;
+          feed_kg: number | null;
+          feed_bags: number | null;
+          last_log_on: string | null;
+          entries: number | null;
+        };
+        Relationships: [];
+      };
       public_milestones: {
         Row: {
           id: string | null;
@@ -1333,7 +1344,14 @@ export type Database = {
       investment_method: "paystack" | "manual" | "rollover";
       investment_status: "pending" | "success" | "failed";
       log_type:
-        "feed" | "growth_sample" | "mortality" | "medication" | "general" | "harvest" | "sale";
+        | "feed"
+        | "growth_sample"
+        | "mortality"
+        | "medication"
+        | "general"
+        | "harvest"
+        | "sale"
+        | "stocking";
       payment_method: "paystack" | "manual";
       payment_status: "pending" | "success" | "failed";
       payout_status: "pending" | "paid" | "withheld";
@@ -1481,7 +1499,16 @@ export const Constants = {
       incident_status: ["open", "mitigating", "resolved"],
       investment_method: ["paystack", "manual", "rollover"],
       investment_status: ["pending", "success", "failed"],
-      log_type: ["feed", "growth_sample", "mortality", "medication", "general", "harvest", "sale"],
+      log_type: [
+        "feed",
+        "growth_sample",
+        "mortality",
+        "medication",
+        "general",
+        "harvest",
+        "sale",
+        "stocking",
+      ],
       payment_method: ["paystack", "manual"],
       payment_status: ["pending", "success", "failed"],
       payout_status: ["pending", "paid", "withheld"],

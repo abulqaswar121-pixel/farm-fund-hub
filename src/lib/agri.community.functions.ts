@@ -1042,7 +1042,7 @@ export const issueDocument = createServerFn({ method: "POST" })
       .select("full_name")
       .eq("id", userId)
       .maybeSingle();
-    const memberName = profile?.full_name ?? "NDH AgriCapital member";
+    const memberName = profile?.full_name ?? "NDH FarmFund member";
 
     if (data.kind === "harvest_statement") {
       if (!data.cycleId) throw new Error("A settlement statement needs a cycle");
@@ -1074,7 +1074,7 @@ export const issueDocument = createServerFn({ method: "POST" })
         .maybeSingle();
 
       const payload: DocumentPayload = {
-        orgName: "NDH AgriCapital",
+        orgName: "NDH FarmFund",
         memberName,
         memberId: userId,
         cycleCode: cycle.code,
@@ -1142,7 +1142,7 @@ export const issueDocument = createServerFn({ method: "POST" })
     const total = Number(funding?.raised_capital ?? 0);
 
     const payload: DocumentPayload = {
-      orgName: "NDH AgriCapital",
+      orgName: "NDH FarmFund",
       memberName,
       memberId: userId,
       cycleCode: cycle.code,

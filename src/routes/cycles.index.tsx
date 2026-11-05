@@ -15,13 +15,13 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/cycles/")({
   head: () => ({
     meta: [
-      { title: "Farm Cycles You Can Join | NDH AgriCapital" },
+      { title: "Farm Cycles You Can Join | NDH FarmFund" },
       {
         name: "description",
         content:
           "Every farm cycle currently raising money: catfish and tilapia ponds, broiler and layer houses, grain fields and greenhouses. See what each one needs, how much is raised and how long it runs.",
       },
-      { property: "og:title", content: "Farm Cycles You Can Join | NDH AgriCapital" },
+      { property: "og:title", content: "Farm Cycles You Can Join | NDH FarmFund" },
     ],
   }),
   loader: async () => await listPublicCycles(),

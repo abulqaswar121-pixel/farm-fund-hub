@@ -437,7 +437,7 @@
    * 3b. Brand lockup — the NDH family signature, shared with the
    *     Academy: the Open Gateway master tile wearing this property's
    *     sector badge, NAJEEB DIGITAL HUB on the top line, the property
-   *     name underneath (NDH AgriCapital, signal cyan → emerald).
+   *     name underneath (NDH FarmFund, signal cyan → emerald).
    * ------------------------------------------------------------------ */
   .ndh-brand {
     display: inline-flex;
@@ -470,40 +470,46 @@
     gap: 0.5rem;
   }
 
+  /* Top line — the family name. Small, clean, uppercase, crisp tracking. */
   .ndh-brand-name {
     font-family: var(--font-display);
-    font-size: 0.95rem;
-    font-weight: 700;
-    letter-spacing: -0.015em;
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    line-height: 1;
     white-space: nowrap;
-    color: #ffffff;
+    color: #cbd5e1;
     transition: color 0.18s ease;
   }
 
   .ndh-brand-name em {
     font-style: normal;
     font-weight: 400;
-    color: #cbd5e1;
+    color: #94a3b8;
   }
 
   .ndh-brand:hover .ndh-brand-name {
     color: #ffffff;
   }
 
+  /* Bottom line — the property name. Large and bold; this is the sign. */
   .ndh-brand-sub {
-    margin-top: 0.12rem;
+    margin-top: 0.28rem;
+    display: block;
     font-family: var(--font-display);
-    font-size: 0.72rem;
-    font-weight: 600;
-    letter-spacing: 0.01em;
-    color: var(--signal);
+    font-size: 1.02rem;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    line-height: 1;
+    color: #ffffff;
     white-space: nowrap;
   }
 
   .ndh-brand-sub em {
     font-style: normal;
     font-weight: 700;
-    color: var(--mint);
+    color: var(--signal);
+    text-shadow: 0 0 18px color-mix(in srgb, var(--signal) 35%, transparent);
   }
 
   .ndh-brand-badge {
@@ -521,19 +527,21 @@
   }
 
   .ndh-brand--sm .ndh-brand-name {
-    font-size: 0.82rem;
+    font-size: 0.55rem;
   }
 
   .ndh-brand--sm .ndh-brand-sub {
-    font-size: 0.66rem;
+    margin-top: 0.22rem;
+    font-size: 0.88rem;
   }
 
   .ndh-brand--lg .ndh-brand-name {
-    font-size: 1.1rem;
+    font-size: 0.7rem;
   }
 
   .ndh-brand--lg .ndh-brand-sub {
-    font-size: 0.82rem;
+    margin-top: 0.32rem;
+    font-size: 1.35rem;
   }
 
   /* On the porcelain canvas the lockup switches to ecosystem ink. */
@@ -542,19 +550,20 @@
   }
 
   .ndh-brand--onLight .ndh-brand-name {
-    color: var(--ink-deep);
-  }
-
-  .ndh-brand--onLight .ndh-brand-name em {
     color: var(--ink-soft);
   }
 
+  .ndh-brand--onLight .ndh-brand-name em {
+    color: var(--ink-mute);
+  }
+
   .ndh-brand--onLight .ndh-brand-sub {
-    color: var(--signal-deep);
+    color: var(--navy);
   }
 
   .ndh-brand--onLight .ndh-brand-sub em {
-    color: var(--mint-deep);
+    color: var(--signal-deep);
+    text-shadow: none;
   }
 
   .ndh-brand--onLight .ndh-brand-badge {
@@ -1370,7 +1379,7 @@
   }
 
   /* Narrow phones: the header carries the master lockup and one menu trigger,
-     so the optional "Farm Ledger" badge stands down and the two brand lines
+     so the two brand lines
      tighten rather than pushing the trigger off the row. */
   @media (max-width: 460px) {
     .pg-header-inner {

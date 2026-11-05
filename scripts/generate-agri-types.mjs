@@ -1,5 +1,5 @@
 /**
- * Regenerates the Supabase table typings for the NDH AgriCapital schema.
+ * Regenerates the Supabase table typings for the NDH FarmFund schema.
  *
  * The live generator (`supabase gen types`) needs a database connection, which
  * is not always available from a build agent. This script reproduces the same
@@ -8,7 +8,7 @@
  *
  * Run: node scripts/generate-agri-types.mjs
  *
- * Note: `Relationships` is intentionally empty for the AgriCapital tables. The
+ * Note: `Relationships` is intentionally empty for the FarmFund tables. The
  * server code loads related rows with an explicit second query rather than an
  * embedded PostgREST resource, so no relationship metadata is needed and none
  * is guessed here.
@@ -486,6 +486,14 @@ const VIEWS = {
     T("contributing_members", "number | null"),
     T("already_settled", "boolean | null"),
   ],
+  public_feed_totals: [
+    T("cycle_id", "string | null"),
+    T("code", "string | null"),
+    T("feed_kg", "number | null"),
+    T("feed_bags", "number | null"),
+    T("last_log_on", "string | null"),
+    T("entries", "number | null"),
+  ],
   public_milestones: [
     T("id", "string | null"),
     T("cycle_id", "string | null"),
@@ -567,7 +575,7 @@ const ENUMS = {
   investment_method: '"paystack" | "manual" | "rollover"',
   investment_status: '"pending" | "success" | "failed"',
   log_type:
-    '"feed" | "growth_sample" | "mortality" | "medication" | "general" | "harvest" | "sale"',
+    '"feed" | "growth_sample" | "mortality" | "medication" | "general" | "harvest" | "sale" | "stocking"',
   review_status: '"pending" | "approved" | "flagged"',
   transfer_status: '"offered" | "claimed" | "settled" | "withdrawn"',
   visit_status: '"requested" | "confirmed" | "declined" | "completed" | "cancelled"',
