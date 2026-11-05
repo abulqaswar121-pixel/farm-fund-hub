@@ -8,6 +8,45 @@ export type Database = {
   };
   public: {
     Tables: {
+      activity_feed: {
+        Row: {
+          id: string;
+          kind: string;
+          cycle_id: string | null;
+          amount: number | null;
+          category: string | null;
+          note: string | null;
+          actor_id: string | null;
+          actor_name: string;
+          reference: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          kind: string;
+          cycle_id?: string | null;
+          amount?: number | null;
+          category?: string | null;
+          note?: string | null;
+          actor_id?: string | null;
+          actor_name?: string;
+          reference?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          kind?: string;
+          cycle_id?: string | null;
+          amount?: number | null;
+          category?: string | null;
+          note?: string | null;
+          actor_id?: string | null;
+          actor_name?: string;
+          reference?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       cycle_investments: {
         Row: {
           id: string;
@@ -71,6 +110,51 @@ export type Database = {
           recorded_by?: string | null;
           created_at?: string;
           updated_at?: string;
+        };
+        Relationships: [];
+      };
+      documents: {
+        Row: {
+          id: string;
+          kind: Database["public"]["Enums"]["document_kind"];
+          code: string;
+          member_id: string;
+          cycle_id: string | null;
+          investment_id: string | null;
+          distribution_id: string | null;
+          title: string;
+          issued_on: string;
+          payload: Json;
+          issued_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          kind: Database["public"]["Enums"]["document_kind"];
+          code: string;
+          member_id: string;
+          cycle_id?: string | null;
+          investment_id?: string | null;
+          distribution_id?: string | null;
+          title: string;
+          issued_on?: string;
+          payload?: Json;
+          issued_by?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          kind?: Database["public"]["Enums"]["document_kind"];
+          code?: string;
+          member_id?: string;
+          cycle_id?: string | null;
+          investment_id?: string | null;
+          distribution_id?: string | null;
+          title?: string;
+          issued_on?: string;
+          payload?: Json;
+          issued_by?: string | null;
+          created_at?: string;
         };
         Relationships: [];
       };
@@ -173,6 +257,11 @@ export type Database = {
           is_payable: boolean;
           settled_on: string | null;
           receipt_url: string | null;
+          status: Database["public"]["Enums"]["expense_status"];
+          approved_by: string | null;
+          approved_at: string | null;
+          review_note: string | null;
+          logged_by_role: string | null;
           recorded_by: string;
           created_at: string;
           updated_at: string;
@@ -188,6 +277,11 @@ export type Database = {
           is_payable?: boolean;
           settled_on?: string | null;
           receipt_url?: string | null;
+          status?: Database["public"]["Enums"]["expense_status"];
+          approved_by?: string | null;
+          approved_at?: string | null;
+          review_note?: string | null;
+          logged_by_role?: string | null;
           recorded_by: string;
           created_at?: string;
           updated_at?: string;
@@ -203,6 +297,11 @@ export type Database = {
           is_payable?: boolean;
           settled_on?: string | null;
           receipt_url?: string | null;
+          status?: Database["public"]["Enums"]["expense_status"];
+          approved_by?: string | null;
+          approved_at?: string | null;
+          review_note?: string | null;
+          logged_by_role?: string | null;
           recorded_by?: string;
           created_at?: string;
           updated_at?: string;
@@ -365,6 +464,111 @@ export type Database = {
         };
         Relationships: [];
       };
+      log_media: {
+        Row: {
+          id: string;
+          log_id: string | null;
+          cycle_id: string;
+          kind: string;
+          url: string;
+          caption: string | null;
+          captured_by: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          log_id?: string | null;
+          cycle_id: string;
+          kind: string;
+          url: string;
+          caption?: string | null;
+          captured_by: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          log_id?: string | null;
+          cycle_id?: string;
+          kind?: string;
+          url?: string;
+          caption?: string | null;
+          captured_by?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      member_alerts: {
+        Row: {
+          id: string;
+          member_id: string;
+          activity_id: string | null;
+          title: string;
+          body: string | null;
+          tone: string;
+          read_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          member_id: string;
+          activity_id?: string | null;
+          title: string;
+          body?: string | null;
+          tone?: string;
+          read_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          member_id?: string;
+          activity_id?: string | null;
+          title?: string;
+          body?: string | null;
+          tone?: string;
+          read_at?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      monthly_plan_charges: {
+        Row: {
+          id: string;
+          member_id: string;
+          cycle_id: string | null;
+          due_on: string;
+          amount: number;
+          status: string;
+          paid_on: string | null;
+          investment_id: string | null;
+          note: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          member_id: string;
+          cycle_id?: string | null;
+          due_on: string;
+          amount: number;
+          status?: string;
+          paid_on?: string | null;
+          investment_id?: string | null;
+          note?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          member_id?: string;
+          cycle_id?: string | null;
+          due_on?: string;
+          amount?: number;
+          status?: string;
+          paid_on?: string | null;
+          investment_id?: string | null;
+          note?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       operational_logs: {
         Row: {
           id: string;
@@ -452,24 +656,114 @@ export type Database = {
         };
         Relationships: [];
       };
+      operator_assignments: {
+        Row: {
+          id: string;
+          operator_id: string;
+          cycle_id: string;
+          granted_by: string | null;
+          granted_at: string;
+          revoked_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          operator_id: string;
+          cycle_id: string;
+          granted_by?: string | null;
+          granted_at?: string;
+          revoked_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          operator_id?: string;
+          cycle_id?: string;
+          granted_by?: string | null;
+          granted_at?: string;
+          revoked_at?: string | null;
+        };
+        Relationships: [];
+      };
       profiles: {
         Row: {
           id: string;
           full_name: string | null;
+          phone: string | null;
+          whatsapp_number: string | null;
+          bank_name: string | null;
+          account_number: string | null;
+          account_name: string | null;
+          bank_verified_at: string | null;
+          notify_email: boolean;
+          notify_whatsapp: boolean;
+          monthly_plan_amount: number | null;
+          monthly_plan_active: boolean;
+          monthly_plan_started_on: string | null;
           created_at: string;
           updated_at: string;
         };
         Insert: {
           id: string;
           full_name?: string | null;
+          phone?: string | null;
+          whatsapp_number?: string | null;
+          bank_name?: string | null;
+          account_number?: string | null;
+          account_name?: string | null;
+          bank_verified_at?: string | null;
+          notify_email?: boolean;
+          notify_whatsapp?: boolean;
+          monthly_plan_amount?: number | null;
+          monthly_plan_active?: boolean;
+          monthly_plan_started_on?: string | null;
           created_at?: string;
           updated_at?: string;
         };
         Update: {
           id?: string;
           full_name?: string | null;
+          phone?: string | null;
+          whatsapp_number?: string | null;
+          bank_name?: string | null;
+          account_number?: string | null;
+          account_name?: string | null;
+          bank_verified_at?: string | null;
+          notify_email?: boolean;
+          notify_whatsapp?: boolean;
+          monthly_plan_amount?: number | null;
+          monthly_plan_active?: boolean;
+          monthly_plan_started_on?: string | null;
           created_at?: string;
           updated_at?: string;
+        };
+        Relationships: [];
+      };
+      reserve_pledges: {
+        Row: {
+          id: string;
+          cycle_id: string;
+          distribution_id: string | null;
+          amount: number;
+          reason: string;
+          decided_by: string;
+          decided_at: string;
+        };
+        Insert: {
+          id?: string;
+          cycle_id: string;
+          distribution_id?: string | null;
+          amount: number;
+          reason: string;
+          decided_by: string;
+          decided_at?: string;
+        };
+        Update: {
+          id?: string;
+          cycle_id?: string;
+          distribution_id?: string | null;
+          amount?: number;
+          reason?: string;
+          decided_by?: string;
+          decided_at?: string;
         };
         Relationships: [];
       };
@@ -548,6 +842,51 @@ export type Database = {
           settled_by?: string | null;
           created_at?: string;
           updated_at?: string;
+        };
+        Relationships: [];
+      };
+      treasury_entries: {
+        Row: {
+          id: string;
+          cycle_id: string | null;
+          kind: Database["public"]["Enums"]["treasury_entry_kind"];
+          amount: number;
+          occurred_on: string;
+          category: string | null;
+          note: string | null;
+          reference: string | null;
+          source_table: string | null;
+          source_id: string | null;
+          recorded_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          cycle_id?: string | null;
+          kind: Database["public"]["Enums"]["treasury_entry_kind"];
+          amount: number;
+          occurred_on?: string;
+          category?: string | null;
+          note?: string | null;
+          reference?: string | null;
+          source_table?: string | null;
+          source_id?: string | null;
+          recorded_by?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          cycle_id?: string | null;
+          kind?: Database["public"]["Enums"]["treasury_entry_kind"];
+          amount?: number;
+          occurred_on?: string;
+          category?: string | null;
+          note?: string | null;
+          reference?: string | null;
+          source_table?: string | null;
+          source_id?: string | null;
+          recorded_by?: string | null;
+          created_at?: string;
         };
         Relationships: [];
       };
@@ -789,6 +1128,48 @@ export type Database = {
         };
         Relationships: [];
       };
+      cycle_settlement_readiness: {
+        Row: {
+          cycle_id: string | null;
+          code: string | null;
+          status: Database["public"]["Enums"]["cycle_status"] | null;
+          current_stage: Database["public"]["Enums"]["stage_id"] | null;
+          profit_investor_percent: number | null;
+          profit_operator_percent: number | null;
+          reserve_percent: number | null;
+          projected_harvest_on: string | null;
+          weighed_kg: number | null;
+          banked_revenue: number | null;
+          open_liabilities: number | null;
+          verified_capital: number | null;
+          contributing_members: number | null;
+          already_settled: boolean | null;
+        };
+        Relationships: [];
+      };
+      cycle_settlement_summary: {
+        Row: {
+          cycle_id: string | null;
+          cycle_code: string | null;
+          cycle_name: string | null;
+          commodity: Database["public"]["Enums"]["commodity_type"] | null;
+          gross_revenue: number | null;
+          liabilities_paid: number | null;
+          principal_returned: number | null;
+          reserve_set_aside: number | null;
+          net_profit: number | null;
+          investor_profit_pool: number | null;
+          operator_fee: number | null;
+          profit_investor_percent: number | null;
+          profit_operator_percent: number | null;
+          reserve_percent: number | null;
+          principal_at_risk: boolean | null;
+          executed_at: string | null;
+          total_weight_kg: number | null;
+          harvest_date: string | null;
+        };
+        Relationships: [];
+      };
       cycle_stock_level: {
         Row: {
           cycle_id: string | null;
@@ -801,6 +1182,31 @@ export type Database = {
           sample_avg_weight_g: number | null;
           crates_collected: number | null;
           bags_harvested: number | null;
+        };
+        Relationships: [];
+      };
+      cycle_treasury_position: {
+        Row: {
+          cycle_id: string | null;
+          code: string | null;
+          capital_funded: number | null;
+          expenses_paid: number | null;
+          expenses_incurred: number | null;
+          cash_on_hand: number | null;
+        };
+        Relationships: [];
+      };
+      document_register: {
+        Row: {
+          code: string | null;
+          kind: Database["public"]["Enums"]["document_kind"] | null;
+          title: string | null;
+          issued_on: string | null;
+          cycle_id: string | null;
+          cycle_code: string | null;
+          cycle_name: string | null;
+          member_id: string | null;
+          payload: Json | null;
         };
         Relationships: [];
       };
@@ -834,6 +1240,18 @@ export type Database = {
           log_date: string | null;
           summary: string | null;
           created_at: string | null;
+        };
+        Relationships: [];
+      };
+      treasury_position: {
+        Row: {
+          total_capital_funded: number | null;
+          total_expenses_incurred: number | null;
+          total_payouts_paid: number | null;
+          total_reserve_held: number | null;
+          operating_cash_on_hand: number | null;
+          movements: number | null;
+          last_movement_on: string | null;
         };
         Relationships: [];
       };
@@ -884,6 +1302,20 @@ export type Database = {
         Args: { _cycle_id?: string; _gross_revenue?: number; _note?: string };
         Returns: Database["public"]["Tables"]["waterfall_distributions"]["Row"];
       };
+      run_cycle_waterfall_planned: {
+        Args: {
+          _cycle_id?: string;
+          _gross_revenue?: number;
+          _reserve_top_up?: number;
+          _test?: boolean;
+          _note?: string;
+        };
+        Returns: Database["public"]["Tables"]["waterfall_distributions"]["Row"];
+      };
+      settle_monthly_plan: {
+        Args: { _investment_id?: string };
+        Returns: undefined;
+      };
       settle_share_transfer: {
         Args: { _transfer_id?: string };
         Returns: Database["public"]["Tables"]["share_transfers"]["Row"];
@@ -894,6 +1326,8 @@ export type Database = {
       commodity_type: "catfish" | "tilapia" | "broiler" | "layer" | "grain" | "greenhouse";
       cycle_status: "draft" | "open" | "funded" | "active" | "harvested" | "settled" | "cancelled";
       distribution_status: "draft" | "executed" | "paid";
+      document_kind: "investment_certificate" | "payment_receipt" | "harvest_statement";
+      expense_status: "pending" | "approved" | "rejected";
       incident_severity: "low" | "moderate" | "serious" | "critical";
       incident_status: "open" | "mitigating" | "resolved";
       investment_method: "paystack" | "manual" | "rollover";
@@ -903,6 +1337,7 @@ export type Database = {
       payment_method: "paystack" | "manual";
       payment_status: "pending" | "success" | "failed";
       payout_status: "pending" | "paid" | "withheld";
+      plan_cadence: "none" | "monthly";
       review_status: "pending" | "approved" | "flagged";
       rollover_mode: "off" | "principal" | "profit" | "both";
       stage_id:
@@ -913,6 +1348,7 @@ export type Database = {
         | "sale_settlement"
         | "waterfall_distribution";
       transfer_status: "offered" | "claimed" | "settled" | "withdrawn";
+      treasury_entry_kind: "capital_in" | "expense_out" | "payout_out" | "reserve_in" | "top_up";
       visit_status: "requested" | "confirmed" | "declined" | "completed" | "cancelled";
     };
     CompositeTypes: {
@@ -1039,6 +1475,8 @@ export const Constants = {
       commodity_type: ["catfish", "tilapia", "broiler", "layer", "grain", "greenhouse"],
       cycle_status: ["draft", "open", "funded", "active", "harvested", "settled", "cancelled"],
       distribution_status: ["draft", "executed", "paid"],
+      document_kind: ["investment_certificate", "payment_receipt", "harvest_statement"],
+      expense_status: ["pending", "approved", "rejected"],
       incident_severity: ["low", "moderate", "serious", "critical"],
       incident_status: ["open", "mitigating", "resolved"],
       investment_method: ["paystack", "manual", "rollover"],
@@ -1047,6 +1485,7 @@ export const Constants = {
       payment_method: ["paystack", "manual"],
       payment_status: ["pending", "success", "failed"],
       payout_status: ["pending", "paid", "withheld"],
+      plan_cadence: ["none", "monthly"],
       review_status: ["pending", "approved", "flagged"],
       rollover_mode: ["off", "principal", "profit", "both"],
       stage_id: [
@@ -1058,6 +1497,7 @@ export const Constants = {
         "waterfall_distribution",
       ],
       transfer_status: ["offered", "claimed", "settled", "withdrawn"],
+      treasury_entry_kind: ["capital_in", "expense_out", "payout_out", "reserve_in", "top_up"],
       visit_status: ["requested", "confirmed", "declined", "completed", "cancelled"],
     },
   },

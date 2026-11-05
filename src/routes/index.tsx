@@ -19,9 +19,13 @@ import {
 import { AiConcierge } from "@/components/ndh/AiConcierge";
 import { FamilyFooter } from "@/components/ndh/FamilyFooter";
 import { PrecisionHeader } from "@/components/ndh/PrecisionHeader";
-import { CycleCard } from "@/components/agri/CycleCard";
+import { FarmHero } from "@/components/agri/FarmHero";
+import { HowItWorks } from "@/components/agri/HowItWorks";
+import { OpportunityCard } from "@/components/agri/OpportunityCard";
+import { PhotoProofStrip } from "@/components/agri/PhotoProofStrip";
+import { ReturnCalculator } from "@/components/agri/ReturnCalculator";
+import { WhatsAppBanner } from "@/components/agri/WhatsAppBanner";
 import { LiveFarmTicker } from "@/components/agri/LiveFarmTicker";
-import { ExampleWalkthrough } from "@/components/agri/ExampleWalkthrough";
 import { HowWeKeepThisHonest } from "@/components/agri/HowWeKeepThisHonest";
 import { TransparencyFeed, IncidentRegister } from "@/components/agri/TransparencyFeed";
 import { ClimatePanel } from "@/components/agri/ClimatePanel";
@@ -30,32 +34,9 @@ import { Figure } from "@/components/ndh/ledger-ui";
 import { getPlatformPulse, listPublicCycles } from "@/lib/agri.public.functions";
 import { COMMODITIES } from "@/lib/agri/commodities";
 import { moneyCompact, moneyPublic, number, percent } from "@/lib/agri/format";
-import { NUMBER_HINT, PLAIN_JOURNEY, PLAIN_PAYOUT_ORDER } from "@/lib/agri/plain";
+import { useLocale } from "@/lib/agri/i18n";
+import { NUMBER_HINT, PLAIN_PAYOUT_ORDER } from "@/lib/agri/plain";
 import { DEFAULT_RULES } from "@/lib/agri/rules";
-
-/**
- * The visitor's version of the four-step journey.
- *
- * The words are plain on purpose: a first-time visitor should not have to learn
- * the ledger's vocabulary before they can judge the offer. The ledger's own term
- * for each step still appears underneath, small and grey, because a member who
- * signs in will meet it in the portal and should recognise it.
- */
-const JOURNEY_ICONS = [PiggyBank, Fish, Scale, Waves] as const;
-
-const JOURNEY_LEDGER_TERM: Record<string, string> = {
-  "01": "Capital pooling",
-  "02": "Stocking & growth",
-  "03": "Harvest & off-take",
-  "04": "Waterfall settlement",
-};
-
-const JOURNEY_CHIP_TONE: Record<string, string> = {
-  "01": "pg-chip--mint",
-  "02": "pg-chip--signal",
-  "03": "pg-chip--closing",
-  "04": "pg-chip--mint",
-};
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -83,6 +64,7 @@ export const Route = createFileRoute("/")({
 
 function PublicHome() {
   const { pulse, cycles, ledgerReachable } = Route.useLoaderData();
+  const { t } = useLocale();
 
   const openCycles = cycles.filter((card) => card.status === "open" || card.status === "funded");
   const featured = (openCycles.length > 0 ? openCycles : cycles).slice(0, 3);
@@ -97,144 +79,17 @@ function PublicHome() {
        * Hero — deep navy, ambient glow, and the platform's own numbers.
        * Every counter below is counted from the ledger on each request.
        * ---------------------------------------------------------------- */}
-      <section className="band-dark">
-        <div className="bg-grid-pattern absolute inset-0 opacity-60" aria-hidden="true" />
-        <div
-          className="hero-glow left-1/2 top-[-140px] h-[380px] w-[720px] -translate-x-1/2"
-          aria-hidden="true"
-        />
-        <div className="absolute inset-x-0 top-0 h-px bg-[image:var(--grad-master)] opacity-70" />
-
-        <div className="relative z-10 mx-auto grid min-w-0 max-w-[var(--page)] gap-10 px-[var(--gutter)] py-14 lg:grid-cols-[1.12fr_0.88fr] lg:py-20">
-          <div className="min-w-0">
-            <p className="animate-rise-in inline-flex max-w-full items-center gap-2 rounded-full border border-signal/30 bg-white/[0.06] px-4 py-1.5 text-[0.7rem] font-semibold text-signal shadow-lg backdrop-blur-md">
-              <Sparkles size={13} aria-hidden="true" className="shrink-0" />
-              <span className="min-w-0">
-                The agricultural investment ledger of Najeeb Digital Hub
-              </span>
-            </p>
-
-            <h1 className="animate-rise-in animate-rise-in--1 mt-5 font-display text-[2.1rem] font-bold leading-[1.06] tracking-tight sm:text-[2.8rem] lg:text-[3.15rem]">
-              Farm capital with the
-              <br />
-              <span className="pg-gradient-text">books left open.</span>
-            </h1>
-
-            <p className="animate-rise-in animate-rise-in--2 mt-5 max-w-xl text-[0.95rem] leading-7 text-slate-300">
-              Members put money into real farm cycles — catfish and tilapia ponds, broiler and layer
-              houses, grain fields and greenhouses. For each one we publish what the cycle needs,
-              what the farm actually did, what the harvest weighed, and who was paid. The rules that
-              decide the split are written into the cycle before anybody pays in.
-            </p>
-
-            <div className="animate-rise-in animate-rise-in--3 mt-7 flex flex-wrap items-center gap-3">
-              <Link to="/cycles" className="pg-btn pg-btn--signal">
-                <Sprout size={16} aria-hidden="true" />
-                See open cycles
-                <ArrowRight size={15} aria-hidden="true" />
-              </Link>
-              <Link to="/signin" className="pg-btn pg-btn--onDark">
-                Member Sign In
-              </Link>
-              <a href="#maths" className="pg-btn pg-btn--onDark">
-                <Calculator size={16} aria-hidden="true" />
-                Try the numbers
-              </a>
-            </div>
-
-            {/* Platform pulse — counted from the ledger, never seeded. */}
-            <dl className="mt-9 grid min-w-0 gap-4 sm:grid-cols-3">
-              <HeroCounter
-                label="Capital deployed"
-                value={moneyCompact(pulse.capitalDeployed)}
-                caption={NUMBER_HINT.moneyInvested}
-              />
-              <HeroCounter
-                label="Livestock on farm"
-                value={number(pulse.livestockOnFarm)}
-                caption={NUMBER_HINT.animals}
-              />
-              <HeroCounter
-                label="Cycles settled"
-                value={number(pulse.settledCycles)}
-                caption={NUMBER_HINT.cyclesFinished}
-              />
-            </dl>
-
-            <p className="mt-3 text-[0.68rem] leading-5 text-slate-500">
-              {number(pulse.activeCycles)} cycles growing on a farm right now ·{" "}
-              {number(pulse.openCycles)} still open to new members · {number(pulse.membersCount)}{" "}
-              registered members. These counters read zero until the co-operative publishes its
-              first cycle — we never fill them with an illustration.
-            </p>
-          </div>
-
-          <div className="min-w-0 space-y-4">
-            <div className="rounded-2xl border border-navy-line bg-white/[0.05] p-5 shadow-lg backdrop-blur-md">
-              <p className="pg-kicker pg-kicker--onDark">Agreed before you pay</p>
-              <ul className="mt-3 space-y-3">
-                <LockedRow
-                  icon={<Lock size={15} />}
-                  title={`${percent(DEFAULT_RULES.investorSharePercent, 0)} of profit to members, ${percent(
-                    DEFAULT_RULES.operatorSharePercent,
-                    0,
-                  )} to the farm caretaker`}
-                  body="Written into the cycle when it is published. It cannot be renegotiated at harvest."
-                />
-                <LockedRow
-                  icon={<Waves size={15} />}
-                  title="Bills first, then members, then profit"
-                  body="A fixed order of payments. Nothing is shared as profit until every member has their money back."
-                />
-                <LockedRow
-                  icon={<Coins size={15} />}
-                  title="Your share, counted from the ledger"
-                  body="Your percentage is worked out from payments we have confirmed, every time you look — never stored, never guessed."
-                />
-              </ul>
-              <a
-                href="#how-it-works"
-                className="mt-4 inline-flex items-center gap-1.5 text-[0.78rem] font-semibold text-signal no-underline"
-              >
-                See how a cycle runs
-                <ArrowRight size={13} aria-hidden="true" />
-              </a>
-            </div>
-
-            <div className="rounded-2xl border border-navy-line bg-white/[0.05] p-5 shadow-lg backdrop-blur-md">
-              <p className="pg-kicker pg-kicker--onDark">Where the co-operative stands today</p>
-              <div className="mt-3 grid min-w-0 grid-cols-2 gap-4">
-                <MiniFigure
-                  value={number(pulse.membersCount)}
-                  label="Registered members"
-                  caption={NUMBER_HINT.members}
-                />
-                <MiniFigure
-                  value={number(pulse.settledCycles)}
-                  label="Cycles paid out"
-                  caption="Finished, sold and shared out."
-                />
-                <MiniFigure
-                  value={moneyCompact(moneyBackToMembers)}
-                  label="Money back to members"
-                  caption={NUMBER_HINT.paidBack}
-                />
-                <MiniFigure
-                  value={String(COMMODITIES.length)}
-                  label="Stock families"
-                  caption="Fish, poultry, grain and greenhouse produce."
-                />
-              </div>
-              {!hasTrackRecord ? (
-                <p className="mt-4 border-t border-navy-line pt-3 text-[0.68rem] leading-4 text-slate-400">
-                  These are the co-operative&apos;s real totals, so they start at zero. We publish
-                  no illustrative returns.
-                </p>
-              ) : null}
-            </div>
-          </div>
-        </div>
-      </section>
+      <FarmHero
+        pulse={{
+          capitalDeployed: pulse.capitalDeployed,
+          livestockOnFarm: pulse.livestockOnFarm,
+          settledCycles: pulse.settledCycles,
+          activeCycles: pulse.activeCycles,
+          openCycles: pulse.openCycles,
+          membersCount: pulse.membersCount,
+        }}
+        ledgerReachable={ledgerReachable}
+      />
 
       {/* Live farm ticker — the strip directly under the hero band. */}
       <LiveFarmTicker
@@ -246,112 +101,81 @@ function PublicHome() {
       />
 
       {/* ---------------------------------------------------------------- *
-       * Marketplace
+       * Open farm opportunities — target, days left, timeline, live bar,
+       * and the visitor's own return calculator beside them.
        * ---------------------------------------------------------------- */}
-      <section className="mx-auto max-w-[var(--page)] px-[var(--gutter)] py-14 sm:py-16">
+      <section
+        id="opportunities"
+        className="mx-auto max-w-[var(--page)] scroll-mt-20 px-[var(--gutter)] py-14 sm:py-16"
+      >
         <div className="flex flex-col gap-3 border-b border-hairline pb-5 md:flex-row md:items-end md:justify-between">
           <div className="min-w-0">
-            <p className="pg-kicker">Cycles you can join</p>
-            <h2 className="mt-1.5 text-[1.45rem] leading-tight text-ink-deep sm:text-[1.85rem]">
-              {openCycles.length > 0 ? "Open for funding right now" : "The marketplace today"}
+            <p className="pg-kicker">{t("opps.kicker")}</p>
+            <h2 className="mt-1.5 text-[1.45rem] leading-tight text-ink-deep sm:text-[1.95rem]">
+              {t("opps.title")}
             </h2>
             <p className="mt-1.5 max-w-2xl text-[0.85rem] leading-6 text-ink-soft">
-              Each card tells you what the cycle needs, how much has come in so far, the smallest
-              amount you can put in and when the harvest is expected. Progress is rounded down, so
-              it can only ever understate how far a cycle has come.
+              {t("opps.blurb")}
             </p>
           </div>
           <Link to="/cycles" className="pg-btn pg-btn--ghost shrink-0">
-            See every cycle
+            See every farm
             <ArrowUpRight size={15} aria-hidden="true" />
           </Link>
         </div>
 
-        {featured.length > 0 ? (
-          <div className="mt-6 grid min-w-0 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {featured.map((card) => (
-              <CycleCard key={card.id} card={card} />
-            ))}
+        <div className="mt-6 grid min-w-0 gap-5 lg:grid-cols-[1.6fr_1fr]">
+          <div className="min-w-0">
+            {featured.length > 0 ? (
+              <div className="grid min-w-0 gap-4 sm:grid-cols-2">
+                {featured.map((card) => (
+                  <OpportunityCard key={card.id} card={card} />
+                ))}
+              </div>
+            ) : (
+              <div className="pg-card flex h-full flex-col items-center justify-center gap-3 px-6 py-14 text-center">
+                <span className="grid size-12 place-items-center rounded-full bg-porcelain text-ink-mute">
+                  <Sprout size={20} />
+                </span>
+                <p className="font-display text-base font-semibold text-ink-deep">
+                  {ledgerReachable
+                    ? "No cycles are published yet"
+                    : "We could not reach the ledger just now"}
+                </p>
+                <p className="max-w-md text-[0.82rem] leading-6 text-ink-mute">
+                  {ledgerReachable
+                    ? "A cycle is only published once its costs, its stocking plan and its locked profit split are settled. Open a member account and a new cycle will be waiting the moment it goes live."
+                    : "The marketplace service did not answer this request, so no live figures can be shown. Nothing has been lost — reload in a moment."}
+                </p>
+                <Link
+                  to="/signin"
+                  search={{ intent: "invest" }}
+                  className="pg-btn pg-btn--primary mt-1"
+                >
+                  Open a member account
+                </Link>
+              </div>
+            )}
           </div>
-        ) : (
-          <div className="pg-card mt-6 flex flex-col items-center gap-3 px-6 py-14 text-center">
-            <span className="grid size-12 place-items-center rounded-full bg-porcelain text-ink-mute">
-              <Sprout size={20} />
-            </span>
-            <p className="font-display text-base font-semibold text-ink-deep">
-              {ledgerReachable
-                ? "No cycles are published yet"
-                : "We could not reach the ledger just now"}
-            </p>
-            <p className="max-w-md text-[0.82rem] leading-6 text-ink-mute">
-              {ledgerReachable
-                ? "A cycle is only published once its costs, its stocking plan and its locked profit split are settled. Open a member account and a new cycle will be waiting the moment it goes live."
-                : "The marketplace service did not answer this request, so no live figures can be shown. Nothing has been lost — reload in a moment."}
-            </p>
-            <p className="max-w-md text-[0.78rem] leading-6 text-ink-mute">
-              In the meantime, the {percent(DEFAULT_RULES.investorSharePercent, 0)}/
-              {percent(DEFAULT_RULES.operatorSharePercent, 0)} split and the order of payments are
-              fixed for every cycle — you can try them on made-up numbers below.
-            </p>
-            <Link to="/signin" className="pg-btn pg-btn--primary mt-1">
-              Open a member account
-            </Link>
-          </div>
-        )}
+          <ReturnCalculator className="self-start lg:sticky lg:top-20" />
+        </div>
       </section>
 
       {/* ---------------------------------------------------------------- *
-       * Lifecycle — the four-step journey, plain words over the ledger term.
+       * How it works — three steps, then the six-stage farm-side rail so a
+       * curious visitor can see the record-keeping is real.
        * ---------------------------------------------------------------- */}
-      <section id="how-it-works" className="scroll-mt-20 border-y border-hairline bg-white">
-        <div className="mx-auto max-w-[var(--page)] px-[var(--gutter)] py-14 sm:py-16">
-          <div className="min-w-0">
-            <p className="pg-kicker">How it works</p>
-            <h2 className="mt-1.5 text-[1.45rem] leading-tight text-ink-deep sm:text-[1.95rem]">
-              What happens to your money, in four steps
-            </h2>
-            <p className="mt-2 max-w-3xl text-[0.85rem] leading-6 text-ink-soft">
-              Fish, poultry, grain and greenhouse cycles all follow the same arc. The terms are
-              fixed before step one; the arithmetic is published at step four.
-            </p>
-          </div>
+      <HowItWorks showFooterNotes={false} />
 
-          <div className="mt-8 grid min-w-0 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {PLAIN_JOURNEY.map((step, index) => {
-              const Icon = JOURNEY_ICONS[index] ?? Sprout;
-              return (
-                <div key={step.n} className="pg-card relative min-w-0 p-6">
-                  <div className="pg-numeral absolute right-5 top-4" aria-hidden="true">
-                    {step.n}
-                  </div>
-                  <span className="grid size-11 place-items-center rounded-xl bg-[image:var(--grad-master)] text-navy-deep">
-                    <Icon size={19} aria-hidden="true" />
-                  </span>
-                  <p className="mt-4 font-display text-[1rem] font-bold leading-snug text-ink-deep">
-                    <span className="fig mr-1.5 text-[0.72rem] text-ink-mute">{step.n}</span>
-                    {step.title}
-                  </p>
-                  <p className="mt-2 text-[0.8rem] leading-6 text-ink-soft">{step.body}</p>
-                  <div className="mt-3.5 flex flex-wrap items-center gap-2">
-                    <span className={`pg-chip ${JOURNEY_CHIP_TONE[step.n] ?? "pg-chip"}`}>
-                      {step.chip}
-                    </span>
-                    <span className="font-mono text-[0.62rem] uppercase tracking-wider text-ink-mute">
-                      {JOURNEY_LEDGER_TERM[step.n] ?? ""}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          <div className="mt-10 rounded-2xl border border-hairline bg-porcelain p-5">
+      <section className="border-b border-hairline bg-white py-12">
+        <div className="mx-auto max-w-[var(--page)] px-[var(--gutter)]">
+          <div className="rounded-2xl border border-hairline bg-porcelain p-5">
             <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
               <div className="min-w-0">
                 <p className="pg-kicker">On the farm side</p>
                 <p className="mt-1.5 max-w-2xl text-[0.8rem] leading-6 text-ink-soft">
-                  The farm team works through six logged stages, from collecting money to sharing
-                  the profit. Members can watch the rail move on any cycle they have backed.
+                  Behind every card the farm team works through six logged stages, from collecting
+                  money to sharing the profit. Members watch the rail move on any cycle they back.
                 </p>
               </div>
               <Link to="/cycles" className="pg-btn pg-btn--ghost shrink-0">
@@ -364,7 +188,7 @@ function PublicHome() {
             </div>
           </div>
 
-          <div className="mt-10 min-w-0">
+          <div className="mt-8 min-w-0">
             <p className="pg-kicker">What we raise</p>
             <h3 className="mt-1.5 text-[1.2rem] leading-tight text-ink-deep sm:text-[1.4rem]">
               Six stock families, each with its own record-keeping
@@ -398,23 +222,6 @@ function PublicHome() {
                       <p className="mt-1.5 text-[0.75rem] leading-5 text-ink-soft">
                         {commodity.summary}
                       </p>
-                      <ul className="mt-3 list-none space-y-1.5 p-0">
-                        {commodity.telemetryPlain.slice(0, 2).map((line) => (
-                          <li key={line.label} className="min-w-0">
-                            <span className="flex gap-1.5 text-[0.72rem] font-semibold text-mint-deep">
-                              <ShieldCheck
-                                size={12}
-                                className="mt-0.5 shrink-0"
-                                aria-hidden="true"
-                              />
-                              {line.label}
-                            </span>
-                            <span className="mt-0.5 block text-[0.7rem] leading-5 text-ink-mute">
-                              {line.hint}
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
                     </div>
                   </div>
                 );
@@ -424,28 +231,9 @@ function PublicHome() {
         </div>
       </section>
 
-      {/* ---------------------------------------------------------------- *
-       * The maths — an example the visitor drives, never a real cycle's plan.
-       * ---------------------------------------------------------------- */}
-      <section id="maths" className="scroll-mt-20 py-14 sm:py-16">
-        <div className="mx-auto max-w-[var(--page)] px-[var(--gutter)]">
-          <div className="min-w-0">
-            <p className="pg-kicker">The maths, in the open</p>
-            <h2 className="mt-1.5 text-[1.45rem] leading-tight text-ink-deep sm:text-[1.95rem]">
-              Run the numbers yourself
-            </h2>
-            <p className="mt-2 max-w-3xl text-[0.85rem] leading-6 text-ink-soft">
-              No real cycle&apos;s plans are used here, because what a cycle expects to earn is the
-              co-operative&apos;s business and not a public claim. Instead, build a made-up cycle
-              and watch the same order of payments that runs at a real harvest.
-            </p>
-          </div>
+      <PhotoProofStrip onDark />
 
-          <div className="mt-6">
-            <ExampleWalkthrough />
-          </div>
-        </div>
-      </section>
+      <WhatsAppBanner inviteUrl={null} />
 
       <HowWeKeepThisHonest />
 
@@ -503,7 +291,7 @@ function PublicHome() {
                 />
               </ul>
               <a
-                href="#maths"
+                href="#opportunities"
                 className="mt-4 inline-flex items-center gap-1.5 text-[0.78rem] font-semibold text-signal-deep no-underline"
               >
                 Try these rules on example numbers

@@ -191,6 +191,9 @@ export function FamilyFooter() {
             <a href="/legal/risk" className="no-underline hover:text-white">
               Risk statement
             </a>
+            <a href="/verify" className="no-underline hover:text-white">
+              Verify a document
+            </a>
             <a href="#top" className="no-underline hover:text-white">
               Back to top ↑
             </a>

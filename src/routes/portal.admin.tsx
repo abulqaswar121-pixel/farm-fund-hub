@@ -6,6 +6,7 @@ import {
   BadgeCheck,
   Banknote,
   CalendarCheck,
+  Check,
   Coins,
   Gauge,
   Layers,
@@ -14,6 +15,7 @@ import {
   Plus,
   RefreshCw,
   Repeat,
+  Receipt,
   Scale,
   ShieldAlert,
   ShieldCheck,
@@ -21,6 +23,9 @@ import {
   X,
 } from "lucide-react";
 
+import { BroadcastPanel } from "@/components/agri/BroadcastPanel";
+import { OperatorUnitsPanel } from "@/components/agri/OperatorUnitsPanel";
+import { SettlementWizard } from "@/components/agri/SettlementWizard";
 import { StageRail } from "@/components/agri/StageRail";
 import { WaterfallLadder } from "@/components/agri/WaterfallLadder";
 import {
@@ -38,6 +43,7 @@ import { DEFAULT_RULES, runWaterfall, validateRules, type CycleRules } from "@/l
 import {
   advanceCycleStage,
   applyRollovers,
+  attachExpenseReceipt,
   createFarmCycle,
   decideFarmVisit,
   getAdminConsole,
@@ -48,6 +54,7 @@ import {
   recordHarvestSale,
   rejectInvestment,
   resolveIncident,
+  setCycleListing,
   reviewOperationalLog,
   runSettlement,
   setMemberRole,
@@ -62,7 +69,16 @@ export const Route = createFileRoute("/portal/admin")({
   component: AdminPortal,
 });
 
-type Tab = "overview" | "cycles" | "verification" | "logs" | "settlement" | "members" | "board";
+type Tab =
+  | "overview"
+  | "cycles"
+  | "verification"
+  | "logs"
+  | "settlement"
+  | "members"
+  | "units"
+  | "broadcast"
+  | "board";
 
 const TABS: { id: Tab; label: string; icon: typeof Gauge }[] = [
   { id: "overview", label: "Overview", icon: Gauge },
@@ -71,6 +87,8 @@ const TABS: { id: Tab; label: string; icon: typeof Gauge }[] = [
   { id: "logs", label: "Log auditor", icon: ShieldCheck },
   { id: "settlement", label: "Settlement engine", icon: Scale },
   { id: "members", label: "Members & roles", icon: BadgeCheck },
+  { id: "units", label: "Farm unit access", icon: Lock },
+  { id: "broadcast", label: "WhatsApp updates", icon: Repeat },
   { id: "board", label: "Board & register", icon: Coins },
 ];
 
@@ -370,7 +388,21 @@ function AdminPortal() {
         </div>
       ) : null}
 
-      {tab === "settlement" ? <SettlementEngine console_={console_} onDone={done} /> : null}
+      {tab === "settlement" ? (
+        <div className="space-y-8">
+          <SettlementWizard console_={console_} onDone={done} />
+          <div className="border-t border-hairline pt-6">
+            <p className="pg-kicker">Legacy one-button run</p>
+            <p className="mt-1.5 max-w-2xl text-[0.78rem] leading-6 text-ink-soft">
+              The original single-screen settlement, kept for a cycle whose numbers are already
+              agreed and only need executing. It runs the same database function, so the figures
+              agree with the wizard — but it gives you no preview, no reserve top-up and no
+              per-member review before the run. Prefer the wizard above.
+            </p>
+          </div>
+          <SettlementEngine console_={console_} onDone={done} />
+        </div>
+      ) : null}
 
       {tab === "members" ? (
         <div className="space-y-5">
@@ -408,6 +440,10 @@ function AdminPortal() {
         </div>
       ) : null}
 
+      {tab === "units" ? <OperatorUnitsPanel console_={console_} onDone={done} /> : null}
+
+      {tab === "broadcast" ? <BroadcastPanel console_={console_} /> : null}
+
       {tab === "board" ? <BoardAndRegister console_={console_} onDone={done} /> : null}
     </div>
   );
@@ -426,6 +462,7 @@ function CycleLauncher({
 }) {
   const create = useServerFn(createFarmCycle);
   const publish = useServerFn(publishFarmCycle);
+  const setListing = useServerFn(setCycleListing);
   const advance = useServerFn(advanceCycleStage);
 
   const [busy, setBusy] = useState(false);
@@ -757,6 +794,33 @@ function CycleLauncher({
                       }
                       label={CYCLE_STATUS_LABEL[cycle.status as CycleStatus] ?? cycle.status}
                     />
+                    {cycle.locked && cycle.status !== "settled" && cycle.status !== "harvested" ? (
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          const listed = cycle.status === "cancelled";
+                          try {
+                            await setListing({ data: { cycleId: cycle.id, listed } });
+                            onDone(
+                              listed ? "success" : "info",
+                              listed
+                                ? `${cycle.code} is listed again, with a fresh funding window.`
+                                : `${cycle.code} is unlisted. Members keep their positions and the farm keeps logging — it simply stops taking new money.`,
+                            );
+                          } catch (error) {
+                            onDone(
+                              "error",
+                              error instanceof Error
+                                ? error.message
+                                : "The listing was not changed",
+                            );
+                          }
+                        }}
+                        className="rounded-full border border-hairline bg-white px-3 py-1 text-[0.7rem] font-semibold text-ink-soft transition-colors hover:border-signal hover:text-ink-deep"
+                      >
+                        {cycle.status === "cancelled" ? "List again" : "Pause listing"}
+                      </button>
+                    ) : null}
                     {!cycle.locked ? (
                       <button
                         type="button"
@@ -974,6 +1038,7 @@ function VerificationQueue({
               )}
               Verify &amp; credit
             </button>
+            <ReceiptAttach investmentId={investment.id} onDone={onDone} />
             <button
               type="button"
               disabled={busyId === investment.id}
@@ -999,6 +1064,83 @@ function VerificationQueue({
           </div>
         </Card>
       ))}
+    </div>
+  );
+}
+
+/**
+ * Attach the paper behind an offline transfer.
+ *
+ * Verifying a bank transfer is a human decision, and the only thing that makes
+ * it safe is that the teller slip exists and somebody filed it. The address
+ * input is offered rather than a file picker on purpose: the teller slip is
+ * often photographed on a phone that has no upload rights to the bucket, and a
+ * pasted link is honest about where the evidence lives.
+ */
+function ReceiptAttach({
+  investmentId,
+  onDone,
+}: {
+  investmentId: string;
+  onDone: (tone: "success" | "error" | "info", text: string) => void;
+}) {
+  const attach = useServerFn(attachExpenseReceipt);
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="pg-btn pg-btn--ghost h-10 text-[0.74rem]"
+      >
+        <Receipt size={13} aria-hidden="true" />
+        Attach slip
+      </button>
+    );
+  }
+
+  return (
+    <div className="flex w-full flex-wrap items-end gap-2">
+      <label className="min-w-[12rem] flex-1">
+        <span className="pg-label">Receipt link or storage path</span>
+        <input
+          className="pg-input h-10 font-mono text-[0.72rem]"
+          value={value}
+          onChange={(event) => setValue(event.target.value)}
+          placeholder="https://… or uid/cycle/file.jpg"
+        />
+      </label>
+      <button
+        type="button"
+        disabled={busy || value.trim().length < 3}
+        onClick={async () => {
+          setBusy(true);
+          try {
+            await attach({ data: { expenseId: investmentId, receiptPath: value.trim() } });
+            onDone("success", "Slip attached to the contribution record.");
+            setOpen(false);
+            setValue("");
+          } catch (error) {
+            onDone("error", error instanceof Error ? error.message : "The slip was not attached");
+          }
+          setBusy(false);
+        }}
+        className="pg-btn pg-btn--primary h-10"
+      >
+        {busy ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />}
+        Save
+      </button>
+      <button
+        type="button"
+        onClick={() => setOpen(false)}
+        className="pg-btn pg-btn--ghost h-10"
+        aria-label="Cancel attaching the slip"
+      >
+        <X size={13} aria-hidden="true" />
+      </button>
     </div>
   );
 }

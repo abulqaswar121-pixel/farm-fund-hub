@@ -60,18 +60,53 @@ def font(path: str, size: int):
 display_bold_path = sys.argv[1] if len(sys.argv) > 1 else "/tmp/ogfonts/spacegrotesk-700.ttf"
 body_path = sys.argv[2] if len(sys.argv) > 2 else "/tmp/ogfonts/dmsans-400.ttf"
 body_medium_path = sys.argv[3] if len(sys.argv) > 3 else "/tmp/ogfonts/dmsans-500.ttf"
+body_semibold_path = sys.argv[4] if len(sys.argv) > 4 else "/tmp/ogfonts/dmsans-600.ttf"
 
 display_bold = lambda size: font(display_bold_path, size)  # noqa: E731
 body = lambda size: font(body_path, size)  # noqa: E731
 body_medium = lambda size: font(body_medium_path, size)  # noqa: E731
+body_semibold = lambda size: font(body_semibold_path, size)  # noqa: E731
+
+# ---------------------------------------------------------------- farm photo --
+# The right 38% of the card is a real farm photograph, softened into the navy so
+# the headline never has to fight it. A share card that shows the product is
+# worth more than one that shows a gradient.
+PHOTO_LEFT = int(W * 0.60)
+photo_path = root / "public/images/farm/hero-catfish-ponds.jpg"
+if photo_path.exists():
+    photo = Image.open(photo_path).convert("RGB")
+    # Cover-fit the strip.
+    target_w, target_h = W - PHOTO_LEFT, H
+    scale = max(target_w / photo.width, target_h / photo.height)
+    photo = photo.resize(
+        (round(photo.width * scale) + 1, round(photo.height * scale) + 1), Image.LANCZOS
+    )
+    left = max(0, (photo.width - target_w) // 2)
+    top = max(0, (photo.height - target_h) // 2)
+    photo = photo.crop((left, top, left + target_w, top + target_h))
+
+    # Navy 75% wash over the photograph, easing to full navy at the seam so the
+    # two halves read as one card rather than a collage.
+    wash = Image.new("RGBA", (target_w, target_h), NAVY + (0,))
+    px = wash.load()
+    for x in range(target_w):
+        t = x / max(1, target_w - 1)
+        alpha = round(255 * (0.75 - 0.55 * min(1.0, t / 0.45)))
+        for y in range(0, target_h, 4):
+            for dy in range(4):
+                if y + dy < target_h:
+                    px[x, y + dy] = NAVY + (alpha,)
+    photo = photo.convert("RGBA")
+    photo.alpha_composite(wash)
+    canvas.paste(photo.convert("RGB"), (PHOTO_LEFT, 0))
 
 # Faint contour grid — the "precision" texture, never loud enough to read as data.
-for x in range(0, W, 40):
+for x in range(0, PHOTO_LEFT, 40):
     draw.line([(x, 0), (x, H)], fill=(255, 255, 255, 8), width=1)
 for y in range(0, H, 40):
-    draw.line([(0, y), (W, y)], fill=(255, 255, 255, 8), width=1)
+    draw.line([(0, y), (PHOTO_LEFT, y)], fill=(255, 255, 255, 8), width=1)
 
-# Master gradient bar across the top edge.
+# Master gradient bar across the top edge, and a cyan hairline down the seam.
 for x in range(W):
     t = x / (W - 1)
     if t < 0.5:
@@ -81,14 +116,15 @@ for x in range(W):
         u = (t - 0.5) / 0.5
         colour = tuple(round(104 + (169 - 104) * u) for i in range(3))
     draw.line([(x, 0), (x, 6)], fill=colour)
+draw.line([(PHOTO_LEFT, 0), (PHOTO_LEFT, H)], fill=CYAN + (70,), width=2)
 
-# Gateway mark with its agricultural sector badge.
+# ------------------------------------------------------------- brand lockup --
 #
 # The badge geometry is imported from `build-brand-icons.py` rather than
 # re-drawn, so the tab icon, the home-screen icon and this unfurl card all wear
 # an identical sprout roundel — one definition, three outputs.
-MARK_X, MARK_Y, MARK_SIZE = 72, 84, 150
-canvas.paste(mark, (MARK_X, MARK_Y), mark)
+MARK_X, MARK_Y, MARK_SIZE = 64, 54, 96
+canvas.paste(mark.resize((MARK_SIZE, MARK_SIZE), Image.LANCZOS), (MARK_X, MARK_Y), mark.resize((MARK_SIZE, MARK_SIZE), Image.LANCZOS))
 
 ICON_SIZE = MARK_SIZE / 0.78  # the badge is positioned relative to the whole icon
 ICON_ORIGIN_X = MARK_X - (ICON_SIZE - MARK_SIZE) / 2
@@ -117,14 +153,46 @@ _sprout = Image.new("RGBA", (W, H), (0, 0, 0, 0))
 brand_icons.draw_sprout(_sprout, BADGE_CX, BADGE_CY, BADGE_R, (255, 255, 255, 255))
 canvas.paste(_sprout, (0, 0), _sprout)
 
-draw.text((72, 258), "NAJEEB DIGITAL HUB", font=body_medium(26), fill=CYAN)
-
-# Lockup.
-draw.text((72, 300), "NDH AgriCapital", font=display_bold(84), fill=PORCELAIN)
 draw.text(
-    (72, 412),
-    "Farm capital with the books left open",
-    font=body(36),
+    (MARK_X + MARK_SIZE + 22, MARK_Y + 12),
+    "NAJEEB DIGITAL HUB",
+    font=body_semibold(19),
+    fill=CYAN,
+)
+draw.text(
+    (MARK_X + MARK_SIZE + 22, MARK_Y + 44),
+    "NDH AgriCapital",
+    font=display_bold(40),
+    fill=PORCELAIN,
+)
+
+# ------------------------------------------------------------------ headline --
+# The exact share headline the platform is published under. Three fixed lines,
+# each measured once so the card never depends on a font metric surprise.
+HEADLINE = ["Transparent Community", "Farm Investments &", "Verified Live Stock Ledger"]
+# Shrink until the longest line clears the photo seam with a real margin.
+head_size = 52
+while head_size > 30:
+    head_font = display_bold(head_size)
+    if max(draw.textlength(line, font=head_font) for line in HEADLINE) <= PHOTO_LEFT - 64 - 34:
+        break
+    head_size -= 1
+line_height = round(head_size * 1.19)
+y = 186
+for line in HEADLINE:
+    draw.text((64, y), line, font=head_font, fill=PORCELAIN)
+    y += line_height
+
+draw.text(
+    (66, y + 22),
+    "Fund active farm batches, watch daily photo logs, and earn",
+    font=body(25),
+    fill=SLATE,
+)
+draw.text(
+    (66, y + 56),
+    "harvest dividends with verified equity.",
+    font=body(25),
     fill=SLATE,
 )
 
@@ -132,40 +200,36 @@ draw.text(
 #
 # The chips are measured and shrunk to fit rather than hard-coded, so editing the
 # wording can never push a chip off the right edge of the card.
-chips = [
-    "Rules locked up front",
-    "Members paid before profit",
-    "Every payout recorded",
-]
-MARGIN, GAP = 72, 48
-available = W - MARGIN * 2
+chips = ["70 / 30 harvest split", "Live photo proof", "Verified equity"]
+MARGIN, GAP = 64, 18
+available = int(W * 0.58) - MARGIN
 
-chip_size = 26
-while chip_size > 14:
+chip_size = 22
+while chip_size > 13:
     chip_font = body(chip_size)
     widths = [draw.textlength(text, font=chip_font) for text in chips]
-    total = sum(widths) + GAP * (len(chips) - 1) + 40 * len(chips)
+    total = sum(widths) + GAP * (len(chips) - 1) + 34 * len(chips)
     if total <= available:
         break
     chip_size -= 1
 
 x = MARGIN
 for text, width in zip(chips, widths):
-    height = chip_size + 28
-    top = 492 + (54 - height) / 2
+    height = chip_size + 24
+    top = 520
     draw.rounded_rectangle(
-        [x, top, x + width + 40, top + height],
+        [x, top, x + width + 34, top + height],
         radius=height / 2,
-        outline=(255, 255, 255, 40),
+        outline=(255, 255, 255, 42),
         width=2,
     )
-    draw.text((x + 20, top + height / 2), text, font=chip_font, fill=MINT, anchor="lm")
-    x += width + 40 + GAP
+    draw.text((x + 17, top + height / 2), text, font=chip_font, fill=MINT, anchor="lm")
+    x += width + 34 + GAP
 
 draw.text(
-    (72, 578),
+    (64, 578),
     "agricapital.ndh.com.ng",
-    font=body(28),
+    font=body_medium(24),
     fill=PORCELAIN,
 )
 

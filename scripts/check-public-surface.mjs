@@ -27,6 +27,14 @@ const PUBLIC_FILES = [
   "src/components/agri/ExampleWalkthrough.tsx",
   "src/components/agri/TransparencyFeed.tsx",
   "src/components/agri/HowWeKeepThisHonest.tsx",
+  // Document verification. Public in the sense that matters — a stranger may
+  // open it with a code from a printed page — but it reads only the
+  // `document_register` view, which withholds every figure unless the caller is
+  // the member who owns the document or a treasury admin. Listed here so it is
+  // held to the same rule as the pages above, even though the figures it shows
+  // (equity, gross revenue) are legitimate on a member's own certificate.
+  "src/routes/verify.tsx",
+  "src/components/agri/A4Document.tsx",
 ];
 
 /** Tables that only a signed-in member may read, and only through the portal. */
@@ -97,6 +105,23 @@ const ALLOWANCES = [
     file: "src/lib/agri.public.functions.ts",
     token: "buyer",
     reason: "the word appears in a comment explaining why the buyer is withheld",
+  },
+  {
+    file: "src/routes/verify.tsx",
+    token: "equityPercent",
+    reason:
+      "the member's own equity on their own certificate, released only by document_register to the owner or treasury",
+  },
+  {
+    file: "src/components/agri/A4Document.tsx",
+    token: "equityPercent",
+    reason:
+      "prints the equity line on a member's own certificate, from the same owner-scoped register row",
+  },
+  {
+    file: "src/components/agri/A4Document.tsx",
+    token: "grossRevenue",
+    reason: "the cycle-level figure on a harvest statement the owner has already been shown",
   },
 ];
 

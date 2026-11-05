@@ -1405,3 +1405,509 @@
     text-align: center;
   }
 }
+
+/* ==========================================================================
+   A4 documents — certificate, receipt, settlement statement
+   --------------------------------------------------------------------------
+   One sheet, one page, every time. The sheet is a real 210mm × 297mm box, so
+   the content area is a known height and no block can push a second page out.
+   The print block hides the rest of the app entirely (the sidebar, the phone
+   navigation, the concierge button) and sets the page with no margin, because
+   the sheet already carries its own.
+   ========================================================================== */
+.doc-shell {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 210mm;
+}
+
+.doc-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.9rem;
+}
+
+.doc-sheet {
+  position: relative;
+  box-sizing: border-box;
+  width: 210mm;
+  min-height: 297mm;
+  max-width: 100%;
+  margin-inline: auto;
+  padding: 14mm 15mm 12mm;
+  background: #ffffff;
+  color: #0f172a;
+  border: 1px solid var(--hairline);
+  box-shadow: var(--shadow-lift);
+  font-family: var(--font-sans);
+  font-size: 10pt;
+  line-height: 1.45;
+  display: flex;
+  flex-direction: column;
+  /* Off-screen phones get the sheet scaled by the shell, never by squashing
+     the type: a printed page must always print at its true size. */
+  transform-origin: top left;
+}
+
+/* Letterhead ------------------------------------------------------------- */
+.doc-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10mm;
+}
+
+.doc-mark {
+  border-radius: 8px;
+  flex: 0 0 auto;
+}
+
+.doc-org {
+  font-family: var(--font-display);
+  font-size: 15pt;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--navy);
+  line-height: 1.1;
+  margin: 0;
+}
+
+.doc-org-sub {
+  margin: 1mm 0 0;
+  font-size: 7.5pt;
+  letter-spacing: 0.02em;
+  color: #64748b;
+}
+
+.doc-head-right {
+  text-align: right;
+  flex: 0 0 auto;
+}
+
+.doc-kind {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 9pt;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--signal-deep);
+}
+
+.doc-code {
+  margin: 1mm 0 1.5mm;
+  font-family: var(--font-mono);
+  font-size: 7.5pt;
+  letter-spacing: 0.04em;
+  color: #475569;
+}
+
+.doc-qr {
+  margin-left: auto;
+  width: 24mm;
+  height: 24mm;
+  border: 0.4mm solid var(--navy);
+  padding: 1.2mm;
+  border-radius: 1mm;
+}
+
+.doc-qr svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.doc-rule {
+  height: 1.1mm;
+  margin: 4mm 0 0;
+  border-radius: 1mm;
+  background: linear-gradient(90deg, #22d3ee 0%, #68baf7 48%, #a9a1eb 100%);
+}
+
+/* Body ------------------------------------------------------------------- */
+.doc-body {
+  flex: 1 1 auto;
+  padding-top: 5mm;
+}
+
+.doc-lead {
+  margin: 0;
+  font-size: 9.5pt;
+  color: #475569;
+}
+
+.doc-name {
+  margin: 1.5mm 0 2.5mm;
+  font-family: var(--font-display);
+  font-size: 20pt;
+  font-weight: 700;
+  line-height: 1.12;
+  letter-spacing: -0.015em;
+  color: var(--navy);
+  border-bottom: 0.4mm solid var(--hairline);
+  padding-bottom: 2mm;
+}
+
+.doc-name--sm {
+  font-size: 15pt;
+}
+
+.doc-mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.doc-strong {
+  font-weight: 700;
+  font-size: 11pt;
+  color: var(--navy);
+}
+
+/* Key/value tables ------------------------------------------------------- */
+.doc-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 4mm;
+  font-size: 9pt;
+}
+
+.doc-table th,
+.doc-table td {
+  padding: 1.7mm 2.4mm;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 0.25mm solid #e2e8f0;
+}
+
+.doc-table th {
+  width: 40%;
+  font-weight: 600;
+  color: #475569;
+  background: #f8fafc;
+}
+
+.doc-table td {
+  color: #0f172a;
+  word-break: break-word;
+}
+
+.doc-table tr:last-child th,
+.doc-table tr:last-child td {
+  border-bottom: none;
+}
+
+.doc-table--tight th,
+.doc-table--tight td {
+  padding: 1.3mm 2mm;
+  font-size: 8.2pt;
+}
+
+.doc-table--tight th {
+  width: 52%;
+}
+
+.doc-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5mm;
+  align-items: start;
+}
+
+/* Amount band (receipt) -------------------------------------------------- */
+.doc-amount-band {
+  margin-top: 4mm;
+  padding: 4mm 5mm;
+  border-radius: 2mm;
+  border: 0.35mm solid #a7f3d0;
+  background: #ecfdf5;
+  display: block;
+}
+
+.doc-amount-label {
+  display: block;
+  font-size: 7.5pt;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #047857;
+}
+
+.doc-amount {
+  display: block;
+  margin-top: 1mm;
+  font-size: 22pt;
+  font-weight: 700;
+  line-height: 1.1;
+  color: #065f46;
+}
+
+.doc-amount-words {
+  display: block;
+  margin-top: 1mm;
+  font-size: 8.5pt;
+  font-style: italic;
+  color: #065f46;
+}
+
+.doc-status {
+  display: inline-block;
+  padding: 0.6mm 2.4mm;
+  border-radius: 999px;
+  border: 0.3mm solid #a7f3d0;
+  background: #ecfdf5;
+  color: #047857;
+  font-family: var(--font-mono);
+  font-size: 7.5pt;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+/* Statement totals ------------------------------------------------------- */
+.doc-total-band {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.15fr;
+  gap: 0;
+  margin-top: 4mm;
+  border: 0.35mm solid var(--navy);
+  border-radius: 2mm;
+  overflow: hidden;
+}
+
+.doc-total-cell {
+  padding: 3mm 3.5mm;
+  border-right: 0.25mm solid var(--hairline);
+}
+
+.doc-total-cell:last-child {
+  border-right: none;
+}
+
+.doc-total-cell span {
+  display: block;
+  font-size: 7.5pt;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.doc-total-cell strong {
+  display: block;
+  margin-top: 1mm;
+  font-size: 10.5pt;
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.doc-total-cell--lead {
+  background: var(--navy);
+}
+
+.doc-total-cell--lead span {
+  color: #a9c6e8;
+}
+
+.doc-total-cell--lead strong {
+  color: #ffffff;
+  font-size: 12pt;
+}
+
+/* Terms ------------------------------------------------------------------ */
+.doc-terms {
+  margin-top: 4mm;
+  padding: 3mm 4mm;
+  border-left: 0.8mm solid var(--signal);
+  background: #f8fafc;
+  border-radius: 0 1.5mm 1.5mm 0;
+}
+
+.doc-terms-title {
+  margin: 0 0 1.4mm;
+  font-family: var(--font-display);
+  font-size: 8.5pt;
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.doc-terms ul,
+.doc-terms ol {
+  margin: 0;
+  padding-left: 4.2mm;
+  font-size: 7.8pt;
+  line-height: 1.42;
+  color: #334155;
+}
+
+.doc-terms li + li {
+  margin-top: 1mm;
+}
+
+.doc-alert {
+  margin-top: 3mm;
+  padding: 2.4mm 3mm;
+  border-radius: 1.5mm;
+  border: 0.3mm solid #fcd34d;
+  background: #fffbeb;
+  font-size: 7.8pt;
+  line-height: 1.4;
+  color: #92400e;
+}
+
+/* Signatures ------------------------------------------------------------- */
+.doc-sign-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14mm;
+  margin-top: 7mm;
+}
+
+.doc-sign-line {
+  display: block;
+  height: 0;
+  border-bottom: 0.35mm solid #94a3b8;
+  margin-bottom: 1.5mm;
+}
+
+.doc-sign p {
+  margin: 0;
+  font-size: 7.5pt;
+  color: #64748b;
+}
+
+/* Footer ----------------------------------------------------------------- */
+.doc-foot {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 6mm;
+  margin-top: 5mm;
+  padding-top: 3mm;
+  border-top: 0.3mm solid var(--hairline);
+}
+
+.doc-foot-note {
+  margin: 0;
+  font-size: 7.5pt;
+  line-height: 1.4;
+  color: #475569;
+}
+
+.doc-foot-fine {
+  margin: 1.2mm 0 0;
+  font-size: 6.6pt;
+  line-height: 1.38;
+  color: #94a3b8;
+}
+
+.doc-stamp {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 2mm;
+  padding: 2mm 3mm;
+  border: 0.4mm dashed var(--signal-deep);
+  border-radius: 1.5mm;
+  color: var(--signal-deep);
+  transform: rotate(-2.5deg);
+}
+
+.doc-stamp-ring {
+  display: grid;
+  place-items: center;
+  width: 7mm;
+  height: 7mm;
+  border-radius: 50%;
+  background: #ecfeff;
+}
+
+.doc-stamp-text {
+  font-family: var(--font-mono);
+  font-size: 6.4pt;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* Narrow screens: scale the sheet down so it is readable on a phone without
+   ever changing the size it prints at. */
+@media (max-width: 800px) {
+  .doc-shell {
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+  }
+
+  .doc-sheet {
+    transform: scale(0.62);
+    margin-bottom: -110mm;
+  }
+
+  .doc-grid-2,
+  .doc-total-band {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+
+  html,
+  body {
+    background: #ffffff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Everything that is not the document stands down. */
+  .no-print,
+  .pg-header,
+  .pg-menu,
+  .ndh-preview-ribbon,
+  .pg-header-inner,
+  aside,
+  nav,
+  footer:not(.doc-foot),
+  .ndh-concierge,
+  [data-concierge] {
+    display: none !important;
+  }
+
+  .doc-shell {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+  }
+
+  .doc-toolbar {
+    display: none !important;
+  }
+
+  .doc-sheet {
+    width: 210mm;
+    min-height: 0;
+    height: auto;
+    max-height: 296mm;
+    margin: 0;
+    border: none;
+    box-shadow: none;
+    transform: none !important;
+    page-break-after: avoid;
+    page-break-inside: avoid;
+    overflow: hidden;
+  }
+
+  .doc-terms,
+  .doc-total-band,
+  .doc-table,
+  .doc-sign-row {
+    page-break-inside: avoid;
+  }
+}
